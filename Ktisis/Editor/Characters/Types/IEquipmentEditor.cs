@@ -1,33 +1,50 @@
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Characters.Types.IEquipmentEditor
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Ktisis.Editor.Characters.State;
 
+#nullable disable
 namespace Ktisis.Editor.Characters.Types;
 
-public interface IEquipmentEditor {
-	public void ApplyStateFlags();
-	
-	public EquipmentModelId GetEquipIndex(EquipIndex index);
-	public void SetEquipIndex(EquipIndex index, EquipmentModelId model);
-	public void SetEquipIdVariant(EquipIndex index, ushort id, byte variant);
-	public void SetEquipStainId(EquipIndex index, byte stainId, int dyeIndex = 0);
+public interface IEquipmentEditor
+{
+  void ApplyStateFlags();
 
-	public bool GetHatVisible();
-	public void SetHatVisible(bool visible);
+  EquipmentModelId GetEquipIndex(EquipIndex index);
 
-	public bool GetVisorToggled();
-	public void SetVisorToggled(bool toggled);
+  void SetEquipIndex(EquipIndex index, EquipmentModelId model);
 
-	public ushort GetGlassesId(int index = 0);
-	public void SetGlassesId(int index, ushort id);
+  void SetEquipIdVariant(EquipIndex index, ushort id, byte variant);
 
-	public WeaponModelId GetWeaponIndex(WeaponIndex index);
-	public void SetWeaponIndex(WeaponIndex index, WeaponModelId model);
-	public void SetWeaponIdBaseVariant(WeaponIndex index, ushort id, ushort second, byte variant);
-	public void SetWeaponStainId(WeaponIndex index, byte stainId, int dyeIndex = 0);
+  void SetEquipStainId(EquipIndex index, byte stainId, int dyeIndex = 0);
 
-	public bool GetWeaponVisible(WeaponIndex index);
-	public void SetWeaponVisible(WeaponIndex index, bool visible);
-	
-	public void ApplyStateToGameObject();
+  bool GetHatVisible();
+
+  void SetHatVisible(bool visible);
+
+  bool GetVisorToggled();
+
+  void SetVisorToggled(bool toggled);
+
+  ushort GetGlassesId(int index = 0);
+
+  void SetGlassesId(int index, ushort id);
+
+  WeaponModelId GetWeaponIndex(WeaponIndex index);
+
+  void SetWeaponIndex(WeaponIndex index, WeaponModelId model);
+
+  void SetWeaponIdBaseVariant(WeaponIndex index, ushort id, ushort second, byte variant);
+
+  void SetWeaponStainId(WeaponIndex index, byte stainId, int dyeIndex = 0);
+
+  bool GetWeaponVisible(WeaponIndex index);
+
+  void SetWeaponVisible(WeaponIndex index, bool visible);
+
+  void ApplyStateToGameObject();
 }

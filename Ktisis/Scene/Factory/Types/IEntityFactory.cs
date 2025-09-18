@@ -1,19 +1,32 @@
-using Dalamud.Game.ClientState.Objects.Types;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Factory.Types.IEntityFactory
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Structs.Lights;
+using Dalamud.Game.ClientState.Objects.Types;
 using Ktisis.Scene.Factory.Builders;
 using Ktisis.Scene.Factory.Creators;
+using Ktisis.Structs.Lights;
 
+#nullable enable
 namespace Ktisis.Scene.Factory.Types;
 
-public interface IEntityFactory {
-	public IActorBuilder BuildActor(IGameObject actor);
-	public ILightBuilder BuildLight();
-	public IObjectBuilder BuildObject();
-	public IPoseBuilder BuildPose();
+public interface IEntityFactory
+{
+  IActorBuilder BuildActor(IGameObject actor);
 
-	public IActorCreator CreateActor();
-	public ILightCreator CreateLight();
-	public ILightCreator CreateLight(LightType type);
-	public IRefImageBuilder BuildRefImage();
+  ILightBuilder BuildLight();
+
+  IObjectBuilder BuildObject();
+
+  IPoseBuilder BuildPose();
+
+  IActorCreator CreateActor();
+
+  ILightCreator CreateLight();
+
+  ILightCreator CreateLight(LightType type);
+
+  IRefImageBuilder BuildRefImage();
 }

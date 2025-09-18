@@ -1,26 +1,22 @@
-using System.Runtime.InteropServices;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Structs.Input.KeyboardQueue
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Keys;
-
+#nullable disable
 namespace Ktisis.Structs.Input;
 
-[StructLayout(LayoutKind.Sequential)]
-public struct KeyboardQueue {
-	public unsafe fixed ulong _data[66];
+public struct KeyboardQueue
+{
+  public unsafe fixed ulong _data[66];
 
-	public unsafe QueueEntry this[int i] {
-		get {
-			fixed (ulong* ptr = this._data)
-				return ((QueueEntry*)ptr)[i];
-		}
-	}
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public struct QueueEntry {
-	[FieldOffset(0)] public KeyEvent Event;
-	[FieldOffset(1)] public byte KeyCode;
-	[FieldOffset(4)] public byte Unknown;
-
-	public VirtualKey VirtualKey => (VirtualKey)this.KeyCode;
+  public unsafe QueueEntry this[int i]
+  {
+    get
+    {
+      fixed (ulong* numPtr = this._data)
+        return ((QueueEntry*) numPtr)[i];
+    }
+  }
 }

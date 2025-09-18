@@ -1,23 +1,38 @@
-﻿using Ktisis.Editor.Animation.Game;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Animation.Types.IAnimationEditor
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using Ktisis.Editor.Animation.Game;
 using Ktisis.Structs.Actors;
 
+#nullable enable
 namespace Ktisis.Editor.Animation.Types;
 
-public interface IAnimationEditor {
-	public bool SpeedControlEnabled { get; set; }
-	public bool PositionLockEnabled { get; set; }
-	
-	public bool TryGetModeAndPose(out PoseModeEnum mode, out int pose);
-	public int GetPoseCount(PoseModeEnum poseMode);
-	public void SetPose(PoseModeEnum poseMode, byte pose = 0xFF);
+public interface IAnimationEditor
+{
+  bool SpeedControlEnabled { get; set; }
 
-	public void PlayAnimation(GameAnimation animation, bool playStart = true);
-	
-	public void PlayTimeline(uint id);
-	public AnimationTimeline GetTimeline();
-	public void SetForceTimeline(ushort id);
-	public void SetTimelineSpeed(uint slot, float speed);
+  bool PositionLockEnabled { get; set; }
 
-	public bool IsWeaponDrawn { get; }
-	public void ToggleWeapon();
+  bool TryGetModeAndPose(out PoseModeEnum mode, out int pose);
+
+  int GetPoseCount(PoseModeEnum poseMode);
+
+  void SetPose(PoseModeEnum poseMode, byte pose = 255 /*0xFF*/);
+
+  void PlayAnimation(GameAnimation animation, bool playStart = true);
+
+  void PlayTimeline(uint id);
+
+  AnimationTimeline GetTimeline();
+
+  void SetForceTimeline(ushort id);
+
+  void SetTimelineSpeed(uint slot, float speed);
+
+  bool IsWeaponDrawn { get; }
+
+  void ToggleWeapon();
 }

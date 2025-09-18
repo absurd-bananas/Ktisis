@@ -1,224 +1,223 @@
-using System.Numerics;
-using System.Collections.Generic;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Posing.HavokPosing
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Utility;
-
+using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.Havok.Animation.Rig;
 using FFXIVClientStructs.Havok.Common.Base.Container.Array;
+using FFXIVClientStructs.Havok.Common.Base.Container.String;
 using FFXIVClientStructs.Havok.Common.Base.Math.Matrix;
 using FFXIVClientStructs.Havok.Common.Base.Math.QsTransform;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
-
 using Ktisis.Common.Utility;
 using Ktisis.Interop;
+using System;
+using System.Collections.Generic;
+using System.Numerics;
 
+#nullable enable
 namespace Ktisis.Editor.Posing;
 
-public static class HavokPosing {
-	// Matrix wrappers
-	
-	private readonly static Alloc<Matrix4x4> Matrix = new(16);
+public static class HavokPosing
+{
+  private static readonly Alloc<Matrix4x4> Matrix = new Alloc<Matrix4x4>(16UL /*0x10*/);
 
-	public unsafe static Matrix4x4 GetMatrix(hkQsTransformf* transform) {
-		transform->get4x4ColumnMajor((float*)Matrix.Address);
-		return *Matrix.Data;
-	}
-	
-	public unsafe static Matrix4x4 GetMatrix(hkaPose* pose, int boneIndex) {
-		if (pose == null || pose->ModelPose.Data == null)
-			return Matrix4x4.Identity;
-		return GetMatrix(pose->ModelPose.Data + boneIndex);
-	}
+  public static unsafe Matrix4x4 GetMatrix(hkQsTransformf* transform)
+  {
+    ((hkQsTransformf) (IntPtr) transform).get4x4ColumnMajor((float*) HavokPosing.Matrix.Address);
+    return *HavokPosing.Matrix.Data;
+  }
 
-	public unsafe static void SetMatrix(hkQsTransformf* trans, Matrix4x4 matrix) {
-		*Matrix.Data = matrix;
-		trans->set((hkMatrix4f*)Matrix.Address);
-	}
+  public static unsafe Matrix4x4 GetMatrix(hkaPose* pose, int boneIndex)
+  {
+    return (IntPtr) pose == IntPtr.Zero || (IntPtr) pose->ModelPose.Data == IntPtr.Zero ? Matrix4x4.Identity : HavokPosing.GetMatrix(pose->ModelPose.Data + boneIndex);
+  }
 
-	public unsafe static void SetMatrix(hkaPose* pose, int boneIndex, Matrix4x4 matrix) {
-		SetMatrix(pose->ModelPose.Data + boneIndex, matrix);
-	}
-	
-	// Model transform
-	
-	public unsafe static Transform? GetModelTransform(hkaPose* pose, int boneIx) {
-		if (pose == null || pose->ModelPose.Data == null || boneIx < 0 || boneIx > pose->ModelPose.Length)
-			return null;
-		return new Transform(GetMatrix(pose->ModelPose.Data + boneIx));
-	}
+  public static unsafe void SetMatrix(hkQsTransformf* trans, Matrix4x4 matrix)
+  {
+    *HavokPosing.Matrix.Data = matrix;
+    ((hkQsTransformf) (IntPtr) trans).set((hkMatrix4f*) HavokPosing.Matrix.Address);
+  }
 
-	public unsafe static void SetModelTransform(hkaPose* pose, int boneIx, Transform trans) {
-		if (pose == null || pose->ModelPose.Data == null || boneIx < 0 || boneIx > pose->ModelPose.Length)
-			return;
-		SetMatrix(pose->ModelPose.Data + boneIx, trans.ComposeMatrix());
-	}
+  public static unsafe void SetMatrix(hkaPose* pose, int boneIndex, Matrix4x4 matrix)
+  {
+    HavokPosing.SetMatrix(pose->ModelPose.Data + boneIndex, matrix);
+  }
 
-	public unsafe static Transform? GetLocalTransform(hkaPose* pose, int boneIx) {
-		if (pose == null || pose->LocalPose.Data == null || boneIx < 0 || boneIx > pose->LocalPose.Length)
-			return null;
-		return new Transform(GetMatrix(pose->LocalPose.Data + boneIx));
-	}
-	
-	// Propagation
+  public static unsafe Transform? GetModelTransform(hkaPose* pose, int boneIx)
+  {
+    return (IntPtr) pose == IntPtr.Zero || (IntPtr) pose->ModelPose.Data == IntPtr.Zero || boneIx < 0 || boneIx > pose->ModelPose.Length ? (Transform) null : new Transform(HavokPosing.GetMatrix(pose->ModelPose.Data + boneIx));
+  }
 
-	public unsafe static void Propagate(Skeleton* skele, int partialIx, int boneIx, Transform target, Transform initial, bool propagatePartials = true) {
-		var partial = skele->PartialSkeletons[partialIx];
-		var pose = partial.GetHavokPose(0);
-		if (pose == null || pose->Skeleton == null) return;
+  public static unsafe void SetModelTransform(hkaPose* pose, int boneIx, Transform trans)
+  {
+    if ((IntPtr) pose == IntPtr.Zero || (IntPtr) pose->ModelPose.Data == IntPtr.Zero || boneIx < 0 || boneIx > pose->ModelPose.Length)
+      return;
+    HavokPosing.SetMatrix(pose->ModelPose.Data + boneIx, trans.ComposeMatrix());
+  }
 
-		// Calculate transform delta & propagate to children
-		
-		var sourcePos = target.Position;
-		var deltaPos = sourcePos - initial.Position;
-		var deltaRot = target.Rotation / initial.Rotation;
-		Propagate(pose, boneIx, sourcePos, deltaPos, deltaRot);
+  public static unsafe Transform? GetLocalTransform(hkaPose* pose, int boneIx)
+  {
+    return (IntPtr) pose == IntPtr.Zero || (IntPtr) pose->LocalPose.Data == IntPtr.Zero || boneIx < 0 || boneIx > pose->LocalPose.Length ? (Transform) null : new Transform(HavokPosing.GetMatrix(pose->LocalPose.Data + boneIx));
+  }
 
-		if (partialIx != 0 || !propagatePartials) return;
-		
-		// Propagate connected partial skeletons
+  public static unsafe void Propagate(
+    Skeleton* skele,
+    int partialIx,
+    int boneIx,
+    Transform target,
+    Transform initial,
+    bool propagatePartials = true)
+  {
+    PartialSkeleton partialSkeleton1 = skele->PartialSkeletons[partialIx];
+    hkaPose* havokPose1 = ((PartialSkeleton) ref partialSkeleton1).GetHavokPose(0);
+    if ((IntPtr) havokPose1 == IntPtr.Zero || (IntPtr) havokPose1->Skeleton == IntPtr.Zero)
+      return;
+    Vector3 position = target.Position;
+    Vector3 deltaPos = position - initial.Position;
+    Quaternion deltaRot = target.Rotation / initial.Rotation;
+    HavokPosing.Propagate(havokPose1, boneIx, position, deltaPos, deltaRot);
+    if (partialIx != 0 || !propagatePartials)
+      return;
+    hkaSkeleton* skeleton1 = havokPose1->Skeleton;
+    for (int index = 0; index < (int) skele->PartialSkeletonCount; ++index)
+    {
+      PartialSkeleton partialSkeleton2 = skele->PartialSkeletons[index];
+      if (!((PartialSkeleton) ref partialSkeleton2).HavokPoses.IsEmpty)
+      {
+        hkaPose* havokPose2 = ((PartialSkeleton) ref partialSkeleton2).GetHavokPose(0);
+        if ((IntPtr) havokPose2 != IntPtr.Zero)
+        {
+          hkaSkeleton* skeleton2 = havokPose2->Skeleton;
+          if (!HavokPosing.IsMultiRootSkeleton(skeleton2->ParentIndices))
+          {
+            short connectedBoneIndex = partialSkeleton2.ConnectedBoneIndex;
+            short connectedParentBoneIndex = partialSkeleton2.ConnectedParentBoneIndex;
+            if ((int) connectedParentBoneIndex == boneIx || HavokPosing.IsBoneDescendantOf(skeleton1->ParentIndices, (int) connectedParentBoneIndex, boneIx))
+              HavokPosing.Propagate(havokPose2, (int) connectedBoneIndex, position, deltaPos, deltaRot);
+          }
+          else
+          {
+            foreach (int multiRoot in HavokPosing.GetMultiRoots(skeleton2->ParentIndices))
+            {
+              short boneNameIndex = HavokPosing.TryGetBoneNameIndex(havokPose1, ((hkStringPtr) ref skeleton2->Bones[multiRoot].Name).String);
+              if (((((hkStringPtr) ref skeleton1->Bones[boneIx].Name).String == ((hkStringPtr) ref skeleton2->Bones[multiRoot].Name).String ? 1 : 0) | (boneNameIndex != (short) -1 ? (HavokPosing.IsBoneDescendantOf(skeleton1->ParentIndices, (int) boneNameIndex, boneIx) ? 1 : 0) : (false ? 1 : 0))) != 0)
+                HavokPosing.Propagate(havokPose2, multiRoot, position, deltaPos, deltaRot);
+            }
+          }
+        }
+      }
+    }
+  }
 
-		var hkaSkele = pose->Skeleton;
-		for (var p = 0; p < skele->PartialSkeletonCount; p++) {
-			var subPartial = skele->PartialSkeletons[p];
-			if (subPartial.HavokPoses.IsEmpty) continue;
+  private static unsafe void Propagate(
+    hkaPose* pose,
+    int boneIx,
+    Vector3 sourcePos,
+    Vector3 deltaPos,
+    Quaternion deltaRot)
+  {
+    hkaSkeleton* skeleton = pose->Skeleton;
+    for (int index = boneIx; index < skeleton->Bones.Length; ++index)
+    {
+      if (HavokPosing.IsBoneDescendantOf(skeleton->ParentIndices, index, boneIx))
+      {
+        Transform modelTransform = HavokPosing.GetModelTransform(pose, index);
+        Matrix4x4 scale = Matrix4x4.CreateScale(modelTransform.Scale);
+        Matrix4x4 fromQuaternion = Matrix4x4.CreateFromQuaternion(deltaRot * modelTransform.Rotation);
+        Matrix4x4 translation = Matrix4x4.CreateTranslation(deltaPos + sourcePos + Vector3.Transform(modelTransform.Position - sourcePos, deltaRot));
+        HavokPosing.SetMatrix(pose, index, scale * fromQuaternion * translation);
+      }
+    }
+  }
 
-			var subPose = subPartial.GetHavokPose(0);
-			if (subPose == null) continue;
+  public static unsafe Quaternion ParentSkeleton(Skeleton* modelSkeleton, int partialIndex)
+  {
+    PartialSkeleton partialSkeleton1 = modelSkeleton->PartialSkeletons[partialIndex];
+    hkaPose* havokPose1 = ((PartialSkeleton) ref partialSkeleton1).GetHavokPose(0);
+    if ((IntPtr) havokPose1 == IntPtr.Zero)
+      return Quaternion.Identity;
+    PartialSkeleton partialSkeleton2 = *modelSkeleton->PartialSkeletons;
+    hkaPose* havokPose2 = ((PartialSkeleton) ref partialSkeleton2).GetHavokPose(0);
+    if ((IntPtr) havokPose2 == IntPtr.Zero)
+      return Quaternion.Identity;
+    Transform modelTransform1 = HavokPosing.GetModelTransform(havokPose1, (int) partialSkeleton1.ConnectedBoneIndex);
+    Transform modelTransform2 = HavokPosing.GetModelTransform(havokPose2, (int) partialSkeleton1.ConnectedParentBoneIndex);
+    Quaternion quaternion = modelTransform2.Rotation / modelTransform1.Rotation;
+    Transform transform1 = new Transform(modelTransform2.Position, modelTransform1.Rotation, modelTransform1.Scale);
+    HavokPosing.SetModelTransform(havokPose1, (int) partialSkeleton1.ConnectedBoneIndex, transform1);
+    HavokPosing.Propagate(modelSkeleton, partialIndex, (int) partialSkeleton1.ConnectedBoneIndex, transform1, modelTransform1);
+    Transform transform2 = new Transform(modelTransform2.Position, quaternion * modelTransform1.Rotation, modelTransform2.Scale);
+    HavokPosing.SetModelTransform(havokPose1, (int) partialSkeleton1.ConnectedBoneIndex, transform2);
+    HavokPosing.Propagate(modelSkeleton, partialIndex, (int) partialSkeleton1.ConnectedBoneIndex, transform2, transform1);
+    return quaternion;
+  }
 
-			var subSkele = subPose->Skeleton;
-			if (!IsMultiRootSkeleton(subSkele->ParentIndices)) {
-				// propagate normally if this is a single-binding partial (i.e. hair, face to j_kao)
-				var rootBone = subPartial.ConnectedBoneIndex;
-				var parentBone = subPartial.ConnectedParentBoneIndex;
-				if (parentBone != boneIx && !IsBoneDescendantOf(hkaSkele->ParentIndices, parentBone, boneIx)) continue;
-				Propagate(subPose, rootBone, sourcePos, deltaPos, deltaRot);
-			} else {
-				// propagate against each root in a multi-root partial (i.e. j_ex_top_a_l to j_ude_a_l && j_ex_top_a_r to j_ude_a_r)
-				var multi_roots = GetMultiRoots(subSkele->ParentIndices);
-				foreach(int root_idx in multi_roots) {
-					var parent_root_idx = TryGetBoneNameIndex(pose, subSkele->Bones[root_idx].Name.String);
+  public static unsafe void SyncModelSpace(Skeleton* skeleton, int partialIndex)
+  {
+    if ((IntPtr) skeleton == IntPtr.Zero || (IntPtr) skeleton->PartialSkeletons == IntPtr.Zero)
+      return;
+    PartialSkeleton partialSkeleton = skeleton->PartialSkeletons[partialIndex];
+    hkaPose* havokPose = ((PartialSkeleton) ref partialSkeleton).GetHavokPose(0);
+    if ((IntPtr) havokPose == IntPtr.Zero || (IntPtr) havokPose->Skeleton == IntPtr.Zero)
+      return;
+    for (int boneIx = 1; boneIx < havokPose->Skeleton->Bones.Length; ++boneIx)
+    {
+      Transform modelTransform1 = HavokPosing.GetModelTransform(havokPose, (int) havokPose->Skeleton->ParentIndices[boneIx]);
+      if (modelTransform1 != null)
+      {
+        Transform localTransform = HavokPosing.GetLocalTransform(havokPose, boneIx);
+        Transform modelTransform2 = HavokPosing.GetModelTransform(havokPose, boneIx);
+        modelTransform2.Position = modelTransform1.Position + Vector3.Transform(localTransform.Position, modelTransform1.Rotation);
+        modelTransform2.Rotation = modelTransform1.Rotation * localTransform.Rotation;
+        HavokPosing.SetModelTransform(havokPose, boneIx, modelTransform2);
+      }
+    }
+    if (partialIndex <= 0)
+      return;
+    HavokPosing.ParentSkeleton(skeleton, partialIndex);
+  }
 
-					// account for either:
-					// 1. boneIx being posed refers to the same bone as a root_idx
-					// 2. boneIx being posed is the parent of a root_idx within the parent skeleton
-					bool manipulated_bone_is_multi_root = hkaSkele->Bones[boneIx].Name.String == subSkele->Bones[root_idx].Name.String;
-					bool manipulated_bone_is_parent = parent_root_idx != -1 ? IsBoneDescendantOf(hkaSkele->ParentIndices, parent_root_idx, boneIx) : false;
-					if (manipulated_bone_is_multi_root || manipulated_bone_is_parent) Propagate(subPose, root_idx, sourcePos, deltaPos, deltaRot);
-				}
-			}
-		}
-	}
+  public static unsafe short TryGetBoneNameIndex(hkaPose* pose, string? name)
+  {
+    if ((IntPtr) pose == IntPtr.Zero || (IntPtr) pose->Skeleton == IntPtr.Zero || StringExtensions.IsNullOrEmpty(name))
+      return -1;
+    hkArray<hkaBone> bones = pose->Skeleton->Bones;
+    for (short boneNameIndex = 0; (int) boneNameIndex < bones.Length; ++boneNameIndex)
+    {
+      if (((hkStringPtr) ref bones[(int) boneNameIndex].Name).String == name)
+        return boneNameIndex;
+    }
+    return -1;
+  }
 
-	private unsafe static void Propagate(hkaPose* pose, int boneIx, Vector3 sourcePos, Vector3 deltaPos, Quaternion deltaRot) {
-		var hkaSkele = pose->Skeleton;
-		for (var i = boneIx; i < hkaSkele->Bones.Length; i++) {
-			if (!IsBoneDescendantOf(hkaSkele->ParentIndices, i, boneIx)) continue;
+  public static bool IsBoneDescendantOf(hkArray<short> indices, int bone, int parent)
+  {
+    if (!HavokPosing.IsMultiRootSkeleton(indices) && parent < 1)
+      return true;
+    for (short index = indices[bone]; index != (short) -1; index = indices[(int) index])
+    {
+      if ((int) index == parent)
+        return true;
+    }
+    return false;
+  }
 
-			var trans = GetModelTransform(pose, i)!;
-			var scm = Matrix4x4.CreateScale(trans.Scale);
-			var rtm = Matrix4x4.CreateFromQuaternion(deltaRot * trans.Rotation);
-			var trm = Matrix4x4.CreateTranslation(deltaPos + sourcePos + Vector3.Transform(trans.Position - sourcePos, deltaRot));
-			SetMatrix(pose, i, scm * rtm * trm);
-		}
-	}
-	
-	// Parenting
-	
-	public unsafe static Quaternion ParentSkeleton(
-		Skeleton* modelSkeleton,
-		int partialIndex
-	) {
-		var partial = modelSkeleton->PartialSkeletons[partialIndex];
-		var pose = partial.GetHavokPose(0);
-		if (pose == null) return Quaternion.Identity;
-		
-		var rootPartial = modelSkeleton->PartialSkeletons[0];
-		var rootPose = rootPartial.GetHavokPose(0);
-		if (rootPose == null) return Quaternion.Identity;
+  public static bool IsMultiRootSkeleton(hkArray<short> indices)
+  {
+    return HavokPosing.GetMultiRoots(indices).Count > 1;
+  }
 
-		var initial = GetModelTransform(pose, partial.ConnectedBoneIndex)!;
-		var target = GetModelTransform(rootPose, partial.ConnectedParentBoneIndex)!;
-		
-		var deltaRot = target.Rotation / initial.Rotation;
-
-		var step1 = new Transform(target.Position, initial.Rotation, initial.Scale);
-		SetModelTransform(pose, partial.ConnectedBoneIndex, step1);
-		Propagate(modelSkeleton, partialIndex, partial.ConnectedBoneIndex, step1, initial);
-
-		var step2 = new Transform(target.Position, deltaRot * initial.Rotation, target.Scale);
-		SetModelTransform(pose, partial.ConnectedBoneIndex, step2);
-		Propagate(modelSkeleton, partialIndex, partial.ConnectedBoneIndex, step2, step1);
-		
-		return deltaRot;
-	}
-	
-	// Base havok utilities
-
-	public unsafe static void SyncModelSpace(Skeleton* skeleton, int partialIndex) {
-		if (skeleton == null || skeleton->PartialSkeletons == null) return;
-
-		var partial = skeleton->PartialSkeletons[partialIndex];
-		var pose = partial.GetHavokPose(0);
-		if (pose == null || pose->Skeleton == null) return;
-		
-		for (var i = 1; i < pose->Skeleton->Bones.Length; i++) {
-			var parent = GetModelTransform(pose, pose->Skeleton->ParentIndices[i]);
-			if (parent == null) continue;
-
-			var local = GetLocalTransform(pose, i)!;
-			var model = GetModelTransform(pose, i)!;
-
-			model.Position = parent.Position + Vector3.Transform(local.Position, parent.Rotation);
-			model.Rotation = parent.Rotation * local.Rotation;
-			SetModelTransform(pose, i, model);
-		}
-		
-		if (partialIndex > 0)
-			ParentSkeleton(skeleton, partialIndex);
-	}
-	
-	// Lookup
-
-	public unsafe static short TryGetBoneNameIndex(hkaPose* pose, string? name) {
-		if (pose == null || pose->Skeleton == null || name.IsNullOrEmpty())
-			return -1;
-
-		var bones = pose->Skeleton->Bones;
-		for (short i = 0; i < bones.Length; i++) {
-			if (bones[i].Name.String == name)
-				return i;
-		}
-		
-		return -1;
-	}
-	
-	// Bone descendants
-
-	public static bool IsBoneDescendantOf(hkArray<short> indices, int bone, int parent) {
-		// only shortcut out of descendant evaluation if this is a single-root skeleton,
-		// and parent is the 0 index
-		if (!IsMultiRootSkeleton(indices) && parent < 1) return true;
-		
-		var p = indices[bone];
-		while (p != -1) {
-			if (p == parent)
-				return true;
-			p = indices[p];
-		}
-		return false;
-	}
-
-	// Helpers for multi-binding partials
-	public static bool IsMultiRootSkeleton(hkArray<short> indices) {
-		if (GetMultiRoots(indices).Count > 1) return true;
-		return false;
-	}
-
-	public static List<int> GetMultiRoots(hkArray<short> indices) {
-		List<int> parent_indices = new();
-		for(var p = 0; p < indices.Length; p++) {
-			if (indices[p] == -1) parent_indices.Add(p);
-		}
-		return parent_indices;
-	}
+  public static List<int> GetMultiRoots(hkArray<short> indices)
+  {
+    List<int> multiRoots = new List<int>();
+    for (int index = 0; index < indices.Length; ++index)
+    {
+      if (indices[index] == (short) -1)
+        multiRoots.Add(index);
+    }
+    return multiRoots;
+  }
 }

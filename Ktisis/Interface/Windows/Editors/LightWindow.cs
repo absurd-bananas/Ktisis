@@ -1,160 +1,189 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Windows.Editors.LightWindow
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Utility.Raii;
+using Dalamud.Interface.Windowing;
+using Ktisis.Editor.Context.Types;
+using Ktisis.Editor.Selection;
+using Ktisis.Interface.Types;
+using Ktisis.Localization;
+using Ktisis.Scene.Entities;
+using Ktisis.Scene.Entities.Game;
+using Ktisis.Scene.Entities.World;
+using Ktisis.Structs.Lights;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
-
-using Ktisis.Editor.Context;
-using Ktisis.Editor.Context.Types;
-using Ktisis.Interface.Types;
-using Ktisis.Localization;
-using Ktisis.Scene.Entities.World;
-using Ktisis.Structs.Lights;
-
+#nullable enable
 namespace Ktisis.Interface.Windows.Editors;
 
-public class LightWindow : EntityEditWindow<LightEntity> {
-	private readonly LocaleManager _locale;
+public class LightWindow : EntityEditWindow<LightEntity>
+{
+  private readonly LocaleManager _locale;
+  private readonly IEditorContext _ctx;
 
-	public LightWindow(
-		IEditorContext ctx,
-		LocaleManager locale
-	) : base("Light Editor", ctx) {
-		this._locale = locale;
-	}
+  public LightWindow(IEditorContext ctx, LocaleManager locale)
+    : base("Light Editor", ctx)
+  {
+    this._ctx = ctx;
+    this._locale = locale;
+  }
 
-	// Draw handlers
-	
-	public override void PreDraw() {
-		base.PreDraw();
-		this.SizeConstraints = new WindowSizeConstraints {
-			MinimumSize = new Vector2(400, 300),
-			MaximumSize = ImGui.GetIO().DisplaySize * 0.90f
-		};
-	}
-	
-	public override void Draw() {
-		this.UpdateTarget();
-		
-		var s = this.Context.Selection;
-		if (s.Count == 1) {
-			var p = s.GetSelected().First();
-			if (p is LightEntity l)
-				this.SetTarget(l);
-		}
+  public override void PreDraw()
+  {
+    base.PreDraw();
+    Window.WindowSizeConstraints windowSizeConstraints;
+    // ISSUE: explicit constructor call
+    ((Window.WindowSizeConstraints) ref windowSizeConstraints).\u002Ector();
+    ((Window.WindowSizeConstraints) ref windowSizeConstraints).MinimumSize = new Vector2(400f, 300f);
+    ref Window.WindowSizeConstraints local = ref windowSizeConstraints;
+    ImGuiIOPtr io = Dalamud.Bindings.ImGui.ImGui.GetIO();
+    Vector2 vector2 = ((ImGuiIOPtr) ref io).DisplaySize * 0.9f;
+    ((Window.WindowSizeConstraints) ref local).MaximumSize = vector2;
+    this.SizeConstraints = new Window.WindowSizeConstraints?(windowSizeConstraints);
+  }
 
-		var entity = this.Target;
-		
-		ImGui.Text($"{entity.Name}:");
-		ImGui.Spacing();
+  public virtual void Draw()
+  {
+    this.UpdateTarget();
+    ISelectManager selection = this.Context.Selection;
+    if (selection.Count == 1 && selection.GetSelected().First<SceneEntity>() is LightEntity target1)
+      this.SetTarget(target1);
+    LightEntity target2 = this.Target;
+    ImU8String imU8String;
+    // ISSUE: explicit constructor call
+    ((ImU8String) ref imU8String).\u002Ector(1, 1);
+    ((ImU8String) ref imU8String).AppendFormatted<string>(target2.Name);
+    ((ImU8String) ref imU8String).AppendLiteral(":");
+    Dalamud.Bindings.ImGui.ImGui.Text(imU8String);
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    using (ImRaii.TabBar(ImU8String.op_Implicit("##LightEditTabs")))
+    {
+      this.DrawTab("Light", new Action<LightEntity>(this.DrawLightTab), target2);
+      this.DrawTab("Shadows", new Action<LightEntity>(this.DrawShadowsTab), target2);
+      this.DrawImportExport(target2);
+    }
+  }
 
-		using var _ = ImRaii.TabBar("##LightEditTabs");
-		this.DrawTab("Light", this.DrawLightTab, entity);
-		this.DrawTab("Shadows", this.DrawShadowsTab, entity);
-	}
-	
-	// Tabs
+  private void DrawImportExport(LightEntity entity1)
+  {
+    if (entity1 == null)
+      return;
+    if (Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Import"), new Vector2()))
+      this._ctx.Interface.OpenLightImport(entity1);
+    Dalamud.Bindings.ImGui.ImGui.SameLine();
+    if (!Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Export"), new Vector2()))
+      return;
+    bool flag = false;
+    if (!this._ctx.Config.File.ExportLightIgnoreNoActorSelectedWarning)
+    {
+      IEnumerable<ActorEntity> source = this._ctx.Scene.Children.Where<SceneEntity>((Func<SceneEntity, bool>) (entity2 => entity2 is ActorEntity)).Cast<ActorEntity>();
+      if (source.Count<ActorEntity>() > 0 && source.FirstOrDefault<ActorEntity>((Func<ActorEntity, bool>) (x => x.IsSelected)) == null && source.Count<ActorEntity>() > 1)
+        flag = true;
+    }
+    if (flag)
+      this._ctx.Interface.OpenLightExportNoActorSelected((Action) (() => this._ctx.Interface.OpenLightExport(entity1)), this._ctx.Config);
+    else
+      this._ctx.Interface.OpenLightExport(entity1);
+  }
 
-	private void DrawTab(string label, Action<LightEntity> draw, LightEntity entity) {
-		using var _tab = ImRaii.TabItem(label);
-		if (_tab.Success) draw.Invoke(entity);
-	}
-	
-	// Light Tab
+  private void DrawTab(string label, Action<LightEntity> draw, LightEntity entity)
+  {
+    using (ImRaii.IEndObject iendObject = ImRaii.TabItem(ImU8String.op_Implicit(label)))
+    {
+      if (!iendObject.Success)
+        return;
+      draw(entity);
+    }
+  }
 
-	private unsafe void DrawLightTab(LightEntity entity) {
-		var sceneLight = entity.GetObject();
-		var light = sceneLight != null ? sceneLight->RenderLight : null;
-		if (light == null) return;
-		
-		ImGui.Spacing();
-		this.DrawLightFlag("Enable reflections", light, LightFlags.Reflection);
-		ImGui.Spacing();
-		
-		// Light type
-		
-		var lightTypePreview = this._locale.Translate($"lightType.{light->LightType}");
-		if (ImGui.BeginCombo("Light Type", lightTypePreview)) {
-			foreach (var value in Enum.GetValues<LightType>()) {
-				var valueLabel = this._locale.Translate($"lightType.{value}");
-				if (ImGui.Selectable(valueLabel, light->LightType == value))
-					light->LightType = value;
-			}
-			ImGui.EndCombo();
-		}
-		
-		switch (light->LightType) {
-			case LightType.SpotLight:
-				ImGui.SliderFloat("Cone Angle##LightAngle", ref light->LightAngle, 0.0f, 180.0f, "%0.0f deg");
-				ImGui.SliderFloat("Falloff Angle##LightAngle", ref light->FalloffAngle, 0.0f, 180.0f, "%0.0f deg");
-				break;
-			case LightType.AreaLight:
-				var angleSpace = ImGui.GetStyle().ItemInnerSpacing.X;
-				var angleWidth = ImGui.CalcItemWidth() / 2 - angleSpace;
-				ImGui.PushItemWidth(angleWidth);
-				ImGui.SliderAngle("##AngleX", ref light->AreaAngle.X, -90, 90);
-				ImGui.SameLine(0, angleSpace);
-				ImGui.SliderAngle("Light Angle##AngleY", ref light->AreaAngle.Y, -90, 90);
-				ImGui.PopItemWidth();
-				ImGui.SliderFloat("Falloff Angle##LightAngle", ref light->FalloffAngle, 0.0f, 180.0f, "%0.0f deg");
-				break;
-		}
-		
-		ImGui.Spacing();
-		
-		// Falloff
-		
-		var falloffPreview = this._locale.Translate($"lightFalloff.{light->FalloffType}");
-		if (ImGui.BeginCombo("Falloff Type", falloffPreview)) {
-			foreach (var value in Enum.GetValues<FalloffType>()) {
-				var valueLabel = this._locale.Translate($"lightFalloff.{value}");
-				if (ImGui.Selectable(valueLabel, light->FalloffType == value))
-					light->FalloffType = value;
-			}
-			ImGui.EndCombo();
-		}
+  private unsafe void DrawLightTab(LightEntity entity)
+  {
+    SceneLight* sceneLightPtr = entity.GetObject();
+    RenderLight* renderLight = (IntPtr) sceneLightPtr != IntPtr.Zero ? sceneLightPtr->RenderLight : (RenderLight*) null;
+    if ((IntPtr) renderLight == IntPtr.Zero)
+      return;
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    this.DrawLightFlag("Enable reflections", renderLight, LightFlags.Reflection);
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    string str1 = this._locale.Translate($"lightType.{renderLight->LightType}");
+    if (Dalamud.Bindings.ImGui.ImGui.BeginCombo(ImU8String.op_Implicit("Light Type"), ImU8String.op_Implicit(str1), (ImGuiComboFlags) 0))
+    {
+      foreach (LightType lightType in Enum.GetValues<LightType>())
+      {
+        if (Dalamud.Bindings.ImGui.ImGui.Selectable(ImU8String.op_Implicit(this._locale.Translate($"lightType.{lightType}")), renderLight->LightType == lightType, (ImGuiSelectableFlags) 0, new Vector2()))
+          renderLight->LightType = lightType;
+      }
+      Dalamud.Bindings.ImGui.ImGui.EndCombo();
+    }
+    switch (renderLight->LightType)
+    {
+      case LightType.SpotLight:
+        Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Cone Angle##LightAngle"), ref renderLight->LightAngle, 0.0f, 180f, ImU8String.op_Implicit("%0.0f deg"), (ImGuiSliderFlags) 0);
+        Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Falloff Angle##LightAngle"), ref renderLight->FalloffAngle, 0.0f, 180f, ImU8String.op_Implicit("%0.0f deg"), (ImGuiSliderFlags) 0);
+        break;
+      case LightType.AreaLight:
+        ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+        float x = ((ImGuiStylePtr) ref style).ItemInnerSpacing.X;
+        Dalamud.Bindings.ImGui.ImGui.PushItemWidth(Dalamud.Bindings.ImGui.ImGui.CalcItemWidth() / 2f - x);
+        Dalamud.Bindings.ImGui.ImGui.SliderAngle(ImU8String.op_Implicit("##AngleX"), ref renderLight->AreaAngle.X, -90f, 90f, new ImU8String(), (ImGuiSliderFlags) 0);
+        Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+        Dalamud.Bindings.ImGui.ImGui.SliderAngle(ImU8String.op_Implicit("Light Angle##AngleY"), ref renderLight->AreaAngle.Y, -90f, 90f, new ImU8String(), (ImGuiSliderFlags) 0);
+        Dalamud.Bindings.ImGui.ImGui.PopItemWidth();
+        Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Falloff Angle##LightAngle"), ref renderLight->FalloffAngle, 0.0f, 180f, ImU8String.op_Implicit("%0.0f deg"), (ImGuiSliderFlags) 0);
+        break;
+    }
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    string str2 = this._locale.Translate($"lightFalloff.{renderLight->FalloffType}");
+    if (Dalamud.Bindings.ImGui.ImGui.BeginCombo(ImU8String.op_Implicit("Falloff Type"), ImU8String.op_Implicit(str2), (ImGuiComboFlags) 0))
+    {
+      foreach (FalloffType falloffType in Enum.GetValues<FalloffType>())
+      {
+        if (Dalamud.Bindings.ImGui.ImGui.Selectable(ImU8String.op_Implicit(this._locale.Translate($"lightFalloff.{falloffType}")), renderLight->FalloffType == falloffType, (ImGuiSelectableFlags) 0, new Vector2()))
+          renderLight->FalloffType = falloffType;
+      }
+      Dalamud.Bindings.ImGui.ImGui.EndCombo();
+    }
+    Dalamud.Bindings.ImGui.ImGui.DragFloat(ImU8String.op_Implicit("Falloff Power##FalloffPower"), ref renderLight->Falloff, 0.01f, 0.0f, 1000f, new ImU8String(), (ImGuiSliderFlags) 0);
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    Vector3 rgb = renderLight->Color.RGB;
+    if (Dalamud.Bindings.ImGui.ImGui.ColorEdit3(ImU8String.op_Implicit("Color"), ref rgb, (ImGuiColorEditFlags) 8912896 /*0x880000*/))
+      renderLight->Color.RGB = rgb;
+    Dalamud.Bindings.ImGui.ImGui.DragFloat(ImU8String.op_Implicit("Intensity"), ref renderLight->Color.Intensity, 0.01f, 0.0f, 100f, new ImU8String(), (ImGuiSliderFlags) 0);
+    if (!Dalamud.Bindings.ImGui.ImGui.DragFloat(ImU8String.op_Implicit("Range##LightRange"), ref renderLight->Range, 0.1f, 0.0f, 999f, new ImU8String(), (ImGuiSliderFlags) 0))
+      return;
+    entity.Flags |= LightEntityFlags.Update;
+  }
 
-		ImGui.DragFloat("Falloff Power##FalloffPower", ref light->Falloff, 0.01f, 0.0f, 1000.0f);
-		
-		// Base light settings
-		
-		ImGui.Spacing();
-		
-		var color = light->Color.RGB;
-		if (ImGui.ColorEdit3("Color", ref color, ImGuiColorEditFlags.Hdr | ImGuiColorEditFlags.Uint8))
-			light->Color.RGB = color;
-		ImGui.DragFloat("Intensity", ref light->Color.Intensity, 0.01f, 0.0f, 100.0f);
-		if (ImGui.DragFloat("Range##LightRange", ref light->Range, 0.1f, 0, 999))
-			entity.Flags |= LightEntityFlags.Update;
-	}
-	
-	// Shadows tab
+  private unsafe void DrawShadowsTab(LightEntity entity)
+  {
+    SceneLight* sceneLightPtr = entity.GetObject();
+    RenderLight* renderLight = (IntPtr) sceneLightPtr != IntPtr.Zero ? sceneLightPtr->RenderLight : (RenderLight*) null;
+    if ((IntPtr) renderLight == IntPtr.Zero)
+      return;
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    this.DrawLightFlag("Dynamic shadows", renderLight, LightFlags.Dynamic);
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    this.DrawLightFlag("Cast character shadows", renderLight, LightFlags.CharaShadow);
+    this.DrawLightFlag("Cast object shadows", renderLight, LightFlags.ObjectShadow);
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    Dalamud.Bindings.ImGui.ImGui.DragFloat(ImU8String.op_Implicit("Shadow Range"), ref renderLight->CharaShadowRange, 0.1f, 0.0f, 1000f, new ImU8String(), (ImGuiSliderFlags) 0);
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    Dalamud.Bindings.ImGui.ImGui.DragFloat(ImU8String.op_Implicit("Shadow Near"), ref renderLight->ShadowNear, 0.01f, 0.0f, 1000f, new ImU8String(), (ImGuiSliderFlags) 0);
+    Dalamud.Bindings.ImGui.ImGui.DragFloat(ImU8String.op_Implicit("Shadow Far"), ref renderLight->ShadowFar, 0.01f, 0.0f, 1000f, new ImU8String(), (ImGuiSliderFlags) 0);
+  }
 
-	private unsafe void DrawShadowsTab(LightEntity entity) {
-		var sceneLight = entity.GetObject();
-		var light = sceneLight != null ? sceneLight->RenderLight : null;
-		if (light == null) return;
-		
-		ImGui.Spacing();
-		this.DrawLightFlag("Dynamic shadows", light, LightFlags.Dynamic);
-		ImGui.Spacing();
-		
-		this.DrawLightFlag("Cast character shadows", light, LightFlags.CharaShadow);
-		this.DrawLightFlag("Cast object shadows", light, LightFlags.ObjectShadow);
-
-		ImGui.Spacing();
-		ImGui.DragFloat("Shadow Range", ref light->CharaShadowRange, 0.1f, 0.0f, 1000.0f);
-		ImGui.Spacing();
-		ImGui.DragFloat("Shadow Near", ref light->ShadowNear, 0.01f, 0.0f, 1000.0f);
-		ImGui.DragFloat("Shadow Far", ref light->ShadowFar, 0.01f, 0.0f, 1000.0f);
-	}
-	
-	// Utility
-	
-	private unsafe void DrawLightFlag(string label, RenderLight* light, LightFlags flag) {
-		var active = light->Flags.HasFlag(flag);
-		if (ImGui.Checkbox(label, ref active))
-			light->Flags ^= flag;
-	}
+  private unsafe void DrawLightFlag(string label, RenderLight* light, LightFlags flag)
+  {
+    bool flag1 = light->Flags.HasFlag((Enum) flag);
+    if (!Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit(label), ref flag1))
+      return;
+    light->Flags ^= flag;
+  }
 }

@@ -1,139 +1,143 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Workspace.WorkspaceState
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
+using Dalamud.Interface.Utility.Raii;
+using GLib.Widgets;
+using Ktisis.Editor.Context.Types;
+using Ktisis.Editor.Transforms.Types;
+using Ktisis.Interface.Widgets;
+using Ktisis.Scene.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 
-using Dalamud.Interface;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
-
-using GLib.Widgets;
-
-using Ktisis.Editor.Context.Types;
-using Ktisis.Editor.Transforms;
-using Ktisis.Editor.Transforms.Types;
-using Ktisis.Interface.Widgets;
-
+#nullable enable
 namespace Ktisis.Interface.Components.Workspace;
 
-public class WorkspaceState {
-	private readonly IEditorContext _ctx;
-	
-	public WorkspaceState(
-		IEditorContext ctx
-	) {
-		this._ctx = ctx;
-	}
+public class WorkspaceState
+{
+  private readonly IEditorContext _ctx;
 
-	public void Draw() {
-		var style = ImGui.GetStyle();
-		var height = (ImGui.GetFontSize() + style.ItemInnerSpacing.Y) * 2 + style.ItemSpacing.Y;
+  public WorkspaceState(IEditorContext ctx) => this._ctx = ctx;
 
-		var frame = false;
-		try {
-			var id = ImGui.GetID("SceneState_Frame");
-			frame = ImGui.BeginChildFrame(id, new Vector2(-1, height));
-			if (!frame) return;
-			this.DrawContext();
-			this.DrawOverlayToggle();
-		} finally {
-			if (frame) ImGui.EndChildFrame();
-		}
-	}
+  public void Draw()
+  {
+    ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    float y = (float) (((double) Dalamud.Bindings.ImGui.ImGui.GetFontSize() + (double) ((ImGuiStylePtr) ref style).ItemInnerSpacing.Y) * 2.0) + ((ImGuiStylePtr) ref style).ItemSpacing.Y;
+    bool flag = false;
+    try
+    {
+      flag = Dalamud.Bindings.ImGui.ImGui.BeginChildFrame(Dalamud.Bindings.ImGui.ImGui.GetID(ImU8String.op_Implicit("SceneState_Frame")), new Vector2(-1f, y));
+      if (!flag)
+        return;
+      this.DrawContext();
+      this.DrawOverlayToggle();
+    }
+    finally
+    {
+      if (flag)
+        Dalamud.Bindings.ImGui.ImGui.EndChildFrame();
+    }
+  }
 
-	private void DrawContext() {
-		var cursorY = ImGui.GetCursorPosY();
-		var avail = ImGui.GetContentRegionAvail().Y;
-		ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetStyle().ItemSpacing.X);
-		ImGui.SetCursorPosY(cursorY + (avail - ImGui.GetFrameHeight()) / 2);
-		
-		var isPosing = this._ctx.Posing.IsEnabled;
-		
-		var shiftHeld = ImGui.IsKeyDown(ImGuiKey.ModShift);
-		var shouldBlock = this._ctx.Config.Editor.ConfirmExit && isPosing && !shiftHeld;
+  private void DrawContext()
+  {
+    float cursorPosY = Dalamud.Bindings.ImGui.ImGui.GetCursorPosY();
+    float y = Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail().Y;
+    double cursorPosX = (double) Dalamud.Bindings.ImGui.ImGui.GetCursorPosX();
+    ImGuiStylePtr style1 = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    double x = (double) ((ImGuiStylePtr) ref style1).ItemSpacing.X;
+    Dalamud.Bindings.ImGui.ImGui.SetCursorPosX((float) (cursorPosX + x));
+    Dalamud.Bindings.ImGui.ImGui.SetCursorPosY(cursorPosY + (float) (((double) y - (double) Dalamud.Bindings.ImGui.ImGui.GetFrameHeight()) / 2.0));
+    bool isEnabled = this._ctx.Posing.IsEnabled;
+    string str = isEnabled ? "enable" : "disable";
+    uint circleColor = isEnabled ? 4282046570U : 4283453124U;
+    using (ImRaii.PushColor((ImGuiCol) 21, isEnabled ? 4278255360U /*0xFF00FF00*/ : 4285558976U, true))
+    {
+      if (ToggleButton.Draw("##KtisisPoseToggle", ref isEnabled, circleColor))
+        this._ctx.Posing.SetEnabled(isEnabled);
+      if (Dalamud.Bindings.ImGui.ImGui.IsItemHovered())
+      {
+        using (ImRaii.Tooltip())
+          Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(this._ctx.Locale.Translate("workspace.posing.hint." + str)));
+      }
+      Dalamud.Bindings.ImGui.ImGui.SameLine();
+      ImGuiStylePtr style2 = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+      ImFontPtr iconFont = UiBuilder.IconFont;
+      float num = ((ImFontPtr) ref iconFont).FontSize * 2f + ((ImGuiStylePtr) ref style2).ItemInnerSpacing.Y;
+      Dalamud.Bindings.ImGui.ImGui.SetCursorPosY(cursorPosY + (float) (((double) y - (double) num) / 2.0));
+      Dalamud.Bindings.ImGui.ImGui.BeginGroup();
+      using (ImRaii.PushStyle((ImGuiStyleVar) 13, Vector2.Zero, true))
+      {
+        using (ImRaii.PushColor((ImGuiCol) 0, circleColor, true))
+          Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(this._ctx.Locale.Translate("workspace.posing.toggle." + str)));
+        using (ImRaii.PushColor((ImGuiCol) 0, 3758096383U /*0xDFFFFFFF*/, true))
+          this.DrawTargetLabel(this._ctx.Transform);
+      }
+      Dalamud.Bindings.ImGui.ImGui.EndGroup();
+    }
+  }
 
-		var locKey = (isPosing, shouldBlock) switch {
-			(true, false) => "enable",
-			(true, true) => "enable-blocked",
-			(false, _) => "disable",
-		};
-		
-		if (shouldBlock)
-			ImGui.BeginDisabled();
-		
-		var color = isPosing ? 0xFF3AD86A : 0xFF504EC4;
-		using var button = ImRaii.PushColor(ImGuiCol.Button, isPosing ? 0xFF00FF00 : 0xFF7070C0);
-		if (ToggleButton.Draw("##KtisisPoseToggle", ref isPosing, color))
-			this._ctx.Posing.SetEnabled(isPosing);
+  private void DrawTargetLabel(ITransformHandler transform)
+  {
+    ITransformTarget target = transform.Target;
+    if (target == null)
+    {
+      Dalamud.Bindings.ImGui.ImGui.TextDisabled(ImU8String.op_Implicit(this._ctx.Locale.Translate("workspace.state.select_count.none")));
+    }
+    else
+    {
+      string str = target.Primary?.Name ?? "INVALID";
+      int num1 = transform.Target.Targets.Count<SceneEntity>();
+      if (num1 == 1)
+      {
+        Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(str));
+      }
+      else
+      {
+        int num2 = num1 - 1;
+        Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(this._ctx.Locale.Translate("workspace.state.select_count." + (num2 > 1 ? "plural" : "single"), new Dictionary<string, string>()
+        {
+          {
+            "count",
+            num2.ToString()
+          },
+          {
+            "target",
+            target.Primary?.Name ?? "INVALID"
+          }
+        })));
+      }
+    }
+  }
 
-		if (ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled)) {
-			using var _ = ImRaii.Tooltip();
-			ImGui.Text(this._ctx.Locale.Translate($"workspace.posing.hint.{locKey}"));
-		}
-		
-		if (shouldBlock)
-			ImGui.EndDisabled();
-
-		ImGui.SameLine();
-
-		var style = ImGui.GetStyle();
-		var labelHeight = UiBuilder.IconFont.FontSize * 2 + style.ItemInnerSpacing.Y;
-		ImGui.SetCursorPosY(cursorY + (avail - labelHeight) / 2);
-		ImGui.BeginGroup();
-		
-		using (var space = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero)) {
-			using (var text = ImRaii.PushColor(ImGuiCol.Text, color))
-				ImGui.Text(this._ctx.Locale.Translate($"workspace.posing.toggle.{locKey}"));
-			
-			using (var text = ImRaii.PushColor(ImGuiCol.Text, 0xDFFFFFFF))
-				this.DrawTargetLabel(this._ctx.Transform);
-		}
-		
-		ImGui.EndGroup();
-	}
-
-	private void DrawTargetLabel(ITransformHandler transform) {
-		var target = transform.Target;
-		if (target == null) {
-			ImGui.TextDisabled(this._ctx.Locale.Translate("workspace.state.select_count.none"));
-			return;
-		}
-
-		var name = target.Primary?.Name ?? "INVALID";
-
-		var count = transform.Target!.Targets.Count();
-		if (count == 1) {
-			ImGui.Text(name);
-			return;
-		}
-
-		count--;
-		
-		var key = $"workspace.state.select_count.{(count > 1 ? "plural" : "single")}";
-		ImGui.Text(this._ctx.Locale.Translate(
-			key,
-			new Dictionary<string, string> {
-				{ "count", count.ToString() },
-				{ "target", target.Primary?.Name ?? "INVALID" }
-			}
-		));
-	}
-
-	private void DrawOverlayToggle() {
-		using var _ = ImRaii.PushId("##OverlayToggleButton");
-		using var bgCol = ImRaii.PushColor(ImGuiCol.Button, 0);
-		
-		ImGui.SameLine();
-
-		var isActive = this._ctx.Config.Overlay.Visible;
-		using var color = ImRaii.PushColor(ImGuiCol.Text, isActive ? 0xEFFFFFFF : 0x80FFFFFF);
-
-		var icon = isActive ? FontAwesomeIcon.Eye : FontAwesomeIcon.EyeSlash;
-		var label = this._ctx.Locale.Translate("actions.Overlay_Toggle");
-		
-		var avail = ImGui.GetContentRegionAvail();
-		var height = avail.Y - ImGui.GetCursorPosY() / 2;
-		ImGui.SetCursorPosX(ImGui.GetCursorPosX() + avail.X - height);
-		if (Buttons.IconButtonTooltip(icon, label, new Vector2(height, height)))
-			this._ctx.Config.Overlay.Visible = !isActive;
-	}
+  private void DrawOverlayToggle()
+  {
+    using (ImRaii.PushId(ImU8String.op_Implicit("##OverlayToggleButton"), true))
+    {
+      using (ImRaii.PushColor((ImGuiCol) 21, 0U, true))
+      {
+        Dalamud.Bindings.ImGui.ImGui.SameLine();
+        bool visible = this._ctx.Config.Overlay.Visible;
+        using (ImRaii.PushColor((ImGuiCol) 0, visible ? 4026531839U /*0xEFFFFFFF*/ : 2164260863U, true))
+        {
+          int icon = visible ? 61550 : 61552;
+          string str = this._ctx.Locale.Translate("actions.Overlay_Toggle");
+          Vector2 contentRegionAvail = Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail();
+          float num = contentRegionAvail.Y - Dalamud.Bindings.ImGui.ImGui.GetCursorPosY() / 2f;
+          Dalamud.Bindings.ImGui.ImGui.SetCursorPosX(Dalamud.Bindings.ImGui.ImGui.GetCursorPosX() + contentRegionAvail.X - num);
+          string tooltip = str;
+          Vector2? size = new Vector2?(new Vector2(num, num));
+          if (!Buttons.IconButtonTooltip((FontAwesomeIcon) icon, tooltip, size))
+            return;
+          this._ctx.Config.Overlay.Visible = !visible;
+        }
+      }
+    }
+  }
 }

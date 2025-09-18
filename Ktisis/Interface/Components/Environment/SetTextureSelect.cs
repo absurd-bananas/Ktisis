@@ -1,3 +1,15 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Environment.SetTextureSelect
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using Dalamud.Bindings.ImGui;
+using Dalamud.Interface.Textures;
+using Dalamud.Interface.Utility.Raii;
+using Dalamud.Plugin.Services;
+using Ktisis.Core.Attributes;
+using Ktisis.Interface.Widgets;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,185 +18,189 @@ using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Dalamud.Interface.Textures;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Plugin.Services;
-using Dalamud.Bindings.ImGui;
-
-using Ktisis.Core.Attributes;
-
+#nullable enable
 namespace Ktisis.Interface.Components.Environment;
 
 [Transient]
-public class SetTextureSelect {
-	public delegate string ResolvePathHandler(uint id);
-	
-	private readonly ITextureProvider _texture;
-	
-	public SetTextureSelect(
-		ITextureProvider texture
-	) {
-		this._texture = texture;
-	}
+public class SetTextureSelect
+{
+  private readonly ITextureProvider _texture;
+  private static readonly Vector2 ButtonSize = new Vector2(48f, 48f);
+  private static readonly Vector2 OptionSize = new Vector2(64f, 64f);
+  private bool _opening;
+  private SetTextureSelect.OptionsPopupResource? Options;
 
-	public bool Draw(
-		string name,
-		ref uint value,
-		ResolvePathHandler resolve
-	) {
-		using var _id = ImRaii.PushId($"##TexSelect_{name}");
-		
-		var result = false;
-		
-		var path = resolve.Invoke(value);
-		var img = this._texture.GetFromGame(path);
-		if (this.DrawButton(value, img, ButtonSize))
-			this.OpenPopup(name, resolve);
-		result |= this.DrawPopup(name, ref value);
+  public SetTextureSelect(ITextureProvider texture) => this._texture = texture;
 
-		ImGui.SameLine();
+  public bool Draw(string name, ref uint value, SetTextureSelect.ResolvePathHandler resolve)
+  {
+    ImU8String imU8String;
+    // ISSUE: explicit constructor call
+    ((ImU8String) ref imU8String).\u002Ector(12, 1);
+    ((ImU8String) ref imU8String).AppendLiteral("##TexSelect_");
+    ((ImU8String) ref imU8String).AppendFormatted<string>(name);
+    using (ImRaii.PushId(imU8String, true))
+    {
+      bool flag1 = false;
+      ISharedImmediateTexture fromGame = this._texture.GetFromGame(resolve(value));
+      if (this.DrawButton(value, fromGame, SetTextureSelect.ButtonSize))
+        this.OpenPopup(name, resolve);
+      bool flag2 = flag1 | this.DrawPopup(name, ref value);
+      Dalamud.Bindings.ImGui.ImGui.SameLine();
+      using (ImRaii.Group())
+      {
+        Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(name));
+        Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth(Dalamud.Bindings.ImGui.ImGui.CalcItemWidth() - Dalamud.Bindings.ImGui.ImGui.GetCursorPosX());
+        return flag2 | InputUInt.Draw("##" + name, ref value);
+      }
+    }
+  }
 
-		using var _group = ImRaii.Group();
-		ImGui.Text(name);
-		ImGui.SetNextItemWidth(ImGui.CalcItemWidth() - ImGui.GetCursorPosX());
-		result |= Widgets.InputUInt.Draw($"##{name}", ref value);
-		return result;
-	}
-	
-	// Buttons
+  private bool DrawButton(uint value, ISharedImmediateTexture? image, Vector2 size)
+  {
+    using (ImRaii.PushColor((ImGuiCol) 21, 0U, true))
+    {
+      using (ImRaii.PushColor((ImGuiCol) 22, 1815755322U, true))
+      {
+        using (ImRaii.PushColor((ImGuiCol) 23, 2621061690U, true))
+        {
+          using (ImRaii.PushStyle((ImGuiStyleVar) 10, Vector2.Zero, true))
+          {
+            if (image != null)
+              return Dalamud.Bindings.ImGui.ImGui.ImageButton(image.GetWrapOrEmpty().Handle, size);
+            ImU8String imU8String = new ImU8String(0, 1);
+            ((ImU8String) ref imU8String).AppendFormatted<uint>(value, "D3");
+            return Dalamud.Bindings.ImGui.ImGui.Button(imU8String, size);
+          }
+        }
+      }
+    }
+  }
 
-	private readonly static Vector2 ButtonSize = new(48, 48);
-	private readonly static Vector2 OptionSize = new(64, 64);
+  private void OpenPopup(string name, SetTextureSelect.ResolvePathHandler resolve)
+  {
+    this.Options?.Dispose();
+    this.Options = (SetTextureSelect.OptionsPopupResource) null;
+    this.Options = new SetTextureSelect.OptionsPopupResource();
+    this.Options.Load(this._texture, resolve);
+    ImU8String imU8String;
+    // ISSUE: explicit constructor call
+    ((ImU8String) ref imU8String).\u002Ector(6, 1);
+    ((ImU8String) ref imU8String).AppendFormatted<string>(name);
+    ((ImU8String) ref imU8String).AppendLiteral("_Popup");
+    Dalamud.Bindings.ImGui.ImGui.OpenPopup(imU8String, (ImGuiPopupFlags) 0);
+    this._opening = true;
+  }
 
-	private bool DrawButton(uint value, ISharedImmediateTexture? image, Vector2 size) {
-		using var _col0 = ImRaii.PushColor(ImGuiCol.Button, 0);
-		using var _col1 = ImRaii.PushColor(ImGuiCol.ButtonHovered, 0x6C3A3A3A);
-		using var _col2 = ImRaii.PushColor(ImGuiCol.ButtonActive, 0x9C3A3A3A);
-		using var _pad = ImRaii.PushStyle(ImGuiStyleVar.FramePadding, Vector2.Zero);
-		if (image == null)
-			return ImGui.Button($"{value:D3}", size);
-		return ImGui.ImageButton(image.GetWrapOrEmpty().Handle, size);
-	}
-	
-	// Popup
+  private bool DrawPopup(string name, ref uint value)
+  {
+    if (this.Options == null)
+      return false;
+    ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    Dalamud.Bindings.ImGui.ImGui.SetNextWindowSizeConstraints(Vector2.Zero, new Vector2((float) (((double) SetTextureSelect.OptionSize.X + (double) ((ImGuiStylePtr) ref style).ItemSpacing.X) * 6.0) + ((ImGuiStylePtr) ref style).ItemInnerSpacing.X + ((ImGuiStylePtr) ref style).ScrollbarSize, (float) (((double) SetTextureSelect.OptionSize.Y + (double) ((ImGuiStylePtr) ref style).ItemSpacing.Y) * 4.0) + ((ImGuiStylePtr) ref style).WindowPadding.Y));
+    ImU8String imU8String;
+    // ISSUE: explicit constructor call
+    ((ImU8String) ref imU8String).\u002Ector(6, 1);
+    ((ImU8String) ref imU8String).AppendFormatted<string>(name);
+    ((ImU8String) ref imU8String).AppendLiteral("_Popup");
+    using (ImRaii.IEndObject iendObject = ImRaii.Popup(imU8String, (ImGuiWindowFlags) 64 /*0x40*/))
+    {
+      if (!iendObject.Success)
+      {
+        if (this._opening)
+          return false;
+        this.Options?.Dispose();
+        this.Options = (SetTextureSelect.OptionsPopupResource) null;
+        return false;
+      }
+      this._opening = false;
+      int num = 0;
+      bool flag = false;
+      foreach (SetTextureSelect.Option option in this.Options.Get())
+      {
+        if (num++ % 6 != 0 && num > 1)
+          Dalamud.Bindings.ImGui.ImGui.SameLine();
+        if (this.DrawButton(option.Value, option.Texture, SetTextureSelect.OptionSize))
+        {
+          value = option.Value;
+          flag = true;
+        }
+      }
+      return flag;
+    }
+  }
 
-	private bool _opening;
-	private OptionsPopupResource? Options;
-	
-	private void OpenPopup(string name, ResolvePathHandler resolve) {
-		this.Options?.Dispose();
-		this.Options = null;
+  public delegate string ResolvePathHandler(uint id);
 
-		this.Options = new OptionsPopupResource();
-		this.Options.Load(this._texture, resolve);
-		
-		ImGui.OpenPopup($"{name}_Popup");
-		this._opening = true;
-	}
+  private class OptionsPopupResource : IDisposable
+  {
+    private readonly CancellationTokenSource Source = new CancellationTokenSource();
+    private readonly List<SetTextureSelect.Option> List = new List<SetTextureSelect.Option>();
 
-	private bool DrawPopup(string name, ref uint value) {
-		if (this.Options == null) return false;
+    public IEnumerable<SetTextureSelect.Option> Get()
+    {
+      lock (this.List)
+        return (IEnumerable<SetTextureSelect.Option>) this.List.ToList<SetTextureSelect.Option>();
+    }
 
-		const int maxColumns = 6;
-		const int maxRows = 4;
+    public void Load(ITextureProvider tex, SetTextureSelect.ResolvePathHandler resolve)
+    {
+      this.LoadAsync(Enumerable.Range(0, 1000).Select<int, uint>((Func<int, uint>) (i => (uint) i)).Select<uint, SetTextureSelect.Option>((Func<uint, SetTextureSelect.Option>) (i =>
+      {
+        ISharedImmediateTexture fromGame = tex.GetFromGame(resolve(i));
+        if (fromGame == null && i > 0U)
+          return (SetTextureSelect.Option) null;
+        return new SetTextureSelect.Option()
+        {
+          Value = i,
+          Texture = fromGame
+        };
+      })).Where<SetTextureSelect.Option>((Func<SetTextureSelect.Option, bool>) (opt => opt != null)).Cast<SetTextureSelect.Option>(), this.Source.Token).ContinueWith((Action<Task>) (task =>
+      {
+        if (task.Exception == null)
+          return;
+        Ktisis.Ktisis.Log.Error(task.Exception.ToString(), Array.Empty<object>());
+      }));
+    }
 
-		var style = ImGui.GetStyle();
-		ImGui.SetNextWindowSizeConstraints(Vector2.Zero, new Vector2(
-			(OptionSize.X + style.ItemSpacing.X) * maxColumns + style.ItemInnerSpacing.X + style.ScrollbarSize,
-			(OptionSize.Y + style.ItemSpacing.Y) * maxRows + style.WindowPadding.Y
-		));
-		using var _popup = ImRaii.Popup($"{name}_Popup", ImGuiWindowFlags.AlwaysAutoResize);
-		if (!_popup.Success) {
-			if (this._opening) return false;
-			this.Options?.Dispose();
-			this.Options = null;
-			return false;
-		}
+    private async Task LoadAsync(
+      IEnumerable<SetTextureSelect.Option> values,
+      CancellationToken token)
+    {
+      await Task.Yield();
+      Stopwatch t = new Stopwatch();
+      t.Start();
+      foreach (SetTextureSelect.Option[] collection in Enumerable.Chunk<SetTextureSelect.Option>(values, 5))
+      {
+        double totalMilliseconds = t.Elapsed.TotalMilliseconds;
+        lock (this.List)
+        {
+          if (!token.IsCancellationRequested)
+            this.List.AddRange((IEnumerable<SetTextureSelect.Option>) collection);
+          else
+            break;
+        }
+        await Task.Delay(Math.Min((int) totalMilliseconds, 100), token);
+        t.Restart();
+      }
+      token.ThrowIfCancellationRequested();
+      t = (Stopwatch) null;
+    }
 
-		this._opening = false;
-		
-		var i = 0;
-		var result = false;
-		foreach (var option in this.Options.Get()) {
-			if (i++ % 6 != 0 && i > 1) ImGui.SameLine();
-			if (this.DrawButton(option.Value, option.Texture, OptionSize)) {
-				value = option.Value;
-				result = true;
-			}
-		}
-        
-		return result;
-	}
-	
-	// Texture options
+    public void Dispose()
+    {
+      lock (this.List)
+      {
+        this.Source.Cancel();
+        this.List.Clear();
+      }
+      this.Source.Dispose();
+    }
+  }
 
-	private class OptionsPopupResource : IDisposable {
-		private readonly CancellationTokenSource Source = new();
-		private readonly List<Option> List = new();
-
-		public IEnumerable<Option> Get() {
-			IEnumerable<Option> result;
-			lock (this.List)
-				result = this.List.ToList();
-			return result;
-		}
-
-		public void Load(
-			ITextureProvider tex,
-			ResolvePathHandler resolve
-		) {
-			var values = Enumerable.Range(0, 1000)
-				.Select(i => (uint)i)
-				.Select(i => {
-					var path = resolve.Invoke(i);
-					var icon = tex.GetFromGame(path);
-					if (icon == null && i > 0) return null;
-					return new Option {
-						Value = i,
-						Texture = icon
-					};
-				})
-				.Where(opt => opt != null)
-				.Cast<Option>();
-			
-			this.LoadAsync(values, this.Source.Token).ContinueWith(task => {
-				if (task.Exception != null)
-					Ktisis.Log.Error(task.Exception.ToString());
-			});
-		}
-
-		private async Task LoadAsync(
-			IEnumerable<Option> values,
-			CancellationToken token
-		) {
-			await Task.Yield();
-			
-			// IDalamudTextureWrap is blocking regardless of thread, so just stagger the rate they're loaded at.
-			var t = new Stopwatch();
-			t.Start();
-			foreach (var chunk in values.Chunk(5)) {
-				var time = t.Elapsed.TotalMilliseconds;
-				lock (this.List) {
-					if (token.IsCancellationRequested) break;
-					this.List.AddRange(chunk);
-				}
-				await Task.Delay(Math.Min((int)time, 100), token);
-				t.Restart();
-			}
-			token.ThrowIfCancellationRequested();
-		}
-
-		public void Dispose() {
-			lock (this.List) {
-				this.Source.Cancel();
-				this.List.Clear();
-			}
-			this.Source.Dispose();
-		}
-	}
-
-	private class Option {
-		public required uint Value;
-		public required ISharedImmediateTexture? Texture;
-	}
+  private class Option
+  {
+    public required uint Value;
+    public required ISharedImmediateTexture? Texture;
+  }
 }

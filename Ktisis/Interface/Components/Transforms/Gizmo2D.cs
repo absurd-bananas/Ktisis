@@ -1,83 +1,81 @@
-using System;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Transforms.Gizmo2D
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.Utility.Raii;
-
 using Ktisis.ImGuizmo;
 using Ktisis.Interface.Overlay;
+using System;
+using System.Numerics;
 
+#nullable enable
 namespace Ktisis.Interface.Components.Transforms;
 
-public class Gizmo2D {
-	public const float ScaleFactor = 0.5f;
-	
-	// Constructor & creation
+public class Gizmo2D
+{
+  public const float ScaleFactor = 0.5f;
+  private readonly IGizmo Gizmo;
 
-	private readonly IGizmo Gizmo;
+  public Gizmo2D(IGizmo gizmo)
+  {
+    this.Gizmo = gizmo;
+    this.Gizmo.Operation = Operation.ROTATE;
+    this.Gizmo.ScaleFactor = 0.5f;
+  }
 
-	public Gizmo2D(IGizmo gizmo) {
-		this.Gizmo = gizmo;
-		this.Gizmo.Operation = Operation.ROTATE;
-		this.Gizmo.ScaleFactor = ScaleFactor;
-	}
-	
-	// Gizmo state
+  public Mode Mode
+  {
+    get => this.Gizmo.Mode;
+    set => this.Gizmo.Mode = value;
+  }
 
-	public Mode Mode {
-		get => this.Gizmo.Mode;
-		set => this.Gizmo.Mode = value;
-	}
+  public bool IsEnded => this.Gizmo.IsEnded;
 
-	public bool IsEnded => this.Gizmo.IsEnded;
+  public void SetLookAt(Vector3 cameraPos, Vector3 targetPos, float fov, float aspect = 1f)
+  {
+    Matrix4x4 perspectiveFieldOfView = Matrix4x4.CreatePerspectiveFieldOfView(fov, 1f, 0.1f, 100f);
+    this.Gizmo.SetMatrix(Matrix4x4.CreateLookAt(cameraPos, targetPos, Vector3.UnitY), perspectiveFieldOfView);
+  }
 
-	// Draw
-	
-	public void SetLookAt(Vector3 cameraPos, Vector3 targetPos, float fov, float aspect = 1.0f) {
-		var projectionMatrix = Matrix4x4.CreatePerspectiveFieldOfView(
-			fieldOfView: fov,
-			aspectRatio: 1.0f,
-			nearPlaneDistance: 0.1f,
-			farPlaneDistance: 100.0f
-		);
-		
-		var viewMatrix = Matrix4x4.CreateLookAt(cameraPos, targetPos, Vector3.UnitY);
-		this.Gizmo.SetMatrix(viewMatrix, projectionMatrix);
-	}
+  public void Begin(Vector2 rectSize)
+  {
+    using (ImRaii.PushStyle((ImGuiStyleVar) 10, Vector2.Zero, true))
+    {
+      Dalamud.Bindings.ImGui.ImGui.BeginChildFrame((uint) (873568 + this.Gizmo.Id), rectSize);
+      Vector2 cursorScreenPos = Dalamud.Bindings.ImGui.ImGui.GetCursorScreenPos();
+      Vector2 contentRegionAvail = Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail();
+      ImGuiIOPtr io = Dalamud.Bindings.ImGui.ImGui.GetIO();
+      Dalamud.Bindings.ImGui.ImGui.SetNextWindowPos(Vector2.Zero);
+      Dalamud.Bindings.ImGui.ImGui.SetNextWindowSize(((ImGuiIOPtr) ref io).DisplaySize);
+      Dalamud.Bindings.ImGui.ImGui.Begin(ImU8String.op_Implicit("##Gizmo2D"), (ImGuiWindowFlags) 16777263 /*0x0100002F*/);
+      float num = Math.Min(contentRegionAvail.X, contentRegionAvail.Y);
+      Vector2 size = new Vector2(num, num);
+      Vector2 vector2 = (contentRegionAvail - size) / 2f;
+      Vector2 pos = cursorScreenPos + vector2;
+      this.Gizmo.BeginFrame(pos, size);
+      this.Gizmo.PushDrawList();
+      Gizmo2D.DrawGizmoCircle(pos, size, size.X);
+    }
+  }
 
-	public void Begin(Vector2 rectSize) {
-		using var _ = ImRaii.PushStyle(ImGuiStyleVar.FramePadding, Vector2.Zero);
-		
-		ImGui.BeginChildFrame(0xD546_0+(uint)this.Gizmo.Id, rectSize);
+  private static void DrawGizmoCircle(Vector2 pos, Vector2 size, float width)
+  {
+    ImDrawListPtr windowDrawList = Dalamud.Bindings.ImGui.ImGui.GetWindowDrawList();
+    ((ImDrawListPtr) ref windowDrawList).AddCircleFilled(pos + size / 2f, (float) ((double) width * 0.5 / 2.0499999523162842), 3474989088U);
+  }
 
-		var cursorPos = ImGui.GetCursorScreenPos();
-		var innerSize = ImGui.GetContentRegionAvail();
-		
-		// Hack: This uses the full display region due to constraints where the mouse must be within the frame.
-		var io = ImGui.GetIO();
-		ImGui.SetNextWindowPos(Vector2.Zero);
-		ImGui.SetNextWindowSize(io.DisplaySize);
-		ImGui.Begin("##Gizmo2D", ImGuiWindowFlags.ChildWindow | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoDecoration);
-		
-		var minDim = Math.Min(innerSize.X, innerSize.Y);
-		var drawSize = new Vector2(minDim, minDim);
-		var drawPos = cursorPos + (innerSize - drawSize) / 2;
-		
-		this.Gizmo.BeginFrame(drawPos, drawSize);
-		this.Gizmo.PushDrawList();
-		DrawGizmoCircle(drawPos, drawSize, drawSize.X);
-	}
-	
-	private static void DrawGizmoCircle(Vector2 pos, Vector2 size, float width) {
-		ImGui.GetWindowDrawList().AddCircleFilled(pos + size / 2, (width * ScaleFactor) / 2.05f, 0xCF202020);
-	}
+  public bool Manipulate(ref Matrix4x4 matrix, out Matrix4x4 delta)
+  {
+    return this.Gizmo.Manipulate(ref matrix, out delta);
+  }
 
-	public bool Manipulate(ref Matrix4x4 matrix, out Matrix4x4 delta)
-		=> this.Gizmo.Manipulate(ref matrix, out delta);
-	
-	public void End() {
-		this.Gizmo.EndFrame();
-		ImGui.End();
-		ImGui.EndChildFrame();
-	}
+  public void End()
+  {
+    this.Gizmo.EndFrame();
+    Dalamud.Bindings.ImGui.ImGui.End();
+    Dalamud.Bindings.ImGui.ImGui.EndChildFrame();
+  }
 }

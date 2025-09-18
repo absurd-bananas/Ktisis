@@ -1,57 +1,83 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Character;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.GameData.Excel.BattleNpc
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Lumina.Excel;
-using Lumina.Excel.Sheets;
-
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
 using Ktisis.Common.Extensions;
 using Ktisis.GameData.Excel.Types;
 using Ktisis.Structs.Characters;
+using Lumina.Excel;
 
+#nullable enable
 namespace Ktisis.GameData.Excel;
 
-[Sheet("BNpcBase", columnHash: 0xD5D82616)]
-public struct BattleNpc(uint row) : IExcelRow<BattleNpc>, INpcBase {
-	public uint RowId { get; } = row;
+[Sheet("BNpcBase", 3587712534)]
+public struct BattleNpc(uint row) : IExcelRow<BattleNpc>, INpcBase
+{
+  public uint RowId { get; } = row;
 
-	public float Scale { get; init; }
-	
-	private RowRef<ModelChara> ModelChara { get; init; }
-	private RowRef<BNpcCustomize> Customize { get; init; }
-	private RowRef<NpcEquipment> Equipment { get; init; }
+  public float Scale { get; init; } = 0.0f;
 
-	static BattleNpc IExcelRow<BattleNpc>.Create(ExcelPage page, uint offset, uint row) {
-		return new BattleNpc(row) {
-			Scale = page.ReadColumn<float>(4, offset),
-			ModelChara = page.ReadRowRef<ModelChara>(5, offset),
-			Customize = page.ReadRowRef<BNpcCustomize>(6, offset),
-			Equipment = page.ReadRowRef<NpcEquipment>(7, offset)
-		};
-	}
-	
-	// INpcBase
+  private RowRef<Lumina.Excel.Sheets.ModelChara> ModelChara { get; init; } = new RowRef<Lumina.Excel.Sheets.ModelChara>();
 
-	public string Name { get; set; } = string.Empty;
+  private RowRef<BattleNpc.BNpcCustomize> Customize { get; init; } = new RowRef<BattleNpc.BNpcCustomize>();
 
-	public ushort GetModelId() => (ushort)this.ModelChara.RowId;
+  private RowRef<NpcEquipment> Equipment { get; init; } = new RowRef<NpcEquipment>();
 
-	public CustomizeContainer? GetCustomize() => this.Customize is { IsValid: true, RowId: not 0 } ? this.Customize.Value.Customize : null;
-	public EquipmentContainer? GetEquipment() => this.Equipment.IsValid ? this.Equipment.Value.Equipment : null;
+  static BattleNpc IExcelRow<BattleNpc>.Create(ExcelPage page, uint offset, uint row)
+  {
+    return new BattleNpc(row)
+    {
+      Scale = page.ReadColumn<float>(4, offset),
+      ModelChara = page.ReadRowRef<Lumina.Excel.Sheets.ModelChara>(5, offset),
+      Customize = page.ReadRowRef<BattleNpc.BNpcCustomize>(6, offset),
+      Equipment = page.ReadRowRef<NpcEquipment>(7, offset)
+    };
+  }
 
-	public WeaponModelId? GetMainHand() => this.Equipment.IsValid ? this.Equipment.Value.MainHand : null;
-	public WeaponModelId? GetOffHand() => this.Equipment.IsValid ? this.Equipment.Value.OffHand : null;
-	
-	// BNpcCustomize
-	
-	[Sheet("BNpcCustomize", columnHash: 0x18f060d4)]
-	private struct BNpcCustomize(uint row) : IExcelRow<BNpcCustomize> {
-		public uint RowId { get; } = row;
+  public string Name { get; set; } = string.Empty;
 
-		public CustomizeContainer Customize { get; private init; }
+  public ushort GetModelId() => (ushort) this.ModelChara.RowId;
 
-		static BNpcCustomize IExcelRow<BNpcCustomize>.Create(ExcelPage page, uint offset, uint row) {
-			return new BNpcCustomize(row) {
-				Customize = page.ReadCustomize(0, offset)
-			};
-		}
-	}
+  public CustomizeContainer? GetCustomize()
+  {
+    RowRef<BattleNpc.BNpcCustomize> customize = this.Customize;
+    return !customize.IsValid || customize.RowId == 0U ? new CustomizeContainer?() : new CustomizeContainer?(this.Customize.Value.Customize);
+  }
+
+  public EquipmentContainer? GetEquipment()
+  {
+    return !this.Equipment.IsValid ? new EquipmentContainer?() : new EquipmentContainer?(this.Equipment.Value.Equipment);
+  }
+
+  public WeaponModelId? GetMainHand()
+  {
+    return !this.Equipment.IsValid ? new WeaponModelId?() : new WeaponModelId?(this.Equipment.Value.MainHand);
+  }
+
+  public WeaponModelId? GetOffHand()
+  {
+    return !this.Equipment.IsValid ? new WeaponModelId?() : new WeaponModelId?(this.Equipment.Value.OffHand);
+  }
+
+  [Sheet("BNpcCustomize", 418406612)]
+  private struct BNpcCustomize(uint row) : IExcelRow<BattleNpc.BNpcCustomize>
+  {
+    public uint RowId { get; } = row;
+
+    public CustomizeContainer Customize { get; private init; } = new CustomizeContainer();
+
+    static BattleNpc.BNpcCustomize IExcelRow<BattleNpc.BNpcCustomize>.Create(
+      ExcelPage page,
+      uint offset,
+      uint row)
+    {
+      return new BattleNpc.BNpcCustomize(row)
+      {
+        Customize = page.ReadCustomize(0, offset)
+      };
+    }
+  }
 }

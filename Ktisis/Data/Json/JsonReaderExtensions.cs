@@ -1,22 +1,29 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Data.Json.JsonReaderExtensions
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
 using System.Text.Json;
 
+#nullable disable
 namespace Ktisis.Data.Json;
 
-public static class JsonReaderExtensions {
-	public static void SkipIt(this ref BlockBufferJsonReader reader) {
-		if (reader.Reader.TrySkip()) return;
-		if (reader.Reader.TokenType == JsonTokenType.PropertyName)
-			reader.Read();
-		if (reader.Reader.TokenType != JsonTokenType.StartObject && reader.Reader.TokenType != JsonTokenType.StartArray) {
-			/* We don't skip primitives here since we also don't skip `EndObject`/`EndArray` --
-			 * the expectation is that after this method call, the caller can safely call `reader.Read()` to move to the
-			 * next value that they are interested in.
-			 */
-			return;
-		}
-		int depth = reader.Reader.CurrentDepth;
-		do {
-			reader.Read();
-		} while (reader.Reader.CurrentDepth > depth);
-	}
+public static class JsonReaderExtensions
+{
+  public static void SkipIt(ref this BlockBufferJsonReader reader)
+  {
+    if (((Utf8JsonReader) ref reader.Reader).TrySkip())
+      return;
+    if (((Utf8JsonReader) ref reader.Reader).TokenType == 5)
+      reader.Read();
+    if (((Utf8JsonReader) ref reader.Reader).TokenType != 1 && ((Utf8JsonReader) ref reader.Reader).TokenType != 3)
+      return;
+    int currentDepth = ((Utf8JsonReader) ref reader.Reader).CurrentDepth;
+    do
+    {
+      reader.Read();
+    }
+    while (((Utf8JsonReader) ref reader.Reader).CurrentDepth > currentDepth);
+  }
 }

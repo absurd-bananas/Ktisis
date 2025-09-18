@@ -1,43 +1,57 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Posing.Data.SkeletonPoseData
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.Havok.Animation.Rig;
-
 using Ktisis.Scene.Decor;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
+#nullable enable
 namespace Ktisis.Editor.Posing.Data;
 
-public class SkeletonPoseData {
-	public unsafe Skeleton* Skeleton;
-	public PartialSkeleton Partial;
-	public unsafe hkaPose* Pose;
+public class SkeletonPoseData
+{
+  public unsafe FFXIVClientStructs.FFXIV.Client.Graphics.Render.Skeleton* Skeleton;
+  public PartialSkeleton Partial;
+  public unsafe hkaPose* Pose;
 
-	public unsafe short TryResolveBone(IEnumerable<string> names) => names
-		.Select(name => HavokPosing.TryGetBoneNameIndex(this.Pose, name))
-		.FirstOrDefault(index => index != -1, (short)-1);
+  public unsafe short TryResolveBone(IEnumerable<string> names)
+  {
+    return Enumerable.FirstOrDefault<short>(names.Select<string, short>((Func<string, short>) (name => HavokPosing.TryGetBoneNameIndex(this.Pose, name))), (Func<short, bool>) (index => index != (short) -1), (short) -1);
+  }
 
-	public unsafe static SkeletonPoseData? TryGet(Skeleton* skeleton, int partialIndex, int poseIndex) {
-		if (skeleton == null || skeleton->PartialSkeletons == null || partialIndex > skeleton->PartialSkeletonCount)
-			return null;
+  public static unsafe SkeletonPoseData? TryGet(
+    FFXIVClientStructs.FFXIV.Client.Graphics.Render.Skeleton* skeleton,
+    int partialIndex,
+    int poseIndex)
+  {
+    if ((IntPtr) skeleton == IntPtr.Zero || (IntPtr) skeleton->PartialSkeletons == IntPtr.Zero || partialIndex > (int) skeleton->PartialSkeletonCount)
+      return (SkeletonPoseData) null;
+    PartialSkeleton partialSkeleton = skeleton->PartialSkeletons[partialIndex];
+    if (((PartialSkeleton) ref partialSkeleton).HavokPoses.IsEmpty || (IntPtr) partialSkeleton.SkeletonResourceHandle == IntPtr.Zero)
+      return (SkeletonPoseData) null;
+    hkaPose* havokPose = ((PartialSkeleton) ref partialSkeleton).GetHavokPose(poseIndex);
+    if ((IntPtr) havokPose == IntPtr.Zero || (IntPtr) havokPose->Skeleton == IntPtr.Zero)
+      return (SkeletonPoseData) null;
+    return new SkeletonPoseData()
+    {
+      Skeleton = skeleton,
+      Partial = partialSkeleton,
+      Pose = havokPose
+    };
+  }
 
-		var partial = skeleton->PartialSkeletons[partialIndex];
-		if (partial.HavokPoses.IsEmpty || partial.SkeletonResourceHandle == null)
-			return null;
-		
-		var pose = partial.GetHavokPose(poseIndex);
-		if (pose == null || pose->Skeleton == null)
-			return null;
-
-		return new SkeletonPoseData {
-			Skeleton = skeleton,
-			Partial = partial,
-			Pose = pose
-		};
-	}
-
-	public unsafe static SkeletonPoseData? TryGet(ISkeleton skeleton, int partialIndex, int poseIndex) {
-		var ptr = skeleton.GetSkeleton();
-		return ptr != null ? TryGet(ptr, partialIndex, poseIndex) : null;
-	}
+  public static unsafe SkeletonPoseData? TryGet(
+    ISkeleton skeleton,
+    int partialIndex,
+    int poseIndex)
+  {
+    FFXIVClientStructs.FFXIV.Client.Graphics.Render.Skeleton* skeleton1 = skeleton.GetSkeleton();
+    return (IntPtr) skeleton1 == IntPtr.Zero ? (SkeletonPoseData) null : SkeletonPoseData.TryGet(skeleton1, partialIndex, poseIndex);
+  }
 }

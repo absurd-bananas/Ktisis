@@ -1,25 +1,28 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Data.Serialization.SchemaReader
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
 using Ktisis.Common.Utility;
 using Ktisis.Data.Config.Pose2D;
 using Ktisis.Data.Config.Sections;
 
+#nullable enable
 namespace Ktisis.Data.Serialization;
 
-public static class SchemaReader {
-	// Categories
-	
-	private const string CategorySchemaPath = "Data.Schema.Categories.xml";
+public static class SchemaReader
+{
+  private const string CategorySchemaPath = "Data.Schema.Categories.xml";
+  private const string ViewSchemaPath = "Data.Schema.Views.xml";
 
-	public static CategoryConfig ReadCategories() {
-		var stream = ResourceUtil.GetManifestResource(CategorySchemaPath);
-		return CategoryReader.ReadStream(stream);
-	}
-	
-	// Views
+  public static CategoryConfig ReadCategories()
+  {
+    return CategoryReader.ReadStream(ResourceUtil.GetManifestResource("Data.Schema.Categories.xml"));
+  }
 
-	private const string ViewSchemaPath = "Data.Schema.Views.xml";
-
-	public static PoseViewSchema ReadPoseView() {
-		var stream = ResourceUtil.GetManifestResource(ViewSchemaPath);
-		return PoseViewReader.ReadStream(stream);
-	}
+  public static PoseViewSchema ReadPoseView()
+  {
+    return PoseViewReader.ReadStream(ResourceUtil.GetManifestResource("Data.Schema.Views.xml"));
+  }
 }

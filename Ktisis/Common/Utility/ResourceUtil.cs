@@ -1,17 +1,21 @@
-﻿using System.IO;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Common.Utility.ResourceUtil
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using System.IO;
 using System.Reflection;
 
+#nullable enable
 namespace Ktisis.Common.Utility;
 
-public static class ResourceUtil {
-	public static Stream GetManifestResource(string path) {
-		var assembly = Assembly.GetExecutingAssembly();
-		var name = assembly.GetName().Name!;
-		path = $"{name}.{path}";
-
-		var stream = assembly.GetManifestResourceStream(path);
-		if (stream == null)
-			throw new FileNotFoundException(path);
-		return stream;
-	}
+public static class ResourceUtil
+{
+  public static Stream GetManifestResource(string path)
+  {
+    Assembly executingAssembly = Assembly.GetExecutingAssembly();
+    path = $"{executingAssembly.GetName().Name}.{path}";
+    return executingAssembly.GetManifestResourceStream(path) ?? throw new FileNotFoundException(path);
+  }
 }

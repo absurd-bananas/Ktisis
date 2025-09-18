@@ -1,105 +1,100 @@
-using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Factory.Builders.ObjectBuilder
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Utility;
-
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-using Object = FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object;
-
 using Ktisis.Scene.Entities.Character;
 using Ktisis.Scene.Entities.World;
 using Ktisis.Scene.Factory.Types;
 using Ktisis.Scene.Types;
 using Ktisis.Services.Data;
+using System;
 
+#nullable enable
 namespace Ktisis.Scene.Factory.Builders;
 
-public interface IObjectBuilder : IEntityBuilder<WorldEntity, IObjectBuilder> {
-	public IObjectBuilder SetAddress(nint address);
-	public unsafe IObjectBuilder SetAddress(Object* pointer);
-}
+public sealed class ObjectBuilder : 
+  EntityBuilder<WorldEntity, IObjectBuilder>,
+  IObjectBuilder,
+  IEntityBuilder<WorldEntity, IObjectBuilder>,
+  IEntityBuilderBase<WorldEntity, IObjectBuilder>
+{
+  private readonly IPoseBuilder _pose;
+  private readonly INameResolver _naming;
+  private IntPtr Address = IntPtr.Zero;
 
-public sealed class ObjectBuilder : EntityBuilder<WorldEntity, IObjectBuilder>, IObjectBuilder {
-	private readonly IPoseBuilder _pose;
-	private readonly INameResolver _naming;
+  public ObjectBuilder(ISceneManager scene, IPoseBuilder pose, INameResolver naming)
+    : base(scene)
+  {
+    this._pose = pose;
+    this._naming = naming;
+  }
 
-	public ObjectBuilder(
-		ISceneManager scene,
-		IPoseBuilder pose,
-		INameResolver naming
-	) : base(scene) {
-		this._pose = pose;
-		this._naming = naming;
-	}
+  protected override IObjectBuilder Builder => (IObjectBuilder) this;
 
-	protected override IObjectBuilder Builder => this;
-	
-	private nint Address = nint.Zero;
-	
-	public IObjectBuilder SetAddress(nint address) {
-		this.Address = address;
-		return this;
-	}
+  public IObjectBuilder SetAddress(IntPtr address)
+  {
+    this.Address = address;
+    return (IObjectBuilder) this;
+  }
 
-	public unsafe IObjectBuilder SetAddress(Object* pointer) {
-		this.Address = (nint)pointer;
-		return this;
-	}
-	
-	private unsafe ObjectType GetObjectType()
-		=> ((Object*)this.Address)->GetObjectType();
+  public unsafe IObjectBuilder SetAddress(Object* pointer)
+  {
+    this.Address = (IntPtr) pointer;
+    return (IObjectBuilder) this;
+  }
 
-	private unsafe CharacterBase.ModelType GetModelType()
-		=> ((CharacterBase*)this.Address)->GetModelType();
+  private ObjectType GetObjectType() => ((Object) this.Address).GetObjectType();
 
-	private void SetFallbackName(string name) {
-		if (this.Name.IsNullOrEmpty())
-			this.Name = name;
-	}
+  private CharacterBase.ModelType GetModelType() => ((CharacterBase) this.Address).GetModelType();
 
-	protected override WorldEntity Build() {
-		if (this.Address == nint.Zero)
-			throw new Exception("Attempted to build object from null pointer.");
+  private void SetFallbackName(string name)
+  {
+    if (!StringExtensions.IsNullOrEmpty(this.Name))
+      return;
+    this.Name = name;
+  }
 
-		var type = this.GetObjectType();
-		var result = type switch {
-			ObjectType.Light => new LightEntity(this.Scene),
-			ObjectType.CharacterBase => this.BuildCharaBase(),
-			// TODO: VFX?
-			_ => this.BuildDefault()
-		};
-		this.SetFallbackName(type.ToString());
-		result.Name = this.Name;
-		result.Address = this.Address;
-		return result;
-	}
+  protected override WorldEntity Build()
+  {
+    if (this.Address == IntPtr.Zero)
+      throw new Exception("Attempted to build object from null pointer.");
+    ObjectType objectType = this.GetObjectType();
+    WorldEntity worldEntity = objectType == 3 ? this.BuildCharaBase() : (objectType != 5 ? this.BuildDefault() : (WorldEntity) new LightEntity(this.Scene));
+    this.SetFallbackName(objectType.ToString());
+    worldEntity.Name = this.Name;
+    worldEntity.Address = this.Address;
+    return worldEntity;
+  }
 
-	private WorldEntity BuildCharaBase() {
-		var type = this.GetModelType();
-		var result = type switch {
-			CharacterBase.ModelType.Weapon => this.BuildWeapon(),
-			// TODO: Implement generic variant of CharaEntity
-			_ => new CharaEntity(this.Scene, this._pose)
-			//_ => this.BuildDefault()
-		};
-		this.SetFallbackName(type.ToString());
-		return result;
-	}
-	
-	// Weapons
+  private WorldEntity BuildCharaBase()
+  {
+    CharacterBase.ModelType modelType = this.GetModelType();
+    CharaEntity charaEntity = modelType != 4 ? new CharaEntity(this.Scene, this._pose) : (CharaEntity) this.BuildWeapon();
+    this.SetFallbackName(modelType.ToString());
+    return (WorldEntity) charaEntity;
+  }
 
-	private WeaponEntity BuildWeapon() {
-		var entity = new WeaponEntity(this.Scene, this._pose);
-		if (this.Name.IsNullOrEmpty() && this.GetWeaponName() is string name)
-			this.Name = name;
-		return entity;
-	}
+  private WeaponEntity BuildWeapon()
+  {
+    WeaponEntity weaponEntity = new WeaponEntity(this.Scene, this._pose);
+    if (!StringExtensions.IsNullOrEmpty(this.Name))
+      return weaponEntity;
+    string weaponName = this.GetWeaponName();
+    if (weaponName == null)
+      return weaponEntity;
+    this.Name = weaponName;
+    return weaponEntity;
+  }
 
-	private unsafe string? GetWeaponName() {
-		var weapon = (Weapon*)this.Address;
-		return this._naming.GetWeaponName(weapon->ModelSetId, weapon->SecondaryId, weapon->Variant);
-	}
-	
-	// Other
+  private unsafe string? GetWeaponName()
+  {
+    Weapon* address = (Weapon*) this.Address;
+    return this._naming.GetWeaponName(address->ModelSetId, address->SecondaryId, address->Variant);
+  }
 
-	private WorldEntity BuildDefault() => new(this.Scene);
+  private WorldEntity BuildDefault() => new WorldEntity(this.Scene);
 }

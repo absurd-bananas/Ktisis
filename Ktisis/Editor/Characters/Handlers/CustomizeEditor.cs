@@ -1,195 +1,212 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Characters.Handlers.CustomizeEditor
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using Dalamud.Game.ClientState.Objects.Enums;
+using FFXIVClientStructs.FFXIV.Client.Game.Character;
+using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
+using Ktisis.Editor.Characters.Types;
+using Ktisis.Scene.Entities.Game;
 using System;
 using System.Collections.Generic;
 
-using Dalamud.Game.ClientState.Objects.Enums;
-
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-
-using Ktisis.Editor.Characters.Types;
-using Ktisis.Scene.Entities.Game;
-using Ktisis.Structs.Characters;
-
+#nullable enable
 namespace Ktisis.Editor.Characters.Handlers;
 
-public class CustomizeEditor(ActorEntity actor) : ICustomizeEditor {
-	// Customize state wrappers
-	
-	public unsafe byte GetCustomization(CustomizeIndex index) {
-		if (!actor.IsValid) return 0;
-		
-		if (this.TryGetFromState(index, out var value))
-			return value;
-		
-		return actor.CharacterBaseEx != null ? actor.CharacterBaseEx->Customize[(uint)index] : (byte)0;
-	}
+public class CustomizeEditor(ActorEntity actor) : ICustomizeEditor
+{
+  private bool _isHetero;
+  private bool _isHeteroGet;
 
-	private bool TryGetFromState(CustomizeIndex index, out byte value) {
-		value = 0xFF;
-		if (!actor.Appearance.Customize.IsSet(index))
-			return false;
-		value = actor.Appearance.Customize[index];
-		return true;
-	}
+  public unsafe byte GetCustomization(CustomizeIndex index)
+  {
+    if (!actor.IsValid)
+      return 0;
+    byte customization;
+    if (this.TryGetFromState(index, out customization))
+      return customization;
+    return (IntPtr) actor.CharacterBaseEx == IntPtr.Zero ? (byte) 0 : actor.CharacterBaseEx->Customize[(uint) index];
+  }
 
-	public void SetCustomization(CustomizeIndex index, byte value) {
-		if (this.SetCustomizeValue(index, value))
-			this.UpdateCustomizeData(IsRedrawRequired(index));
-	}
-	
-	private unsafe bool IsCurrentValue(CustomizeIndex index, byte value) {
-		var result = true;
+  private bool TryGetFromState(CustomizeIndex index, out byte value)
+  {
+    value = byte.MaxValue;
+    if (!actor.Appearance.Customize.IsSet(index))
+      return false;
+    value = actor.Appearance.Customize[index];
+    return true;
+  }
 
-		var hasState = this.TryGetFromState(index, out var stateVal);
-		if (hasState) result &= value == stateVal;
-		
-		var hasChara = actor.CharacterBaseEx != null;
-		if (hasChara) result &= value == actor.CharacterBaseEx->Customize[(uint)index];
-		
-		return (hasState || hasChara) && result;
-	}
-	
-	// Customize set handlers
+  public void SetCustomization(CustomizeIndex index, byte value)
+  {
+    if (!this.SetCustomizeValue(index, value))
+      return;
+    this.UpdateCustomizeData(CustomizeEditor.IsRedrawRequired(index));
+  }
 
-	private unsafe bool SetCustomizeValue(CustomizeIndex index, byte value) {
-		if (!actor.IsValid) return false;
+  private unsafe bool IsCurrentValue(CustomizeIndex index, byte value)
+  {
+    bool flag1 = true;
+    byte num1;
+    int num2 = this.TryGetFromState(index, out num1) ? 1 : 0;
+    if (num2 != 0)
+      flag1 &= (int) value == (int) num1;
+    bool flag2 = (IntPtr) actor.CharacterBaseEx != IntPtr.Zero;
+    if (flag2)
+      flag1 &= (int) value == (int) actor.CharacterBaseEx->Customize[(uint) index];
+    return ((num2 | (flag2 ? 1 : 0)) & (flag1 ? 1 : 0)) != 0;
+  }
 
-		var isEarChange = index == CustomizeIndex.RaceFeatureType && actor.IsViera();
-		if (isEarChange) {
-			if (value > 4) value = (byte)(value == byte.MaxValue ? 4 : 1);
-			actor.Pose?.Refresh();
-		}
-		
-		actor.Appearance.Customize[index] = value;
-		
-		var chara = actor.GetCharacter();
-		if (chara == null) return false;
+  private unsafe bool SetCustomizeValue(CustomizeIndex index, byte value)
+  {
+    if (!actor.IsValid)
+      return false;
+    if ((index != 22 ? 0 : (actor.IsViera() ? 1 : 0)) != 0)
+    {
+      if (value > (byte) 4)
+        value = value == byte.MaxValue ? (byte) 4 : (byte) 1;
+      actor.Pose?.Refresh();
+    }
+    actor.Appearance.Customize[index] = value;
+    CharacterBase* character = actor.GetCharacter();
+    if ((IntPtr) character == IntPtr.Zero || ((CharacterBase) (IntPtr) character).GetModelType() != 1)
+      return false;
+    ((CustomizeData) ref ((Human*) character)->Customize).Data[(int) index] = value;
+    return true;
+  }
 
-		if (chara->GetModelType() == CharacterBase.ModelType.Human) {
-			var human = (Human*)chara;
-			human->Customize.Data[(int)index] = value;
-			return true;
-		}
+  private unsafe void UpdateCustomizeData(bool redraw)
+  {
+    Human* human = actor.GetHuman();
+    if (!redraw && (IntPtr) human != IntPtr.Zero)
+      redraw = !((Human) (IntPtr) human).UpdateDrawData((byte*) &human->Customize, true);
+    if (!redraw)
+      return;
+    actor.Redraw();
+  }
 
-		return false;
-	}
+  private static bool IsRedrawRequired(CustomizeIndex index) => index <= 1 || index - 4 <= 1;
 
-	private unsafe void UpdateCustomizeData(bool redraw) {
-		var human = actor.GetHuman();
-		if (!redraw && human != null)
-			redraw = !human->UpdateDrawData((byte*)&human->Customize, true);
-		if (redraw) actor.Redraw(); 
-	}
+  public void SetHeterochromia(bool enabled)
+  {
+    this._isHetero = enabled;
+    this._isHeteroGet = true;
+    if (enabled)
+      return;
+    this.SetCustomization((CustomizeIndex) 9, this.GetCustomization((CustomizeIndex) 15));
+  }
 
-	private static bool IsRedrawRequired(CustomizeIndex index) {
-		return index is CustomizeIndex.Race
-			or CustomizeIndex.Tribe
-			or CustomizeIndex.Gender
-			or CustomizeIndex.FaceType;
-	}
-	
-	// Eye color / heterochromia
+  public bool GetHeterochromia()
+  {
+    byte customization1 = this.GetCustomization((CustomizeIndex) 9);
+    byte customization2 = this.GetCustomization((CustomizeIndex) 15);
+    if (!this._isHeteroGet)
+    {
+      this._isHetero = (int) customization1 != (int) customization2;
+      this._isHeteroGet = true;
+    }
+    else
+      this._isHetero |= (int) customization1 != (int) customization2;
+    return this._isHetero;
+  }
 
-	private bool _isHetero;
-	private bool _isHeteroGet;
-	
-	public void SetHeterochromia(bool enabled) {
-		this._isHetero = enabled;
-		this._isHeteroGet = true;
-		if (enabled) return;
-		var col2 = this.GetCustomization(CustomizeIndex.EyeColor2);
-		this.SetCustomization(CustomizeIndex.EyeColor, col2);
-	}
+  public void SetEyeColor(byte value)
+  {
+    ICustomizeBatch customizeBatch = this.Prepare().SetCustomization((CustomizeIndex) 9, value);
+    if (!this.GetHeterochromia())
+      customizeBatch.SetCustomization((CustomizeIndex) 15, value);
+    customizeBatch.Apply();
+  }
 
-	public bool GetHeterochromia() {
-		var col1 = this.GetCustomization(CustomizeIndex.EyeColor);
-		var col2 = this.GetCustomization(CustomizeIndex.EyeColor2);
-		if (!this._isHeteroGet) {
-			this._isHetero = col1 != col2;
-			this._isHeteroGet = true;
-		} else {
-			this._isHetero |= col1 != col2;
-		}
-		return this._isHetero;
-	}
+  public unsafe uint GetModelId()
+  {
+    if (!actor.IsValid)
+      throw new Exception($"Actor entity '{actor.Name}' is invalid.");
+    return actor.Appearance.ModelId ?? CustomizeEditor.GetGameModel(actor.Character);
+  }
 
-	public void SetEyeColor(byte value) {
-		var batch = this.Prepare().SetCustomization(CustomizeIndex.EyeColor, value);
-		if (!this.GetHeterochromia())
-			batch.SetCustomization(CustomizeIndex.EyeColor2, value);
-		batch.Apply();
-	}
-	
-	// Model ID
+  public void SetModelId(uint id, bool redraw = true)
+  {
+    if (!actor.IsValid)
+      throw new Exception($"Actor entity '{actor.Name}' is invalid.");
+    redraw &= this.ModelIdDiffers(id);
+    actor.Appearance.ModelId = new uint?(id);
+    if (!redraw)
+      return;
+    actor.Redraw();
+  }
 
-	public unsafe uint GetModelId() {
-		if (!actor.IsValid)
-			throw new Exception($"Actor entity '{actor.Name}' is invalid.");
-		return actor.Appearance.ModelId ?? GetGameModel(actor.Character);
-	}
+  private unsafe bool ModelIdDiffers(uint id)
+  {
+    return (int) id != ((int) actor.Appearance.ModelId ?? (int) CustomizeEditor.GetGameModel(actor.Character));
+  }
 
-	public void SetModelId(uint id, bool redraw = true) {
-		if (!actor.IsValid)
-			throw new Exception($"Actor entity '{actor.Name}' is invalid.");
-		redraw &= this.ModelIdDiffers(id);
-		actor.Appearance.ModelId = id;
-		if (redraw) actor.Redraw();
-	}
+  private static unsafe uint GetGameModel(FFXIVClientStructs.FFXIV.Client.Game.Character.Character* chara)
+  {
+    if ((IntPtr) chara == IntPtr.Zero)
+      throw new Exception("Character is null.");
+    return (uint) chara->ModelContainer.ModelCharaId;
+  }
 
-	private unsafe bool ModelIdDiffers(uint id)
-		=> id != (actor.Appearance.ModelId ?? GetGameModel(actor.Character));
-	
-	private unsafe static uint GetGameModel(Character* chara) {
-		if (chara == null)
-			throw new Exception("Character is null.");
-		return (uint)chara->ModelContainer.ModelCharaId;
-	}
-	
-	// Set GameObject state (for spawned actors)
+  public unsafe void ApplyStateToGameObject()
+  {
+    if (!actor.IsValid || (IntPtr) actor.Character == IntPtr.Zero)
+      return;
+    for (int index = 0; index < 26; ++index)
+    {
+      byte customization = this.GetCustomization((CustomizeIndex) index);
+      ((CustomizeData) ref actor.Character->DrawData.CustomizeData).Data[index] = customization;
+    }
+  }
 
-	public unsafe void ApplyStateToGameObject() {
-		if (!actor.IsValid || actor.Character == null) return;
-		for (var i = 0; i < CustomizeContainer.Size; i++) {
-			var value = this.GetCustomization((CustomizeIndex)i);
-			actor.Character->DrawData.CustomizeData.Data[i] = value;
-		}
-	}
+  public ICustomizeBatch Prepare() => (ICustomizeBatch) new CustomizeEditor.CustomizeBatch(this);
 
-	// Batch setter
+  private class CustomizeBatch(CustomizeEditor editor) : ICustomizeBatch
+  {
+    private readonly Dictionary<CustomizeIndex, byte> Values = new Dictionary<CustomizeIndex, byte>();
+    private uint? ModelId;
 
-	public ICustomizeBatch Prepare() => new CustomizeBatch(this);
+    public ICustomizeBatch SetCustomization(CustomizeIndex index, byte value)
+    {
+      this.Values[index] = value;
+      return (ICustomizeBatch) this;
+    }
 
-	private class CustomizeBatch(CustomizeEditor editor) : ICustomizeBatch {
-		private readonly Dictionary<CustomizeIndex, byte> Values = new();
-		private uint? ModelId;
+    public ICustomizeBatch SetIfNotNull(CustomizeIndex index, byte? value)
+    {
+      if (!value.HasValue)
+        return (ICustomizeBatch) this;
+      this.SetCustomization(index, value.Value);
+      return (ICustomizeBatch) this;
+    }
 
-		public ICustomizeBatch SetCustomization(CustomizeIndex index, byte value) {
-			this.Values[index] = value;
-			return this;
-		}
+    public ICustomizeBatch SetModelId(uint id)
+    {
+      this.ModelId = new uint?(id);
+      return (ICustomizeBatch) this;
+    }
 
-		public ICustomizeBatch SetIfNotNull(CustomizeIndex index, byte? value) {
-			if (value == null) return this;
-			this.SetCustomization(index, value.Value);
-			return this;
-		}
-
-		public ICustomizeBatch SetModelId(uint id) {
-			this.ModelId = id;
-			return this;
-		}
-		
-		public void Apply() {
-			var redraw = false;
-			foreach (var (index, value) in this.Values) {
-				if (editor.IsCurrentValue(index, value)) continue;
-				redraw |= editor.SetCustomizeValue(index, value) && IsRedrawRequired(index);
-			}
-			if (this.ModelId != null) {
-				redraw |= editor.ModelIdDiffers(this.ModelId.Value);
-				editor.SetModelId(this.ModelId.Value, false);
-			}
-			editor.UpdateCustomizeData(redraw);
-		}
-	}
+    public void Apply()
+    {
+      bool redraw = false;
+      foreach (KeyValuePair<CustomizeIndex, byte> keyValuePair in this.Values)
+      {
+        CustomizeIndex customizeIndex;
+        byte num1;
+        keyValuePair.Deconstruct(ref customizeIndex, ref num1);
+        CustomizeIndex index = customizeIndex;
+        byte num2 = num1;
+        if (!editor.IsCurrentValue(index, num2))
+          redraw = ((redraw ? 1 : 0) | (!editor.SetCustomizeValue(index, num2) ? 0 : (CustomizeEditor.IsRedrawRequired(index) ? 1 : 0))) != 0;
+      }
+      if (this.ModelId.HasValue)
+      {
+        redraw |= editor.ModelIdDiffers(this.ModelId.Value);
+        editor.SetModelId(this.ModelId.Value, false);
+      }
+      editor.UpdateCustomizeData(redraw);
+    }
+  }
 }

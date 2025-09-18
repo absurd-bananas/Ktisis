@@ -1,38 +1,42 @@
-using System;
-using System.Threading.Tasks;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Characters.Types.ICharacterManager
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Game.ClientState.Objects.Types;
-
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-
 using Ktisis.Data.Files;
 using Ktisis.Data.Mcdf;
 using Ktisis.Editor.Characters.State;
 using Ktisis.GameData.Excel.Types;
 using Ktisis.Scene.Entities.Game;
+using System;
+using System.Threading.Tasks;
 
+#nullable enable
 namespace Ktisis.Editor.Characters.Types;
 
-public unsafe delegate void DisableDrawHandler(IGameObject gameObject, DrawObject* drawObject);
+public interface ICharacterManager : IDisposable
+{
+  bool IsValid { get; }
 
-public interface ICharacterManager : IDisposable {
-	public bool IsValid { get; }
-	
-	public McdfManager Mcdf { get; }
+  McdfManager Mcdf { get; }
 
-	public event DisableDrawHandler? OnDisableDraw;
-	
-	public void Initialize();
-	
-	public ICustomizeEditor GetCustomizeEditor(ActorEntity actor);
-	public IEquipmentEditor GetEquipmentEditor(ActorEntity actor);
+  event DisableDrawHandler? OnDisableDraw;
 
-	public bool TryGetStateForActor(IGameObject actor, out ActorEntity entity, out AppearanceState state);
+  void Initialize();
 
-	public void ApplyStateToGameObject(ActorEntity entity);
+  ICustomizeEditor GetCustomizeEditor(ActorEntity actor);
 
-	public Task ApplyCharaFile(ActorEntity actor, CharaFile file, SaveModes modes = SaveModes.All, bool gameState = false);
-	public Task<CharaFile> SaveCharaFile(ActorEntity actor);
+  IEquipmentEditor GetEquipmentEditor(ActorEntity actor);
 
-	public Task ApplyNpc(ActorEntity actor, INpcBase npc, SaveModes modes = SaveModes.All, bool gameState = false);
+  bool TryGetStateForActor(IGameObject actor, out ActorEntity entity, out AppearanceState state);
+
+  void ApplyStateToGameObject(ActorEntity entity);
+
+  Task ApplyCharaFile(ActorEntity actor, CharaFile file, SaveModes modes = SaveModes.All, bool gameState = false);
+
+  Task<CharaFile> SaveCharaFile(ActorEntity actor);
+
+  Task ApplyNpc(ActorEntity actor, INpcBase npc, SaveModes modes = SaveModes.All, bool gameState = false);
 }

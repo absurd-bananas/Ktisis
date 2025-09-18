@@ -1,185 +1,168 @@
-﻿using System;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Posing.Ik.TwoJoints.TwoJointsSolver
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using FFXIVClientStructs.Havok.Animation.Rig;
-
+using FFXIVClientStructs.Havok.Common.Base.Container.Array;
+using FFXIVClientStructs.Havok.Common.Base.Math.QsTransform;
 using Ktisis.Common.Utility;
 using Ktisis.Interop;
 using Ktisis.Structs.Havok;
+using System;
+using System.Numerics;
 
+#nullable enable
 namespace Ktisis.Editor.Posing.Ik.TwoJoints;
 
-public class TwoJointsSolver(IkModule module) : IDisposable {
-	private readonly Alloc<TwoJointsIkSetup> AllocIkSetup = new(16);
-	
-	public unsafe TwoJointsIkSetup* IkSetup => this.AllocIkSetup.Data;
-	private Transform? LastPoseInModel = null;
-	
-	// Setup parameters
+public class TwoJointsSolver(IkModule module) : IDisposable
+{
+  private readonly Alloc<TwoJointsIkSetup> AllocIkSetup = new Alloc<TwoJointsIkSetup>(16UL /*0x10*/);
 
-	public unsafe void Setup() {
-		if (this.AllocIkSetup.Address == nint.Zero)
-			throw new Exception("Allocation for IkSetup failed.");
-		
-		*this.IkSetup = new TwoJointsIkSetup {
-			m_firstJointIdx = -1,
-			m_secondJointIdx = -1,
-			m_endBoneIdx = -1,
-			m_firstJointTwistIdx = -1,
-			m_secondJointTwistIdx = -1,
-			m_hingeAxisLS = new Vector4(0.0f, 0.0f, 1.0f, 1.0f),
-			m_cosineMaxHingeAngle = -1.0f,
-			m_cosineMinHingeAngle = 1.0f,
-			m_firstJointIkGain = 1.0f,
-			m_secondJointIkGain = 1.0f,
-			m_endJointIkGain = 1.0f,
-			m_endTargetMS = Vector4.Zero,
-			m_endTargetRotationMS = Quaternion.Identity,
-			m_endBoneOffsetLS = Vector4.Zero,
-			m_endBoneRotationOffsetLS = Quaternion.Identity,
-			m_enforceEndPosition = true,
-			m_enforceEndRotation = false
-		};
-	}
-	
-	// Solving
+  public unsafe TwoJointsIkSetup* IkSetup => this.AllocIkSetup.Data;
 
-	public unsafe bool Solve(hkaPose* poseIn, hkaPose* poseOut, bool frozen = false) {
-		if (poseOut == null || poseOut->Skeleton == null)
-			return false;
-		
-		if (frozen) {
-			poseIn->SetToReferencePose();
-			poseIn->SyncModelSpace();
-			this.UpdateModelPose(poseIn, poseOut);
-		}
-		
-		byte result = 0;
-		module.SolveTwoJoints(&result, this.IkSetup, poseIn);
-		
-		if (result == 0) return false;
+  public unsafe void Setup()
+  {
+    if (this.AllocIkSetup.Address == IntPtr.Zero)
+      throw new Exception("Allocation for IkSetup failed.");
+    *this.IkSetup = new TwoJointsIkSetup()
+    {
+      m_firstJointIdx = (short) -1,
+      m_secondJointIdx = (short) -1,
+      m_endBoneIdx = (short) -1,
+      m_firstJointTwistIdx = (short) -1,
+      m_secondJointTwistIdx = (short) -1,
+      m_hingeAxisLS = new Vector4(0.0f, 0.0f, 1f, 1f),
+      m_cosineMaxHingeAngle = -1f,
+      m_cosineMinHingeAngle = 1f,
+      m_firstJointIkGain = 1f,
+      m_secondJointIkGain = 1f,
+      m_endJointIkGain = 1f,
+      m_endTargetMS = Vector4.Zero,
+      m_endTargetRotationMS = Quaternion.Identity,
+      m_endBoneOffsetLS = Vector4.Zero,
+      m_endBoneRotationOffsetLS = Quaternion.Identity,
+      m_enforceEndPosition = true,
+      m_enforceEndRotation = false
+    };
+  }
 
-		poseIn->SyncModelSpace();
-		if (frozen)
-			this.ApplyModelPoseStatic(poseIn, poseOut);
-		else
-			this.ApplyModelPoseDynamic(poseIn, poseOut);
+  public unsafe bool Solve(hkaPose* poseIn, hkaPose* poseOut, bool frozen = false)
+  {
+    if ((IntPtr) poseOut == IntPtr.Zero || (IntPtr) poseOut->Skeleton == IntPtr.Zero)
+      return false;
+    if (frozen)
+    {
+      ((hkaPose) (IntPtr) poseIn).SetToReferencePose();
+      ((hkaPose) (IntPtr) poseIn).SyncModelSpace();
+      this.UpdateModelPose(poseIn, poseOut);
+    }
+    byte num1 = 0;
+    IntPtr num2 = module.SolveTwoJoints(&num1, this.IkSetup, poseIn);
+    if (num1 == (byte) 0)
+      return false;
+    ((hkaPose) (IntPtr) poseIn).SyncModelSpace();
+    if (frozen)
+      this.ApplyModelPoseStatic(poseIn, poseOut);
+    else
+      this.ApplyModelPoseDynamic(poseIn, poseOut);
+    return true;
+  }
 
-		return true;
-	}
-	
-	public unsafe bool SolveGroup(hkaPose* poseIn, hkaPose* poseOut, TwoJointsGroup group, bool frozen = false) {
-		if (!group.IsEnabled) return false;
-		
-		var ik = this.IkSetup;
-		
-		ik->m_firstJointIdx = group.FirstBoneIndex;
-		ik->m_firstJointTwistIdx = group.FirstTwistIndex;
-		ik->m_secondJointIdx = group.SecondBoneIndex;
-		ik->m_secondJointTwistIdx = group.SecondTwistIndex;
-		ik->m_endBoneIdx = group.EndBoneIndex;
+  public unsafe bool SolveGroup(
+    hkaPose* poseIn,
+    hkaPose* poseOut,
+    TwoJointsGroup group,
+    bool frozen = false)
+  {
+    if (!group.IsEnabled)
+      return false;
+    TwoJointsIkSetup* ikSetup = this.IkSetup;
+    ikSetup->m_firstJointIdx = group.FirstBoneIndex;
+    ikSetup->m_firstJointTwistIdx = group.FirstTwistIndex;
+    ikSetup->m_secondJointIdx = group.SecondBoneIndex;
+    ikSetup->m_secondJointTwistIdx = group.SecondTwistIndex;
+    ikSetup->m_endBoneIdx = group.EndBoneIndex;
+    ikSetup->m_firstJointIkGain = group.FirstBoneGain;
+    ikSetup->m_secondJointIkGain = group.SecondBoneGain;
+    ikSetup->m_endJointIkGain = group.EndBoneGain;
+    ikSetup->m_enforceEndPosition = group.EnforcePosition;
+    ikSetup->m_enforceEndRotation = group.EnforceRotation;
+    ikSetup->m_hingeAxisLS = new Vector4(group.HingeAxis, 1f);
+    ikSetup->m_cosineMinHingeAngle = group.MinHingeAngle;
+    ikSetup->m_cosineMaxHingeAngle = group.MaxHingeAngle;
+    Transform modelTransform = HavokPosing.GetModelTransform(poseOut, (int) group.EndBoneIndex);
+    if (modelTransform == null)
+      return false;
+    int num = group.Mode == TwoJointsMode.Relative ? 1 : 0;
+    if (num != 0 || !group.EnforcePosition)
+      group.TargetPosition = modelTransform.Position;
+    if (num != 0 || !group.EnforceRotation)
+      group.TargetRotation = modelTransform.Rotation;
+    ikSetup->m_endTargetMS = new Vector4(group.TargetPosition, 0.0f);
+    ikSetup->m_endTargetRotationMS = group.TargetRotation;
+    return this.Solve(poseIn, poseOut, frozen);
+  }
 
-		ik->m_firstJointIkGain = group.FirstBoneGain;
-		ik->m_secondJointIkGain = group.SecondBoneGain;
-		ik->m_endJointIkGain = group.EndBoneGain;
+  private unsafe void UpdateModelPose(hkaPose* poseIn, hkaPose* poseOut)
+  {
+    short firstJointIdx = this.IkSetup->m_firstJointIdx;
+    for (int parent = 1; parent < poseIn->Skeleton->Bones.Length; ++parent)
+    {
+      if (parent == (int) firstJointIdx || HavokPosing.IsBoneDescendantOf(poseOut->Skeleton->ParentIndices, (int) firstJointIdx, parent))
+        *((hkaPose) (IntPtr) poseIn).AccessBoneModelSpace(parent, (hkaPose.PropagateOrNot) 1) = poseOut->ModelPose[parent];
+    }
+  }
 
-		ik->m_enforceEndPosition = group.EnforcePosition;
-		ik->m_enforceEndRotation = group.EnforceRotation;
+  private unsafe void ApplyModelPoseStatic(hkaPose* poseIn, hkaPose* poseOut)
+  {
+    hkArray<short> parentIndices = poseOut->Skeleton->ParentIndices;
+    hkaSkeletonUtils.transformModelPoseToLocalPose(poseOut->Skeleton->Bones.Length, parentIndices.Data, poseOut->ModelPose.Data, poseIn->LocalPose.Data);
+    short firstJointIdx = this.IkSetup->m_firstJointIdx;
+    short endBoneIdx = this.IkSetup->m_endBoneIdx;
+    for (int index = 1; index < poseOut->Skeleton->Bones.Length; ++index)
+    {
+      if ((index == (int) firstJointIdx ? 1 : (HavokPosing.IsBoneDescendantOf(parentIndices, index, (int) firstJointIdx) ? 1 : 0)) != 0)
+      {
+        if (!HavokPosing.IsBoneDescendantOf(parentIndices, index, (int) endBoneIdx))
+        {
+          hkQsTransformf* hkQsTransformfPtr = poseOut->ModelPose.Data + index;
+          hkQsTransformf hkQsTransformf = poseIn->ModelPose[index];
+          hkQsTransformfPtr->Translation = hkQsTransformf.Translation;
+          hkQsTransformfPtr->Rotation = hkQsTransformf.Rotation;
+        }
+        else
+        {
+          short boneIx = parentIndices[index];
+          Transform localTransform = HavokPosing.GetLocalTransform(poseIn, index);
+          Transform modelTransform = HavokPosing.GetModelTransform(poseOut, (int) boneIx);
+          modelTransform.Position += Vector3.Transform(localTransform.Position, modelTransform.Rotation);
+          modelTransform.Rotation *= localTransform.Rotation;
+          modelTransform.Scale *= localTransform.Scale;
+          HavokPosing.SetModelTransform(poseOut, index, modelTransform);
+        }
+      }
+    }
+  }
 
-		ik->m_hingeAxisLS = new Vector4(group.HingeAxis, 1.0f);
-		ik->m_cosineMinHingeAngle = group.MinHingeAngle;
-		ik->m_cosineMaxHingeAngle = group.MaxHingeAngle;
-		
-		var target = HavokPosing.GetModelTransform(poseOut, group.EndBoneIndex);
-		if (target == null) return false;
+  private unsafe void ApplyModelPoseDynamic(hkaPose* poseIn, hkaPose* poseOut)
+  {
+    hkArray<short> parentIndices = poseOut->Skeleton->ParentIndices;
+    short firstJointIdx = this.IkSetup->m_firstJointIdx;
+    for (int bone = 1; bone < poseOut->Skeleton->Bones.Length; ++bone)
+    {
+      if (bone == (int) firstJointIdx || HavokPosing.IsBoneDescendantOf(parentIndices, bone, (int) firstJointIdx))
+        *((hkaPose) (IntPtr) poseOut).AccessBoneModelSpace(bone, (hkaPose.PropagateOrNot) 1) = poseIn->ModelPose[bone];
+    }
+  }
 
-		var isRelative = group.Mode == TwoJointsMode.Relative;
-		if (isRelative || !group.EnforcePosition)
-			group.TargetPosition = target.Position;
-		if (isRelative || !group.EnforceRotation)
-			group.TargetRotation = target.Rotation;
-		
-		ik->m_endTargetMS = new Vector4(group.TargetPosition, 0.0f);
-		ik->m_endTargetRotationMS = group.TargetRotation;
+  public bool IsDisposed { get; private set; }
 
-		return this.Solve(poseIn, poseOut, frozen);
-	}
-
-	private unsafe void UpdateModelPose(hkaPose* poseIn, hkaPose* poseOut) {
-		var start = this.IkSetup->m_firstJointIdx;
-		for (var i = 1; i < poseIn->Skeleton->Bones.Length; i++) {
-			if (i != start && !HavokPosing.IsBoneDescendantOf(poseOut->Skeleton->ParentIndices, start, i))
-				continue;
-			*poseIn->AccessBoneModelSpace(i, hkaPose.PropagateOrNot.Propagate) = poseOut->ModelPose[i];
-		}
-	}
-
-	private unsafe void ApplyModelPoseStatic(hkaPose* poseIn, hkaPose* poseOut) {
-		var parents = poseOut->Skeleton->ParentIndices;
-		hkaSkeletonUtils.transformModelPoseToLocalPose(
-			poseOut->Skeleton->Bones.Length,
-			parents.Data,
-			poseOut->ModelPose.Data,
-			poseIn->LocalPose.Data
-		);
-		
-		var start = this.IkSetup->m_firstJointIdx;
-		var end = this.IkSetup->m_endBoneIdx;
-		var poseInModel = HavokPosing.GetModelTransform(poseIn, end)!;
-		
-		for (var i = 1; i < poseOut->Skeleton->Bones.Length; i++) {
-			var apply = i == start || HavokPosing.IsBoneDescendantOf(parents, i, start);
-			if (!apply) continue;
-			
-			var relative = HavokPosing.IsBoneDescendantOf(parents, i, end);
-			if (!relative) {
-				var target = poseOut->ModelPose.Data + i;
-				var solved = poseIn->ModelPose[i];
-				target->Translation = solved.Translation;
-				target->Rotation = solved.Rotation;
-				continue;
-			}
-
-			// only update child bone transforms (ex fingers, toes) if there's been a change since last frame!
-			// only works consistently with end rotation enforced
-			// TODO: just fix the local->model math below; this is a bandaid over IK bone drift
-			if (
-				this.LastPoseInModel != null
-				&& this.IkSetup->m_enforceEndRotation
-				&& this.LastPoseInModel.Equals(poseInModel)
-			) continue;
-
-			var parentId = parents[i];
-			var local = HavokPosing.GetLocalTransform(poseIn, i)!;
-			var transform = HavokPosing.GetModelTransform(poseOut, parentId)!;
-			
-			transform.Position += Vector3.Transform(local.Position, transform.Rotation);
-			transform.Rotation *= local.Rotation; 
-			transform.Scale *= local.Scale;
-			HavokPosing.SetModelTransform(poseOut, i, transform);
-		}
-		this.LastPoseInModel = poseInModel;
-	}
-
-	private unsafe void ApplyModelPoseDynamic(hkaPose* poseIn, hkaPose* poseOut) {
-		var parents = poseOut->Skeleton->ParentIndices;
-		var start = this.IkSetup->m_firstJointIdx;
-		
-		for (var i = 1; i < poseOut->Skeleton->Bones.Length; i++) {
-			if (i != start && !HavokPosing.IsBoneDescendantOf(parents, i, start))
-				continue;
-			*poseOut->AccessBoneModelSpace(i, hkaPose.PropagateOrNot.Propagate) = poseIn->ModelPose[i];
-		}
-	}
-	
-	// Disposal
-	
-	public bool IsDisposed { get; private set; }
-	
-	public void Dispose() {
-		this.LastPoseInModel = null;
-		this.IsDisposed = true;
-		this.AllocIkSetup.Dispose();
-		GC.SuppressFinalize(this);
-	}
+  public void Dispose()
+  {
+    this.IsDisposed = true;
+    this.AllocIkSetup.Dispose();
+    GC.SuppressFinalize((object) this);
+  }
 }

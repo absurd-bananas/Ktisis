@@ -1,116 +1,76 @@
-using System.Numerics;
-
-using Dalamud.Bindings.ImGui;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Overlay.Gizmo
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Ktisis.Data.Config.Sections;
 using Ktisis.ImGuizmo;
+using System;
+using System.Numerics;
 
+#nullable enable
 namespace Ktisis.Interface.Overlay;
 
-public enum GizmoId : int {
-	Default = -1,
-	OverlayMain,
-	TransformEditor
-}
+public class Gizmo : IGizmo
+{
+  private readonly GizmoConfig _cfg;
+  private bool IsUsedPrev;
+  private bool HasDrawn;
+  private Matrix4x4 ViewMatrix = Matrix4x4.Identity;
+  private Matrix4x4 ProjMatrix = Matrix4x4.Identity;
 
-public interface IGizmo {
-	public GizmoId Id { get; }
-	
-	public float ScaleFactor { get; set; }
-	
-	public Mode Mode { get; set; }
-	public Operation Operation { get; set; }
+  public GizmoId Id { get; }
 
-	public bool AllowAxisFlip { get; set; }
+  public GizmoConfig Config => this._cfg;
 
-	public bool IsEnded { get; }
+  public Gizmo(GizmoConfig cfg, GizmoId id)
+  {
+    this._cfg = cfg;
+    this.Id = id;
+  }
 
-	public void SetMatrix(Matrix4x4 view, Matrix4x4 proj);
+  public float ScaleFactor { get; set; } = 0.5f;
 
-	public void BeginFrame(Vector2 pos, Vector2 size);
-	public void PushDrawList();
+  public Mode Mode { get; set; }
 
-	public bool Manipulate(ref Matrix4x4 mx, out Matrix4x4 delta);
+  public Operation Operation { get; set; } = Operation.UNIVERSAL;
 
-	public void EndFrame();
-}
+  public bool AllowAxisFlip { get; set; } = true;
 
-public class Gizmo : IGizmo {
-	private readonly GizmoConfig _cfg;
-	
-	public GizmoId Id { get; }
-	
-	public Gizmo(
-		GizmoConfig cfg,
-		GizmoId id
-	) {
-		this._cfg = cfg;
-		this.Id = id;
-	}
-	
-	// Proeprties
+  public bool IsEnded { get; private set; }
 
-	public float ScaleFactor { get; set; } = 0.1f;
-	
-	// State
+  public void SetMatrix(Matrix4x4 view, Matrix4x4 proj)
+  {
+    this.ViewMatrix = view;
+    this.ProjMatrix = proj;
+  }
 
-	private bool IsUsedPrev;
-	private bool HasDrawn;
+  public void BeginFrame(Vector2 pos, Vector2 size)
+  {
+    this.HasDrawn = false;
+    Ktisis.ImGuizmo.Gizmo.SetDrawRect(pos.X, pos.Y, size.X, size.Y);
+    if (this.Id != GizmoId.TransformEditor)
+      this.ScaleFactor = !this.Operation.HasFlag((Enum) Operation.ROTATE) ? (!this.Operation.HasFlag((Enum) Operation.TRANSLATE) ? Math.Max(this.Config.ScaleGizmoScale, 0.05f) : Math.Max(this.Config.PositionGizmoScale, 0.05f)) : Math.Max(this.Config.RotationGizmoScale, 0.05f);
+    Ktisis.ImGuizmo.Gizmo.ID = (int) this.Id;
+    Ktisis.ImGuizmo.Gizmo.GizmoScale = this.ScaleFactor;
+    Ktisis.ImGuizmo.Gizmo.AllowAxisFlip = this.AllowAxisFlip;
+    Ktisis.ImGuizmo.Gizmo.Style = this._cfg.Style;
+    Ktisis.ImGuizmo.Gizmo.BeginFrame();
+    this.IsUsedPrev = Ktisis.ImGuizmo.Gizmo.IsUsing;
+  }
 
-	private Matrix4x4 ViewMatrix = Matrix4x4.Identity;
-	private Matrix4x4 ProjMatrix = Matrix4x4.Identity;
+  public unsafe void PushDrawList() => Ktisis.ImGuizmo.Gizmo.DrawList = (IntPtr) Dalamud.Bindings.ImGui.ImGui.GetWindowDrawList().Handle;
 
-	public Mode Mode { get; set; } = Mode.Local;
-	public Operation Operation { get; set; } = Operation.UNIVERSAL;
+  public bool Manipulate(ref Matrix4x4 mx, out Matrix4x4 delta)
+  {
+    delta = Matrix4x4.Identity;
+    if (this.HasDrawn)
+      return false;
+    int num = Ktisis.ImGuizmo.Gizmo.Manipulate(this.ViewMatrix, this.ProjMatrix, this.Operation, this.Mode, ref mx, out delta) ? 1 : 0;
+    this.HasDrawn = true;
+    return num != 0;
+  }
 
-	public bool AllowAxisFlip { get; set; } = true;
-
-	public bool IsEnded { get; private set; }
-	
-	// Draw
-
-	public void SetMatrix(Matrix4x4 view, Matrix4x4 proj) {
-		this.ViewMatrix = view;
-		this.ProjMatrix = proj;
-	}
-
-	public void BeginFrame(Vector2 pos, Vector2 size) {
-		this.HasDrawn = false;
-
-		ImGuizmo.Gizmo.SetDrawRect(pos.X, pos.Y, size.X, size.Y);
-
-		ImGuizmo.Gizmo.ID = (int)this.Id;
-		ImGuizmo.Gizmo.GizmoScale = this.ScaleFactor;
-		ImGuizmo.Gizmo.AllowAxisFlip = this.AllowAxisFlip;
-		ImGuizmo.Gizmo.Style = this._cfg.Style;
-		ImGuizmo.Gizmo.BeginFrame();
-
-		this.IsUsedPrev = ImGuizmo.Gizmo.IsUsing;
-	}
-
-	public unsafe void PushDrawList() {
-		ImGuizmo.Gizmo.DrawList = (nint)ImGui.GetWindowDrawList().Handle;
-	}
-
-	public bool Manipulate(ref Matrix4x4 mx, out Matrix4x4 delta) {
-		delta = Matrix4x4.Identity;
-
-		if (this.HasDrawn) return false;
-
-		var result = ImGuizmo.Gizmo.Manipulate(
-			this.ViewMatrix,
-			this.ProjMatrix,
-			this.Operation,
-			this.Mode,
-			ref mx,
-			out delta
-		);
-
-		this.HasDrawn = true;
-		return result;
-	}
-
-	public void EndFrame() {
-		this.IsEnded = !ImGuizmo.Gizmo.IsUsing && this.IsUsedPrev;
-	}
+  public void EndFrame() => this.IsEnded = !Ktisis.ImGuizmo.Gizmo.IsUsing && this.IsUsedPrev;
 }

@@ -1,91 +1,125 @@
-﻿using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Common.Extensions.LuminaEx
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using FFXIVClientStructs.FFXIV.Client.Game.Character;
-
 using Ktisis.Structs.Characters;
-
-using Lumina.Excel;
+using Lumina.Data;
 using Lumina.Data.Parsing;
 using Lumina.Data.Structs.Excel;
+using Lumina.Excel;
+using Lumina.Text.ReadOnly;
+using System;
 
+#nullable enable
 namespace Ktisis.Common.Extensions;
 
-public static class LuminaEx {
-	// Lumina 5
+public static class LuminaEx
+{
+  public static RowRef<T> ReadRowRef<T>(this ExcelPage page, int columnIndex, uint offset) where T : struct, IExcelRow<T>
+  {
+    object andReadColumn = LuminaEx.GetAndReadColumn(page, columnIndex, offset);
+    return new RowRef<T>(page.Module, Convert.ToUInt32(andReadColumn), new Language?(page.Language));
+  }
 
-	public static RowRef<T> ReadRowRef<T>(this ExcelPage page, int columnIndex, uint offset) where T : struct, IExcelRow<T> {
-		var rowId = GetAndReadColumn(page, columnIndex, offset);
-		return new RowRef<T>(page.Module, Convert.ToUInt32(rowId), page.Language);
-	}
+  public static T ReadColumn<T>(this ExcelPage page, int columnIndex, uint offset)
+  {
+    return (T) LuminaEx.GetAndReadColumn(page, columnIndex, offset);
+  }
 
-	public static T ReadColumn<T>(this ExcelPage page, int columnIndex, uint offset) {
-		return (T)GetAndReadColumn(page, columnIndex, offset);
-	}
-	
-	private static object GetAndReadColumn(ExcelPage page, int columnIndex, uint offset) {
-		var column = page.Sheet.Columns[columnIndex];
-		return column.Type switch {
-			ExcelColumnDataType.String => page.ReadString(column.Offset + offset, offset).ExtractText(),
-			ExcelColumnDataType.Bool => page.ReadBool(column.Offset + offset),
-			ExcelColumnDataType.Int8 => page.ReadInt8(column.Offset + offset),
-			ExcelColumnDataType.UInt8 => page.ReadUInt8(column.Offset + offset),
-			ExcelColumnDataType.Int16 => page.ReadInt16(column.Offset + offset),
-			ExcelColumnDataType.UInt16 => page.ReadUInt16(column.Offset + offset),
-			ExcelColumnDataType.Int32 => page.ReadInt32(column.Offset + offset),
-			ExcelColumnDataType.UInt32 => page.ReadUInt32(column.Offset + offset),
-			ExcelColumnDataType.Float32 => page.ReadFloat32(column.Offset + offset),
-			ExcelColumnDataType.Int64 => page.ReadInt64(column.Offset + offset),
-			ExcelColumnDataType.UInt64 => page.ReadUInt64(column.Offset + offset),
-			ExcelColumnDataType.PackedBool0 => page.ReadPackedBool(column.Offset + offset, 0),
-			ExcelColumnDataType.PackedBool1 => page.ReadPackedBool(column.Offset + offset, 1),
-			ExcelColumnDataType.PackedBool2 => page.ReadPackedBool(column.Offset + offset, 2),
-			ExcelColumnDataType.PackedBool3 => page.ReadPackedBool(column.Offset + offset, 3),
-			ExcelColumnDataType.PackedBool4 => page.ReadPackedBool(column.Offset + offset, 4),
-			ExcelColumnDataType.PackedBool5 => page.ReadPackedBool(column.Offset + offset, 5),
-			ExcelColumnDataType.PackedBool6 => page.ReadPackedBool(column.Offset + offset, 6),
-			ExcelColumnDataType.PackedBool7 => page.ReadPackedBool(column.Offset + offset, 7),
-			_ => throw new Exception($"Unknown type: {column.Type}")
-		};
-	}
-	
-	// Sheet helpers
-	
-	public static CustomizeContainer ReadCustomize(this ExcelPage parser, int index, uint offset) {
-		var result = new CustomizeContainer();
-		for (var i = 0; i < CustomizeContainer.Size; i++)
-			result[(uint)i] = parser.ReadColumn<byte>(index + i, offset);
-		return result;
-	}
-	
-	public static WeaponModelId ReadWeapon(this ExcelPage parser, int index, uint offset) {
-		var quad = (Quad)parser.ReadColumn<ulong>(index, offset);
-		var dye = parser.ReadColumn<byte>(index + 1, offset);
-		var dye2 = parser.ReadColumn<byte>(index + 2, offset);
-		return new WeaponModelId {
-			Id = quad.A,
-			Type = quad.B,
-			Variant = quad.C,
-			Stain0 = dye,
-			Stain1 = dye2
-		};
-	}
+  private static object GetAndReadColumn(ExcelPage page, int columnIndex, uint offset)
+  {
+    ExcelColumnDefinition column = page.Sheet.Columns[columnIndex];
+    switch ((int) column.Type)
+    {
+      case 0:
+        ReadOnlySeString readOnlySeString = page.ReadString((UIntPtr) ((uint) column.Offset + offset), (UIntPtr) offset);
+        return (object) ((ReadOnlySeString) ref readOnlySeString).ExtractText();
+      case 1:
+        return (object) page.ReadBool((UIntPtr) ((uint) column.Offset + offset));
+      case 2:
+        return (object) page.ReadInt8((UIntPtr) ((uint) column.Offset + offset));
+      case 3:
+        return (object) page.ReadUInt8((UIntPtr) ((uint) column.Offset + offset));
+      case 4:
+        return (object) page.ReadInt16((UIntPtr) ((uint) column.Offset + offset));
+      case 5:
+        return (object) page.ReadUInt16((UIntPtr) ((uint) column.Offset + offset));
+      case 6:
+        return (object) page.ReadInt32((UIntPtr) ((uint) column.Offset + offset));
+      case 7:
+        return (object) page.ReadUInt32((UIntPtr) ((uint) column.Offset + offset));
+      case 9:
+        return (object) page.ReadFloat32((UIntPtr) ((uint) column.Offset + offset));
+      case 10:
+        return (object) page.ReadInt64((UIntPtr) ((uint) column.Offset + offset));
+      case 11:
+        return (object) page.ReadUInt64((UIntPtr) ((uint) column.Offset + offset));
+      case 25:
+        return (object) page.ReadPackedBool((UIntPtr) ((uint) column.Offset + offset), (byte) 0);
+      case 26:
+        return (object) page.ReadPackedBool((UIntPtr) ((uint) column.Offset + offset), (byte) 1);
+      case 27:
+        return (object) page.ReadPackedBool((UIntPtr) ((uint) column.Offset + offset), (byte) 2);
+      case 28:
+        return (object) page.ReadPackedBool((UIntPtr) ((uint) column.Offset + offset), (byte) 3);
+      case 29:
+        return (object) page.ReadPackedBool((UIntPtr) ((uint) column.Offset + offset), (byte) 4);
+      case 30:
+        return (object) page.ReadPackedBool((UIntPtr) ((uint) column.Offset + offset), (byte) 5);
+      case 31 /*0x1F*/:
+        return (object) page.ReadPackedBool((UIntPtr) ((uint) column.Offset + offset), (byte) 6);
+      case 32 /*0x20*/:
+        return (object) page.ReadPackedBool((UIntPtr) ((uint) column.Offset + offset), (byte) 7);
+      default:
+        throw new Exception($"Unknown type: {column.Type}");
+    }
+  }
 
-	public static EquipmentModelId ReadEquipItem(this ExcelPage parser, int index, uint offset) {
-		var model = parser.ReadColumn<uint>(index, offset);
-		var dye = parser.ReadColumn<byte>(index + 1, offset);
-		var dye2 = parser.ReadColumn<byte>(index + 2, offset);
-		return new EquipmentModelId {
-			Id = (ushort)model,
-			Variant = (byte)(model >> 16),
-			Stain0 = dye,
-			Stain1 = dye2
-		};
-	}
+  public static CustomizeContainer ReadCustomize(this ExcelPage parser, int index, uint offset)
+  {
+    CustomizeContainer customizeContainer = new CustomizeContainer();
+    for (int index1 = 0; index1 < 26; ++index1)
+      customizeContainer[(uint) index1] = parser.ReadColumn<byte>(index + index1, offset);
+    return customizeContainer;
+  }
 
-	public static EquipmentContainer ReadEquipment(this ExcelPage parser, int index, uint offset) {
-		var result = new EquipmentContainer();
-		for (var i = 0; i < EquipmentContainer.Length; i++)
-			result[(uint)i] = parser.ReadEquipItem(index + i * 3 + (i > 0 ? 2 : 0), offset);
-		return result;
-	}
+  public static WeaponModelId ReadWeapon(this ExcelPage parser, int index, uint offset)
+  {
+    Quad quad = Quad.op_Explicit(parser.ReadColumn<ulong>(index, offset));
+    byte num1 = parser.ReadColumn<byte>(index + 1, offset);
+    byte num2 = parser.ReadColumn<byte>(index + 2, offset);
+    return new WeaponModelId()
+    {
+      Id = ((Quad) ref quad).A,
+      Type = ((Quad) ref quad).B,
+      Variant = ((Quad) ref quad).C,
+      Stain0 = num1,
+      Stain1 = num2
+    };
+  }
+
+  public static EquipmentModelId ReadEquipItem(this ExcelPage parser, int index, uint offset)
+  {
+    uint num1 = parser.ReadColumn<uint>(index, offset);
+    byte num2 = parser.ReadColumn<byte>(index + 1, offset);
+    byte num3 = parser.ReadColumn<byte>(index + 2, offset);
+    return new EquipmentModelId()
+    {
+      Id = (ushort) num1,
+      Variant = (byte) (num1 >> 16 /*0x10*/),
+      Stain0 = num2,
+      Stain1 = num3
+    };
+  }
+
+  public static EquipmentContainer ReadEquipment(this ExcelPage parser, int index, uint offset)
+  {
+    EquipmentContainer equipmentContainer = new EquipmentContainer();
+    for (int index1 = 0; index1 < 10; ++index1)
+      equipmentContainer[(uint) index1] = parser.ReadEquipItem(index + index1 * 3 + (index1 > 0 ? 2 : 0), offset);
+    return equipmentContainer;
+  }
 }

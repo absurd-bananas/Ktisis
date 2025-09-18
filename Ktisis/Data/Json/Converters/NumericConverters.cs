@@ -1,116 +1,49 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Data.Json.Converters.QuaternionConverter
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
 using System;
 using System.Globalization;
 using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Ktisis.Common.Utility;
-
+#nullable enable
 namespace Ktisis.Data.Json.Converters;
 
-internal class QuaternionConverter(JsonFileSerializer json) : JsonConverter<Quaternion> {
-	public override Quaternion Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) {
-		var str = reader.GetString() ?? "";
-		var split = str.Split(",");
-		return new Quaternion(
-			float.Parse(split[0], CultureInfo.InvariantCulture),
-			float.Parse(split[1], CultureInfo.InvariantCulture),
-			float.Parse(split[2], CultureInfo.InvariantCulture),
-			float.Parse(split[3], CultureInfo.InvariantCulture)
-		);
-	}
+internal class QuaternionConverter : JsonConverter<Quaternion>
+{
+  public QuaternionConverter(JsonFileSerializer json)
+  {
+  }
 
-	public override void Write(Utf8JsonWriter writer, Quaternion value, JsonSerializerOptions options) {
-		writer.WriteStringValue(string.Format(
-			CultureInfo.InvariantCulture,
-			"{0}, {1}, {2}, {3}",
-			value.X, value.Y, value.Z, value.W
-		));
-	}
-}
+  public virtual Quaternion Read(
+    ref Utf8JsonReader reader,
+    Type type,
+    JsonSerializerOptions options)
+  {
+    string[] strArray = (((Utf8JsonReader) ref reader).GetString() ?? "").Split(",", StringSplitOptions.None);
+    return new Quaternion(float.Parse(strArray[0], (IFormatProvider) CultureInfo.InvariantCulture), float.Parse(strArray[1], (IFormatProvider) CultureInfo.InvariantCulture), float.Parse(strArray[2], (IFormatProvider) CultureInfo.InvariantCulture), float.Parse(strArray[3], (IFormatProvider) CultureInfo.InvariantCulture));
+  }
 
-internal class Vector3Converter(JsonFileSerializer json) : JsonConverter<Vector3> {
-	public override Vector3 Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) {
-		var str = reader.GetString() ?? "";
-		var split = str.Split(",");
-		return new Vector3(
-			float.Parse(split[0], CultureInfo.InvariantCulture),
-			float.Parse(split[1], CultureInfo.InvariantCulture),
-			float.Parse(split[2], CultureInfo.InvariantCulture)
-		);
-	}
-
-	public override void Write(Utf8JsonWriter writer, Vector3 value, JsonSerializerOptions options) {
-		writer.WriteStringValue(string.Format(
-			CultureInfo.InvariantCulture,
-			"{0}, {1}, {2}",
-			value.X, value.Y, value.Z
-		));
-	}
-}
-
-internal class Vector4Converter(JsonFileSerializer json) : JsonConverter<Vector4> {
-	public override Vector4 Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) {
-		var str = reader.GetString() ?? "";
-		var split = str.Split(",");
-		return new Vector4(
-			float.Parse(split[0], CultureInfo.InvariantCulture),
-			float.Parse(split[1], CultureInfo.InvariantCulture),
-			float.Parse(split[2], CultureInfo.InvariantCulture),
-			float.Parse(split[3], CultureInfo.InvariantCulture)
-		);
-	}
-
-	public override void Write(Utf8JsonWriter writer, Vector4 value, JsonSerializerOptions options) {
-		writer.WriteStringValue(string.Format(
-			CultureInfo.InvariantCulture,
-			"{0}, {1}, {2}, {3}",
-			value.X, value.Y, value.Z, value.W
-		));
-	}
-}
-
-internal class TransformConverter(JsonFileSerializer json) : JsonConverter<Transform> {
-	// i despise this
-	public override Transform Read(ref Utf8JsonReader reader, Type type, JsonSerializerOptions options) {
-		var result = new Transform();
-
-		reader.Read();
-		for (var i = 0; i < 3; i++) {
-			if (reader.TokenType == JsonTokenType.EndObject)
-				break;
-
-			var prop = reader.GetString();
-			reader.Read();
-
-			if (prop == "Rotation") {
-				result.Rotation = ((QuaternionConverter)json.GetConverter<Quaternion>()).Read(ref reader, type, options);
-			} else {
-				var vec = ((Vector3Converter)json.GetConverter<Vector3>()).Read(ref reader, type, options);
-				if (prop == "Position")
-					result.Position = vec;
-				else if (prop == "Scale")
-					result.Scale = vec;
-			}
-
-			reader.Read();
-		}
-
-		return result;
-	}
-
-	public override void Write(Utf8JsonWriter writer, Transform value, JsonSerializerOptions options) {
-		writer.WriteStartObject();
-		foreach (var prop in typeof(Transform).GetFields()) {
-			writer.WritePropertyName(prop.Name);
-
-			// did I complain about how bad this is yet?
-			var val = prop.GetValue(value);
-			if (val is Vector3)
-				((Vector3Converter)json.GetConverter<Vector3>()).Write(writer, (Vector3)val, options);
-			else if (val is Quaternion)
-				((QuaternionConverter)json.GetConverter<Quaternion>()).Write(writer, (Quaternion)val, options);
-		}
-		writer.WriteEndObject();
-	}
+  public virtual void Write(Utf8JsonWriter writer, Quaternion value, JsonSerializerOptions options)
+  {
+    Utf8JsonWriter utf8JsonWriter = writer;
+    CultureInfo invariantCulture = CultureInfo.InvariantCulture;
+    \u003C\u003Ey__InlineArray4<object> buffer = new \u003C\u003Ey__InlineArray4<object>();
+    // ISSUE: reference to a compiler-generated method
+    \u003CPrivateImplementationDetails\u003E.InlineArrayElementRef<\u003C\u003Ey__InlineArray4<object>, object>(ref buffer, 0) = (object) value.X;
+    // ISSUE: reference to a compiler-generated method
+    \u003CPrivateImplementationDetails\u003E.InlineArrayElementRef<\u003C\u003Ey__InlineArray4<object>, object>(ref buffer, 1) = (object) value.Y;
+    // ISSUE: reference to a compiler-generated method
+    \u003CPrivateImplementationDetails\u003E.InlineArrayElementRef<\u003C\u003Ey__InlineArray4<object>, object>(ref buffer, 2) = (object) value.Z;
+    // ISSUE: reference to a compiler-generated method
+    \u003CPrivateImplementationDetails\u003E.InlineArrayElementRef<\u003C\u003Ey__InlineArray4<object>, object>(ref buffer, 3) = (object) value.W;
+    // ISSUE: reference to a compiler-generated method
+    ReadOnlySpan<object> readOnlySpan = \u003CPrivateImplementationDetails\u003E.InlineArrayAsReadOnlySpan<\u003C\u003Ey__InlineArray4<object>, object>(in buffer, 4);
+    string str = string.Format((IFormatProvider) invariantCulture, "{0}, {1}, {2}, {3}", readOnlySpan);
+    utf8JsonWriter.WriteStringValue(str);
+  }
 }

@@ -1,49 +1,45 @@
-﻿using System;
-using System.Reflection;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Ktisis
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-
-using Microsoft.Extensions.DependencyInjection;
-
 using Ktisis.Core;
+using Ktisis.ImGuizmo;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Reflection;
 
+#nullable enable
 namespace Ktisis;
 
-public sealed class Ktisis : IDalamudPlugin {
-	public static IPluginLog Log { get; private set; } = null!;
+public sealed class Ktisis : IDalamudPlugin, IDisposable
+{
+  private readonly ServiceProvider _services;
 
-	private readonly ServiceProvider _services;
+  public static IPluginLog Log { get; private set; }
 
-	public Ktisis(
-		IPluginLog logger,
-		IDalamudPluginInterface dpi
-	) {
-		Log = logger;
-		
-		this._services = new ServiceComposer()
-			.AddFromAttributes()
-			.AddDalamudServices(dpi)
-			.AddSingleton(logger)
-			.BuildProvider();
+  public Ktisis(IPluginLog logger, IDalamudPluginInterface dpi)
+  {
+    Ktisis.Ktisis.Log = logger;
+    this._services = new ServiceComposer().AddFromAttributes().AddDalamudServices(dpi).AddSingleton<IPluginLog>(logger).BuildProvider();
+    this._services.GetRequiredService<PluginContext>().Initialize();
+  }
 
-		this._services.GetRequiredService<PluginContext>()
-			.Initialize();
-	}
+  public static string GetVersion() => Assembly.GetCallingAssembly().GetName().Version.ToString(3);
 
-	// Version info
-
-	public static string GetVersion() {
-		return Assembly.GetCallingAssembly().GetName().Version!.ToString(fieldCount: 3);
-	}
-
-	// Dispose
-
-	public void Dispose() {
-		try {
-			this._services.Dispose();
-		} catch (Exception err) {
-			Log.Error($"Error occurred during disposal:\n{err}");
-		}
-	}
+  public void Dispose()
+  {
+    try
+    {
+      this._services.Dispose();
+      Gizmo.Unload();
+    }
+    catch (Exception ex)
+    {
+      Ktisis.Ktisis.Log.Error($"Error occurred during disposal:\n{ex}", Array.Empty<object>());
+    }
+  }
 }

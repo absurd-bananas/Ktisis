@@ -1,13 +1,22 @@
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Decor.ITransform
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Ktisis.Common.Utility;
+using System.Numerics;
 
+#nullable enable
 namespace Ktisis.Scene.Decor;
 
-public interface ITransform {
-	public Transform? GetTransform();
-	public void SetTransform(Transform trans);
+public interface ITransform
+{
+  Transform? GetTransform();
 
-	public Matrix4x4? GetMatrix() => this.GetTransform()?.ComposeMatrix();
-	public void SetMatrix(Matrix4x4 mx) => this.SetTransform(new Transform(mx));
+  void SetTransform(Transform trans);
+
+  Matrix4x4? GetMatrix() => this.GetTransform()?.ComposeMatrix();
+
+  void SetMatrix(Matrix4x4 mx) => this.SetTransform(new Transform(mx));
 }

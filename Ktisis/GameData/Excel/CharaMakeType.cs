@@ -1,99 +1,123 @@
-// ReSharper disable all
-#pragma warning disable CS8618
-
-using System.Collections.Generic;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.GameData.Excel.CharaMakeType
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Ktisis.Common.Extensions;
-
 using Lumina.Data;
 using Lumina.Excel;
 using Lumina.Excel.Sheets;
+using System;
 
+#nullable enable
 namespace Ktisis.GameData.Excel;
 
-// Temporarily forking CharaMakeType while FacialFeatureOption is bugged -
-// It gets parsed as an int[8] rather than an int[8,7]. I've reached out to perchbird about this issue.
+[Sheet("CharaMakeType", 2161630061)]
+public struct CharaMakeType(uint row) : IExcelRow<CharaMakeType>
+{
+  public uint RowId { get; } = row;
 
-[Sheet( "CharaMakeType", columnHash: 0x80d7db6d)]
-public partial struct CharaMakeType(uint row) : IExcelRow<CharaMakeType> {
-	public uint RowId { get; } = row;
+  public CharaMakeType.CharaMakeStructStruct[] CharaMakeStruct { get; private set; } = (CharaMakeType.CharaMakeStructStruct[]) null;
 
-	public struct CharaMakeStructStruct {
-    	public RowRef<Lobby> Menu { get; internal set; }
-    	public uint SubMenuMask { get; internal set; }
-    	public uint Customize { get; internal set; }
-    	public uint[] SubMenuParam { get; internal set; }
-    	public byte InitVal { get; internal set; }
-    	public byte SubMenuType { get; internal set; }
-    	public byte SubMenuNum { get; internal set; }
-    	public byte LookAt { get; internal set; }
-    	public byte[] SubMenuGraphic { get; internal set; }
+  public byte[] VoiceStruct { get; private set; } = (byte[]) null;
+
+  public int[,] FacialFeatureOption { get; private set; } = (int[,]) null;
+
+  public CharaMakeType.EquipmentStruct[] Equipment { get; private set; } = (CharaMakeType.EquipmentStruct[]) null;
+
+  public RowRef<Lumina.Excel.Sheets.Race> Race { get; private set; } = new RowRef<Lumina.Excel.Sheets.Race>();
+
+  public RowRef<Lumina.Excel.Sheets.Tribe> Tribe { get; private set; } = new RowRef<Lumina.Excel.Sheets.Tribe>();
+
+  public sbyte Gender { get; private set; } = 0;
+
+  static CharaMakeType IExcelRow<CharaMakeType>.Create(ExcelPage page, uint offset, uint row)
+  {
+    CharaMakeType.CharaMakeStructStruct[] makeStructStructArray = new CharaMakeType.CharaMakeStructStruct[28];
+    for (int index1 = 0; index1 < 28; ++index1)
+    {
+      makeStructStructArray[index1].Menu = new RowRef<Lobby>(page.Module, page.ReadUInt32((UIntPtr) (offset + (uint) (ushort) (index1 * 428))), new Language?(page.Language));
+      makeStructStructArray[index1].SubMenuMask = page.ReadUInt32((UIntPtr) (offset + (uint) (ushort) (index1 * 428 + 4)));
+      makeStructStructArray[index1].Customize = page.ReadUInt32((UIntPtr) (offset + (uint) (ushort) (index1 * 428 + 8)));
+      makeStructStructArray[index1].SubMenuParam = new uint[100];
+      for (int index2 = 0; index2 < 100; ++index2)
+        makeStructStructArray[index1].SubMenuParam[index2] = page.ReadUInt32((UIntPtr) (offset + (uint) (ushort) (index1 * 428 + 12 + index2 * 4)));
+      makeStructStructArray[index1].InitVal = page.ReadUInt8((UIntPtr) (offset + (uint) (ushort) (index1 * 428 + 412)));
+      makeStructStructArray[index1].SubMenuType = page.ReadUInt8((UIntPtr) (offset + (uint) (ushort) (index1 * 428 + 413)));
+      makeStructStructArray[index1].SubMenuNum = page.ReadUInt8((UIntPtr) (offset + (uint) (ushort) (index1 * 428 + 414)));
+      makeStructStructArray[index1].LookAt = page.ReadUInt8((UIntPtr) (offset + (uint) (ushort) (index1 * 428 + 415)));
+      makeStructStructArray[index1].SubMenuGraphic = new byte[10];
+      for (int index3 = 0; index3 < 10; ++index3)
+        makeStructStructArray[index1].SubMenuGraphic[index3] = page.ReadUInt8((UIntPtr) (offset + (uint) (ushort) (index1 * 428 + 416 + index3)));
     }
-    public struct EquipmentStruct {
-    	public ulong Helmet { get; internal set; }
-    	public ulong Top { get; internal set; }
-    	public ulong Gloves { get; internal set; }
-    	public ulong Legs { get; internal set; }
-    	public ulong Shoes { get; internal set; }
-    	public ulong Weapon { get; internal set; }
-    	public ulong SubWeapon { get; internal set; }
+    byte[] numArray1 = new byte[12];
+    for (int index = 0; index < 12; ++index)
+      numArray1[index] = page.ReadUInt8((UIntPtr) (offset + (uint) (ushort) (11984 + index)));
+    int[,] numArray2 = new int[8, 7];
+    for (int index4 = 0; index4 < 8; ++index4)
+    {
+      for (int index5 = 0; index5 < 7; ++index5)
+        numArray2[index4, index5] = page.ReadInt32((UIntPtr) (offset + (uint) (ushort) (11996 + index4 * 28 + index5 * 4)));
     }
-    
-    public CharaMakeStructStruct[] CharaMakeStruct { get; private set; }
-    public byte[] VoiceStruct { get; private set; }
-    public int[,] FacialFeatureOption { get; private set; }
-    public EquipmentStruct[] Equipment { get; private set; }
-    public RowRef<Race> Race { get; private set; }
-    public RowRef<Tribe> Tribe { get; private set; }
-    public sbyte Gender { get; private set; }
+    CharaMakeType.EquipmentStruct[] equipmentStructArray = new CharaMakeType.EquipmentStruct[3];
+    for (int index = 0; index < 3; ++index)
+    {
+      equipmentStructArray[index].Helmet = page.ReadUInt64((UIntPtr) (offset + (uint) (ushort) (index * 56 + 12224)));
+      equipmentStructArray[index].Top = page.ReadUInt64((UIntPtr) (offset + (uint) (ushort) (index * 56 + 12232)));
+      equipmentStructArray[index].Gloves = page.ReadUInt64((UIntPtr) (offset + (uint) (ushort) (index * 56 + 12240)));
+      equipmentStructArray[index].Legs = page.ReadUInt64((UIntPtr) (offset + (uint) (ushort) (index * 56 + 12248)));
+      equipmentStructArray[index].Shoes = page.ReadUInt64((UIntPtr) (offset + (uint) (ushort) (index * 56 + 12256)));
+      equipmentStructArray[index].Weapon = page.ReadUInt64((UIntPtr) (offset + (uint) (ushort) (index * 56 + 12264)));
+      equipmentStructArray[index].SubWeapon = page.ReadUInt64((UIntPtr) (offset + (uint) (ushort) (index * 56 + 12272)));
+    }
+    return new CharaMakeType(row)
+    {
+      CharaMakeStruct = makeStructStructArray,
+      VoiceStruct = numArray1,
+      FacialFeatureOption = numArray2,
+      Equipment = equipmentStructArray,
+      Race = page.ReadRowRef<Lumina.Excel.Sheets.Race>(0, offset),
+      Tribe = page.ReadRowRef<Lumina.Excel.Sheets.Tribe>(1, offset),
+      Gender = page.ReadColumn<sbyte>(2, offset)
+    };
+  }
 
-	static CharaMakeType IExcelRow<CharaMakeType>.Create(ExcelPage page, uint offset, uint row) {
-		var charaMakeStruct = new CharaMakeStructStruct[28];
-		for (var i = 0; i < 28; i++) {
-			charaMakeStruct[i].Menu = new RowRef<Lobby>(page.Module, page.ReadUInt32(offset + (ushort)(i * 428 + 0)), page.Language);
-			charaMakeStruct[i].SubMenuMask = page.ReadUInt32(offset + (ushort)(i * 428 + 4));
-			charaMakeStruct[i].Customize = page.ReadUInt32(offset + (ushort)(i * 428 + 8));
-			charaMakeStruct[i].SubMenuParam = new uint[100];
-			for (int SubMenuParamIndexer = 0; SubMenuParamIndexer < 100; SubMenuParamIndexer++)
-				charaMakeStruct[i].SubMenuParam[SubMenuParamIndexer] = page.ReadUInt32(offset + (ushort)(i * 428 + 12 + SubMenuParamIndexer * 4));
-			charaMakeStruct[i].InitVal = page.ReadUInt8(offset + (ushort)(i * 428 + 412));
-			charaMakeStruct[i].SubMenuType = page.ReadUInt8(offset + (ushort)(i * 428 + 413));
-			charaMakeStruct[i].SubMenuNum = page.ReadUInt8(offset + (ushort)(i * 428 + 414));
-			charaMakeStruct[i].LookAt = page.ReadUInt8(offset + (ushort)(i * 428 + 415));
-			charaMakeStruct[i].SubMenuGraphic = new byte[10];
-			for (int SubMenuGraphicIndexer = 0; SubMenuGraphicIndexer < 10; SubMenuGraphicIndexer++)
-				charaMakeStruct[i].SubMenuGraphic[SubMenuGraphicIndexer] = page.ReadUInt8(offset + (ushort)(i * 428 + 416 + SubMenuGraphicIndexer * 1));
-		}
+  public struct CharaMakeStructStruct
+  {
+    public RowRef<Lobby> Menu { get; internal set; }
 
-		var voiceStruct = new byte[12];
-		for (var i = 0; i < 12; i++)
-			voiceStruct[i] = page.ReadUInt8(offset + (ushort)(11984 + i * 1));
+    public uint SubMenuMask { get; internal set; }
 
-		var facialFeatureOption = new int[8,7];
-		for (var x = 0; x < 8; x++) {
-			for (var y = 0; y < 7; y++)
-				facialFeatureOption[x, y] = page.ReadInt32( offset + (ushort)(11996 + x * 28 + y * 4));
-		}
+    public uint Customize { get; internal set; }
 
-		var equipment = new EquipmentStruct[3];
-		for (var i = 0; i < 3; i++) {
-			equipment[i].Helmet = page.ReadUInt64(offset + (ushort)(i * 56 + 12224));
-			equipment[i].Top = page.ReadUInt64(offset + (ushort)(i * 56 + 12232));
-			equipment[i].Gloves = page.ReadUInt64(offset + (ushort)(i * 56 + 12240));
-			equipment[i].Legs = page.ReadUInt64(offset + (ushort)(i * 56 + 12248));
-			equipment[i].Shoes = page.ReadUInt64(offset + (ushort)(i * 56 + 12256));
-			equipment[i].Weapon = page.ReadUInt64(offset + (ushort)(i * 56 + 12264));
-			equipment[i].SubWeapon = page.ReadUInt64(offset + (ushort)(i * 56 + 12272));
-		}
-		
-		return new CharaMakeType(row) {
-			CharaMakeStruct = charaMakeStruct,
-			VoiceStruct = voiceStruct,
-			FacialFeatureOption = facialFeatureOption,
-			Equipment = equipment,
-			Race = page.ReadRowRef<Race>(0, offset),
-			Tribe = page.ReadRowRef<Tribe>(1, offset),
-			Gender = page.ReadColumn<sbyte>(2, offset)
-		};
-	}
+    public uint[] SubMenuParam { get; internal set; }
+
+    public byte InitVal { get; internal set; }
+
+    public byte SubMenuType { get; internal set; }
+
+    public byte SubMenuNum { get; internal set; }
+
+    public byte LookAt { get; internal set; }
+
+    public byte[] SubMenuGraphic { get; internal set; }
+  }
+
+  public struct EquipmentStruct
+  {
+    public ulong Helmet { get; internal set; }
+
+    public ulong Top { get; internal set; }
+
+    public ulong Gloves { get; internal set; }
+
+    public ulong Legs { get; internal set; }
+
+    public ulong Shoes { get; internal set; }
+
+    public ulong Weapon { get; internal set; }
+
+    public ulong SubWeapon { get; internal set; }
+  }
 }

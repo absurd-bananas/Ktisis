@@ -1,198 +1,79 @@
-﻿using System.Collections.Generic;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Editor.Properties.ActorPropertyList
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Interface;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Bindings.ImGui;
-
+using Dalamud.Interface;
 using GLib.Widgets;
-
-using Ktisis.Data.Config;
 using Ktisis.Editor.Context.Types;
 using Ktisis.Interface.Editor.Properties.Types;
-using Ktisis.Interface.Components.Transforms;
-using Ktisis.Editor.Transforms.Types;
 using Ktisis.Localization;
 using Ktisis.Scene.Entities;
 using Ktisis.Scene.Entities.Game;
 using Ktisis.Scene.Entities.Skeleton;
-using Ktisis.Structs.Actors;
+using System;
+using System.Numerics;
 
+#nullable enable
 namespace Ktisis.Interface.Editor.Properties;
 
-public class ActorPropertyList : ObjectPropertyList {
-	private readonly IEditorContext _ctx;
-	private readonly ConfigManager _cfg;
-	private readonly LocaleManager _locale;
-	private static Dictionary<GazeControl, TransformTable>? GazeTables;
+public class ActorPropertyList : ObjectPropertyList
+{
+  private readonly IEditorContext _ctx;
+  private readonly LocaleManager _locale;
+  private const string ImportOptsPopupId = "##KtisisCharaImportOptions";
 
-	private bool IsLinked {
-		get => this._ctx.Config.Editor.LinkedGaze;
-		set => this._ctx.Config.Editor.LinkedGaze = value;
-	}
-	
-	public ActorPropertyList(
-		IEditorContext ctx,
-		ConfigManager cfg,
-		LocaleManager locale
-	) {
-		this._ctx = ctx;
-		this._cfg = cfg;
-		this._locale = locale;
-	}
-	
-	public override void Invoke(IPropertyListBuilder builder, SceneEntity entity) {
-		if (
-			entity switch {
-				BoneNode node => node.Pose.Parent,
-				EntityPose pose => pose.Parent,
-				_ => entity
-			} is not ActorEntity actor
-		) return;
+  public ActorPropertyList(IEditorContext ctx, LocaleManager locale)
+  {
+    this._ctx = ctx;
+    this._locale = locale;
+  }
 
-		builder.AddHeader("Actor", () => this.DrawActorTab(actor), priority: 0);
-		builder.AddHeader("Gaze Control", () => this.DrawGazeTab(actor), priority: 1);
-	}
-	
-	// Actor tab
+  public override void Invoke(IPropertyListBuilder builder, SceneEntity entity)
+  {
+    SceneEntity sceneEntity;
+    switch (entity)
+    {
+      case BoneNode boneNode:
+        sceneEntity = boneNode.Pose.Parent;
+        break;
+      case EntityPose entityPose:
+        sceneEntity = entityPose.Parent;
+        break;
+      default:
+        sceneEntity = entity;
+        break;
+    }
+    ActorEntity actor = sceneEntity as ActorEntity;
+    if (actor == null)
+      return;
+    builder.AddHeader("Actor", (Action) (() => this.DrawActorTab(actor)), 0);
+  }
 
-	private const string ImportOptsPopupId = "##KtisisCharaImportOptions";
+  private void DrawActorTab(ActorEntity actor)
+  {
+    ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    float x = ((ImGuiStylePtr) ref style).ItemInnerSpacing.X;
+    bool positionLockEnabled = this._ctx.Animation.PositionLockEnabled;
+    if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit(this._locale.Translate("actors.pos_lock")), ref positionLockEnabled))
+      this._ctx.Animation.PositionLockEnabled = positionLockEnabled;
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    if (Buttons.IconButton((FontAwesomeIcon) 61508))
+      this._ctx.Interface.OpenActorEditor(actor);
+    Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+    Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit("Edit actor appearance"));
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    if (Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Import"), new Vector2()))
+      this._ctx.Interface.OpenCharaImport(actor);
+    Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+    if (!Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Export"), new Vector2()))
+      return;
+    this._ctx.Interface.OpenCharaExport(actor);
+  }
 
-	private void DrawActorTab(ActorEntity actor) {
-		var spacing = ImGui.GetStyle().ItemInnerSpacing.X;
-		
-		// Position lock
-		
-		var posLock = this._ctx.Animation.PositionLockEnabled;
-		if (ImGui.Checkbox(this._locale.Translate("actors.pos_lock"), ref posLock))
-			this._ctx.Animation.PositionLockEnabled = posLock;
-		
-		ImGui.Spacing();
-		
-		// Open appearance editor
-
-		if (Buttons.IconButton(FontAwesomeIcon.Edit))
-			this._ctx.Interface.OpenActorEditor(actor);
-		ImGui.SameLine(0, spacing);
-		ImGui.Text("Edit actor appearance");
-		
-		ImGui.Spacing();
-		
-		// Import/export
-
-		if (ImGui.Button("Import"))
-			this._ctx.Interface.OpenCharaImport(actor);
-		ImGui.SameLine(0, spacing);
-		if (ImGui.Button("Export"))
-			this._ctx.Interface.OpenCharaExport(actor);
-	}
-	
-	// Gaze tab
-
-	private unsafe void DrawGazeTab(ActorEntity actor) {
-		if (GazeTables == null)
-			GazeTables = new();
-
-		// work from existing gaze on ActorEntity or make a new one if its our first touch w them
-		var gaze = actor.Gaze != null ? (ActorGaze)actor.Gaze : new ActorGaze();
-		// if human actor, enable link/unlinked controls
-		bool isHuman = actor.GetHuman() != null;
-
-		var spacing = ImGui.GetStyle().ItemInnerSpacing.X;
-		var result = false;
-
-		using (ImRaii.Disabled(this._ctx.Posing.IsEnabled)) {
-			if (isHuman) {
-				var icon = IsLinked ? FontAwesomeIcon.Link : FontAwesomeIcon.Unlink;
-				if (Buttons.IconButton(icon)) {
-					if (IsLinked) {
-						var move = gaze.Other;
-						if (move.Gaze.Mode != 0) {
-							result = true;
-							gaze.Head = move;
-							gaze.Eyes = move;
-							gaze.Torso = move;
-							gaze.Other.Gaze.Mode = GazeMode.Disabled;
-						}
-					}
-					IsLinked = !IsLinked;
-				}
-				ImGui.SameLine(0, spacing);
-				ImGui.Text(IsLinked ? "Linked" : "Unlinked");
-				ImGui.Spacing();
-			}
-
-			if (IsLinked || !isHuman)
-				result |= DrawGaze(actor, ref gaze.Other.Gaze, GazeControl.All);
-			else {
-				result |= DrawGaze(actor, ref gaze.Eyes.Gaze, GazeControl.Eyes);
-				ImGui.Spacing();
-				result |= DrawGaze(actor, ref gaze.Head.Gaze, GazeControl.Head);
-				ImGui.Spacing();
-				result |= DrawGaze(actor, ref gaze.Torso.Gaze, GazeControl.Torso);
-			}
-
-			if (result)
-				actor.Gaze = gaze;
-		}
-
-		return;
-	}
-
-	private unsafe bool DrawGaze(ActorEntity actor, ref Gaze gaze, GazeControl type) {
-		if (!GazeTables.ContainsKey(type))
-			GazeTables.Add(type, new TransformTable(this._cfg));
-
-		using var _ = ImRaii.PushId($"Gaze_{type}");
-		var spacing = ImGui.GetStyle().ItemInnerSpacing.X;
-
-		var result = false;
-		var enabled = gaze.Mode != 0;
-		var actorCharacter = (CharacterEx*)actor.Character;
-		var isTracking = gaze.Mode == GazeMode._KtisisFollowCam_;
-
-		if (type != GazeControl.All || !enabled) {
-			// if we're changing individual gazes (or viewing All w/o activation), set each to the basegaze for that type
-			// for all when not enabled, this will zero it out
-			var baseGaze = actorCharacter->Gaze[type];
-			gaze.Pos = baseGaze.Pos;
-		} else {
-			// if we're changing ALL gazes and enabled, load in any as theyre all equal to gaze.Pos for the transformtable
-			var baseGaze = actorCharacter->Gaze[GazeControl.Torso];
-			gaze.Pos = baseGaze.Pos;
-		}
-
-		if (ImGui.Checkbox($"{type}", ref enabled)) {
-			result = true;
-			gaze.Mode = enabled ? GazeMode.Target : GazeMode.Disabled;
-		}
-
-		// calc button space for camera and gizmo buttons
-		var btnSpace = Icons.CalcIconSize(FontAwesomeIcon.Eye).X
-			+ Icons.CalcIconSize(FontAwesomeIcon.LocationArrow).X
-			+ spacing * 3;
-		ImGui.SameLine(0, spacing);
-		ImGui.SameLine(0, ImGui.GetContentRegionAvail().X - btnSpace);
-
-		// camera tracking - when pressed, toggle enabled and change gaze mode to KtisisFollowCam (or revert to Target mode)
-		using (ImRaii.PushColor(ImGuiCol.Button, ImGui.GetColorU32(ImGuiCol.ButtonActive), isTracking)) {
-			if (Buttons.IconButtonTooltip(FontAwesomeIcon.Eye, "Camera Tracking", Vector2.Zero)) {
-				result = true;
-				enabled = true;
-				gaze.Mode = isTracking ? GazeMode.Target : GazeMode._KtisisFollowCam_;
-			}
-		}
-		ImGui.SameLine(0, spacing);
-
-		// TODO: gizmo, needs work to generate a new one w/o using ObjectWindow/OverlayWindow
-		// 	or, possible to create a dummy scene object (GazeTarget?) to hijack overlay gizmo?
-		using (ImRaii.Disabled()) {
-			using var __ = ImRaii.PushColor(ImGuiCol.Button, ImGui.GetColorU32(ImGuiCol.ButtonActive), isTracking);
-			if (Buttons.IconButtonTooltip(FontAwesomeIcon.LocationArrow, "Gizmo Tracking [TODO]", Vector2.Zero)) {}
-		}
-
-		result |= GazeTables[type].DrawPosition(ref gaze.Pos, TransformTableFlags.UseAvailable);
-
-		return result;
-	}
+  private void DrawGazeTab()
+  {
+  }
 }

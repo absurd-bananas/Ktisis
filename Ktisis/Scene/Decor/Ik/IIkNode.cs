@@ -1,8 +1,25 @@
-﻿namespace Ktisis.Scene.Decor.Ik;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Decor.Ik.IIkNode
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-public interface IIkNode {
-	public bool IsEnabled { get; }
-	
-	public void Enable();
-	public void Disable();
+#nullable disable
+namespace Ktisis.Scene.Decor.Ik;
+
+public interface IIkNode
+{
+  bool IsEnabled { get; }
+
+  void Enable();
+
+  void Disable();
+
+  void Toggle()
+  {
+    if (this.IsEnabled)
+      this.Disable();
+    else
+      this.Enable();
+  }
 }

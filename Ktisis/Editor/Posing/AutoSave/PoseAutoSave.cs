@@ -1,157 +1,174 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Timers;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Posing.AutoSave.PoseAutoSave
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Plugin.Services;
 using Dalamud.Utility;
-
 using Ktisis.Data.Config;
 using Ktisis.Data.Config.Sections;
+using Ktisis.Data.Files;
 using Ktisis.Data.Json;
 using Ktisis.Editor.Context.Types;
 using Ktisis.Editor.Posing.Data;
 using Ktisis.Editor.Posing.Types;
+using Ktisis.Scene.Entities;
 using Ktisis.Scene.Entities.Character;
 using Ktisis.Scene.Types;
 using Ktisis.Services.Data;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Timers;
 
+#nullable enable
 namespace Ktisis.Editor.Posing.AutoSave;
 
-public class PoseAutoSave : IDisposable {
-	private readonly IEditorContext _ctx;
-	private readonly IFramework _framework;
-	private readonly FormatService _format;
-	
-	private IPosingManager Posing => this._ctx.Posing;
-	private ISceneManager Scene => this._ctx.Scene;
+public class PoseAutoSave : IDisposable
+{
+  private readonly IEditorContext _ctx;
+  private readonly IFramework _framework;
+  private readonly FormatService _format;
+  private readonly Timer _timer = new Timer();
+  private readonly Queue<string> _prefixes = new Queue<string>();
+  private AutoSaveConfig _cfg;
 
-	private readonly Timer _timer = new();
-	private readonly Queue<string> _prefixes = new();
-	
-	private AutoSaveConfig _cfg = null!;
-	
-	public PoseAutoSave(
-		IEditorContext ctx,
-		IFramework framework,
-		FormatService format
-	) {
-		this._ctx = ctx;
-		this._framework = framework;
-		this._format = format;
-	}
+  private IPosingManager Posing => this._ctx.Posing;
 
-	public void Initialize(Configuration cfg) {
-		this._timer.Elapsed += this.OnElapsed;
-		this.Configure(cfg);
-	}
+  private ISceneManager Scene => this._ctx.Scene;
 
-	public void Configure(Configuration cfg) {
-		this._cfg = cfg.AutoSave;
-		this._timer.Interval = TimeSpan.FromSeconds(this._cfg.Interval).TotalMilliseconds;
-		if (this._timer.Enabled != this._cfg.Enabled)
-			this._timer.Enabled = this._cfg.Enabled;
-	}
+  public PoseAutoSave(IEditorContext ctx, IFramework framework, FormatService format)
+  {
+    this._ctx = ctx;
+    this._framework = framework;
+    this._format = format;
+  }
 
-	private async void OnElapsed(object? sender, ElapsedEventArgs e) {
-		if (!this.Posing.IsValid) {
-			this._timer.Stop();
-			return;
-		}
+  public void Initialize(Configuration cfg)
+  {
+    this._timer.Elapsed += new ElapsedEventHandler(this.OnElapsed);
+    this.Configure(cfg);
+  }
 
-		if (!this._cfg.Enabled || !this.Posing.IsEnabled)
-			return;
-		
-		try {
-			await this._framework.RunOnFrameworkThread(this.Save);
-		} catch (Exception err) {
-			Ktisis.Log.Error($"Failed to save poses:\n{err}");
-		}
-	}
+  public void Configure(Configuration cfg)
+  {
+    this._cfg = cfg.AutoSave;
+    this._timer.Interval = TimeSpan.FromSeconds((long) this._cfg.Interval).TotalMilliseconds;
+    if (this._timer.Enabled == this._cfg.Enabled)
+      return;
+    this._timer.Enabled = this._cfg.Enabled;
+  }
 
-	public void Save() {
-		var prefix = this._format.Replace(this._cfg.FolderFormat);
-		var folder = Path.Combine(this._cfg.FilePath, prefix);
-		this._prefixes.Enqueue(prefix);
+  private void OnElapsed(object? sender, ElapsedEventArgs e)
+  {
+    if (!this.Posing.IsValid)
+    {
+      this._timer.Stop();
+    }
+    else
+    {
+      if (!this._cfg.Enabled || !this.Posing.IsEnabled)
+        return;
+      this._framework.RunOnFrameworkThread(new Action(this.Save));
+    }
+  }
 
-		if (!Directory.Exists(folder))
-			Directory.CreateDirectory(folder);
-		
-		var entities = this.Scene.Children
-			.Where(entity => entity is CharaEntity)
-			.Cast<CharaEntity>()
-			.ToList();
+  public void Save()
+  {
+    string str1 = this._format.Replace(this._cfg.FolderFormat);
+    string str2 = Path.Combine(this._cfg.FilePath, str1);
+    this._prefixes.Enqueue(str1);
+    if (!Directory.Exists(str2))
+      Directory.CreateDirectory(str2);
+    List<CharaEntity> list = this.Scene.Children.Where<SceneEntity>((Func<SceneEntity, bool>) (entity => entity is CharaEntity)).Cast<CharaEntity>().ToList<CharaEntity>();
+    if (list.Count == 0)
+    {
+      Ktisis.Ktisis.Log.Warning("No valid entities, skipping auto save.", Array.Empty<object>());
+    }
+    else
+    {
+      Ktisis.Ktisis.Log.Info($"Auto saving poses for {list.Count} character(s)", Array.Empty<object>());
+      foreach (CharaEntity charaEntity in list)
+      {
+        if (charaEntity.Pose != null)
+        {
+          int num = 1;
+          string str3;
+          string str4;
+          string str5;
+          for (str3 = Path.Combine(str2, charaEntity.Name + ".pose"); Path.Exists(str3); str3 = Path.Combine(str4, str5))
+          {
+            str4 = str2;
+            str5 = $"{charaEntity.Name} ({++num}).pose";
+          }
+          JsonFileSerializer jsonFileSerializer = new JsonFileSerializer();
+          PoseFile poseFile = new EntityPoseConverter(charaEntity.Pose).SaveFile();
+          File.WriteAllText(str3, jsonFileSerializer.Serialize((object) poseFile));
+        }
+      }
+      Ktisis.Ktisis.Log.Verbose($"Prefix count: {this._prefixes.Count} max: {this._cfg.Count}", Array.Empty<object>());
+      while (this._prefixes.Count > this._cfg.Count)
+        this.DeleteOldest();
+    }
+  }
 
-		if (entities.Count == 0) {
-			Ktisis.Log.Warning("No valid entities, skipping auto save.");
-			return;
-		}
-		
-		Ktisis.Log.Info($"Auto saving poses for {entities.Count} character(s)");
-		
-		foreach (var chara in entities) {
-			if (chara.Pose == null) continue;
+  private void DeleteOldest()
+  {
+    string str = Path.Combine(this._cfg.FilePath, this._prefixes.Dequeue());
+    if (Directory.Exists(str))
+    {
+      Ktisis.Ktisis.Log.Verbose("Deleting " + str, Array.Empty<object>());
+      Directory.Delete(str, true);
+    }
+    PoseAutoSave.DeleteEmptyDirs(this._cfg.FilePath);
+  }
 
-			var dupeCt = 1;
-			var name = this._format.StripInvalidChars(chara.Name);
-			var path = Path.Combine(folder, $"{name}.pose");
-			while (Path.Exists(path))
-				path = Path.Combine(folder, $"{name} ({++dupeCt}).pose");
+  private static void DeleteEmptyDirs(string dir)
+  {
+    if (StringExtensions.IsNullOrEmpty(dir))
+      throw new ArgumentException("Starting directory is a null reference or empty string", nameof (dir));
+    try
+    {
+      foreach (string enumerateDirectory in Directory.EnumerateDirectories(dir))
+        PoseAutoSave.DeleteEmptyDirs(enumerateDirectory);
+      if (Directory.EnumerateFileSystemEntries(dir).Any<string>())
+        return;
+      try
+      {
+        Directory.Delete(dir);
+      }
+      catch (DirectoryNotFoundException ex)
+      {
+      }
+    }
+    catch (UnauthorizedAccessException ex)
+    {
+      Ktisis.Ktisis.Log.Error(ex.ToString(), Array.Empty<object>());
+    }
+  }
 
-			var serializer = new JsonFileSerializer();
-			var file = new EntityPoseConverter(chara.Pose).SaveFile();
-			File.WriteAllText(path, serializer.Serialize(file));
-		}
-		
-		Ktisis.Log.Verbose($"Prefix count: {this._prefixes.Count} max: {this._cfg.Count}");
-		while (this._prefixes.Count > this._cfg.Count)
-			this.DeleteOldest();
-	}
+  private void Clear()
+  {
+    try
+    {
+      while (this._cfg.ClearOnExit && this._prefixes.Count > 0)
+        this.DeleteOldest();
+    }
+    catch (Exception ex)
+    {
+      Ktisis.Ktisis.Log.Error($"Failed to clear auto saves:\n{ex}", Array.Empty<object>());
+    }
+  }
 
-	private void DeleteOldest() {
-		var oldest = this._prefixes.Dequeue();
-		var folder = Path.Combine(this._cfg.FilePath, oldest);
-		if (Directory.Exists(folder)) {
-			Ktisis.Log.Verbose($"Deleting {folder}");
-			Directory.Delete(folder, true);
-		}
-		DeleteEmptyDirs(this._cfg.FilePath);
-	}
-
-	private static void DeleteEmptyDirs(string dir) {
-		if (dir.IsNullOrEmpty())
-			throw new ArgumentException("Starting directory is a null reference or empty string", nameof(dir));
-
-		try {
-			foreach (var subDir in Directory.EnumerateDirectories(dir))
-				DeleteEmptyDirs(subDir);
-
-			var entries = Directory.EnumerateFileSystemEntries(dir);
-			if (entries.Any()) return;
-
-			try {
-				Directory.Delete(dir);
-			} catch (DirectoryNotFoundException) { }
-		} catch (UnauthorizedAccessException err) {
-			Ktisis.Log.Error(err.ToString());
-		}
-	}
-
-	private void Clear() {
-		try {
-			while (this._cfg.ClearOnExit && this._prefixes.Count > 0)
-				this.DeleteOldest();
-		} catch (Exception err) {
-			Ktisis.Log.Error($"Failed to clear auto saves:\n{err}");
-		}
-	}
-
-	public void Dispose() {
-		this._timer.Elapsed -= this.OnElapsed;
-		this._timer.Stop();
-		this._timer.Dispose();
-		this.Clear();
-		GC.SuppressFinalize(this);
-	}
+  public void Dispose()
+  {
+    this._timer.Elapsed -= new ElapsedEventHandler(this.OnElapsed);
+    this._timer.Stop();
+    ((Component) this._timer).Dispose();
+    this.Clear();
+    GC.SuppressFinalize((object) this);
+  }
 }

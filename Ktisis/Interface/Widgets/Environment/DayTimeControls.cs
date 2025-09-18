@@ -1,40 +1,44 @@
-using System;
-
-using FFXIVClientStructs.FFXIV.Client.System.Framework;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Widgets.Environment.DayTimeControls
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Bindings.ImGui;
-
 using Ktisis.Structs.Env;
+using System;
 
+#nullable disable
 namespace Ktisis.Interface.Widgets.Environment;
 
-public static class DayTimeControls {
-	public const float MaxTime = 60 * 60 * 24; // 86400
-	
-	public unsafe static bool DrawTime(EnvManagerEx* env, out float time) {
-		time = 0;
-		if (env == null) return false;
-		time = env->_base.DayTimeSeconds;
+public static class DayTimeControls
+{
+  public const float MaxTime = 86400f;
 
-		var dateTime = new DateTime().AddSeconds(time);
-		var slider = ImGui.SliderFloat("##TimeControls_Slider", ref time, 0, MaxTime, dateTime.ToShortTimeString(), ImGuiSliderFlags.NoInput);
+  public static unsafe bool DrawTime(EnvManagerEx* env, out float time)
+  {
+    time = 0.0f;
+    if ((IntPtr) env == IntPtr.Zero)
+      return false;
+    time = env->_base.DayTimeSeconds;
+    DateTime dateTime = new DateTime().AddSeconds((double) time);
+    int num1 = Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("##TimeControls_Slider"), ref time, 0.0f, 86400f, ImU8String.op_Implicit(dateTime.ToShortTimeString()), (ImGuiSliderFlags) 128 /*0x80*/) ? 1 : 0;
+    Dalamud.Bindings.ImGui.ImGui.SameLine();
+    ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+    Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth(Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail().X);
+    int num2 = Dalamud.Bindings.ImGui.ImGui.DragFloat(ImU8String.op_Implicit("##TimeControls_Drag"), ref time, 10f, 0.0f, 86400f, ImU8String.op_Implicit("%.0f"), (ImGuiSliderFlags) 0) ? 1 : 0;
+    return (num1 | num2) != 0;
+  }
 
-		ImGui.SameLine();
+  public static unsafe bool DrawDay(EnvManagerEx* env, out int day)
+  {
+    day = DayTimeControls.CalculateDay(env);
+    return Dalamud.Bindings.ImGui.ImGui.SliderInt(ImU8String.op_Implicit("##MoonPhase"), ref day, 0, 30, new ImU8String(), (ImGuiSliderFlags) 0);
+  }
 
-		ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
-		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X);
-		var drag = ImGui.DragFloat("##TimeControls_Drag", ref time, 10, 0, MaxTime, "%.0f");
-
-		return slider || drag;
-	}
-
-	public unsafe static bool DrawDay(EnvManagerEx* env, out int day) {
-		day = CalculateDay(env);
-		return ImGui.SliderInt("##MoonPhase", ref day, 0, 30);
-	}
-
-	public unsafe static int CalculateDay(EnvManagerEx* env) {
-		var clientTime = &Framework.Instance()->ClientTime;
-		return (int)Math.Ceiling((clientTime->EorzeaTime - env->_base.DayTimeSeconds) / MaxTime) % 32;
-	}
+  public static unsafe int CalculateDay(EnvManagerEx* env)
+  {
+    return (int) Math.Ceiling(((double) FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance()->ClientTime.EorzeaTime - (double) env->_base.DayTimeSeconds) / 86400.0) % 32 /*0x20*/;
+  }
 }

@@ -1,49 +1,49 @@
-﻿using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Structs.Actors.CharacterEx
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using System;
 using System.Numerics;
 using System.Runtime.InteropServices;
 
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
-
+#nullable disable
 namespace Ktisis.Structs.Actors;
 
-[Flags]
-public enum CombatFlags : byte {
-	None = 0,
-	WeaponDrawn = 0x40
-}
+[StructLayout(LayoutKind.Explicit, Size = 8928)]
+public struct CharacterEx
+{
+  public const int AnimationOffset = 2592;
+  [FieldOffset(0)]
+  public FFXIVClientStructs.FFXIV.Client.Game.Character.Character Character;
+  [FieldOffset(224 /*0xE0*/)]
+  public Vector3 DrawObjectOffset;
+  [FieldOffset(304)]
+  public Vector3 CameraOffsetSmooth;
+  [FieldOffset(384)]
+  public Vector3 CameraOffset;
+  [FieldOffset(1568)]
+  public unsafe IntPtr* _emoteControllerVf;
+  [FieldOffset(1568)]
+  public EmoteController EmoteController;
+  [FieldOffset(3298)]
+  public CombatFlags CombatFlags;
+  [FieldOffset(2592)]
+  public AnimationContainer Animation;
+  [FieldOffset(8920)]
+  public float Opacity;
+  [FieldOffset(9044)]
+  public byte Mode;
+  [FieldOffset(9045)]
+  public EmoteModeEnum EmoteMode;
 
-public enum EmoteModeEnum : uint {
-	Normal = 0,
-	SitGround = 1,
-	SitChair = 2,
-	Sleeping = 3
-}
-
-[StructLayout(LayoutKind.Explicit, Size = 0x22E0)]
-public struct CharacterEx {
-	public const int AnimationOffset = 0xA20;
-	public const int GazeOffset = 0xD70;
-	
-	[FieldOffset(0)] public Character Character;
-
-	[FieldOffset(0xE0)] public Vector3 DrawObjectOffset;
-
-	[FieldOffset(0x130)] public Vector3 CameraOffsetSmooth;
-	[FieldOffset(0x180)] public Vector3 CameraOffset;
-
-	[FieldOffset(0x620)] public unsafe nint* _emoteControllerVf;
-	[FieldOffset(0x620)] public EmoteController EmoteController;
-	
-	[FieldOffset(0x0CE2)] public CombatFlags CombatFlags;
-	
-	[FieldOffset(AnimationOffset)] public AnimationContainer Animation;
-
-	[FieldOffset(GazeOffset + 0x10)] public ActorGaze Gaze;
-
-	[FieldOffset(0x22D8)] public float Opacity;
-
-	[FieldOffset(0x2354)] public byte Mode;
-	[FieldOffset(0x2355)] public EmoteModeEnum EmoteMode;
-
-	public bool IsGPose => this.Character.ObjectIndex is >= 201 and <= 243;
+  public bool IsGPose
+  {
+    get
+    {
+      ushort objectIndex = this.Character.ObjectIndex;
+      return objectIndex >= (ushort) 201 && objectIndex <= (ushort) 243;
+    }
+  }
 }

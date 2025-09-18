@@ -1,30 +1,50 @@
-﻿using System.Collections.Generic;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Common.Utility.KeyHelpers
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Interface.Utility;
-using Dalamud.Bindings.ImGui;
+using System;
+using System.Collections.Generic;
 
+#nullable enable
 namespace Ktisis.Common.Utility;
 
-public static class KeyHelpers {
-	public static bool IsModifierKey(VirtualKey key) => key is VirtualKey.CONTROL or VirtualKey.SHIFT or VirtualKey.MENU;
-	
-	public static IEnumerable<VirtualKey> GetKeysDown() {
-		var io = ImGui.GetIO();
+public static class KeyHelpers
+{
+  public static bool IsModifierKey(VirtualKey key) => key - 16 /*0x10*/ <= 2;
 
-		if (io.KeyCtrl) yield return VirtualKey.CONTROL;
-		if (io.KeyShift) yield return VirtualKey.SHIFT;
-		if (io.KeyAlt) yield return VirtualKey.MENU;
-		
-		for (var i = 0; i < io.KeysDown.Length; i++) {
-			if (!io.KeysDown[i]) continue;
-			
-			var key = ImGuiHelpers.ImGuiKeyToVirtualKey((ImGuiKey)i);
-			if (key is >= VirtualKey.LSHIFT and <= VirtualKey.RMENU)
-				continue;
-			
-			if (key != VirtualKey.NO_KEY)
-				yield return key;
-		}
-	}
+  public static IEnumerable<VirtualKey> GetKeysDown()
+  {
+    ImGuiIOPtr io = Dalamud.Bindings.ImGui.ImGui.GetIO();
+    if (((ImGuiIOPtr) ref io).KeyCtrl)
+      yield return (VirtualKey) 17;
+    if (((ImGuiIOPtr) ref io).KeyShift)
+      yield return (VirtualKey) 16 /*0x10*/;
+    if (((ImGuiIOPtr) ref io).KeyAlt)
+      yield return (VirtualKey) 18;
+    int i = 0;
+    while (true)
+    {
+      int num = i;
+      Span<bool> keysDown = ((ImGuiIOPtr) ref io).KeysDown;
+      int length = keysDown.Length;
+      if (num < length)
+      {
+        keysDown = ((ImGuiIOPtr) ref io).KeysDown;
+        if (keysDown[i])
+        {
+          VirtualKey virtualKey = ImGuiHelpers.ImGuiKeyToVirtualKey((ImGuiKey) i);
+          if ((virtualKey < 160 /*0xA0*/ || virtualKey > 165) && virtualKey != null)
+            yield return virtualKey;
+        }
+        ++i;
+      }
+      else
+        break;
+    }
+  }
 }

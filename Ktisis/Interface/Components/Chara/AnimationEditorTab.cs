@@ -1,318 +1,404 @@
-﻿using System;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Chara.AnimationEditorTab
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Interface;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Bindings.ImGui;
+using Dalamud.Interface;
+using Dalamud.Interface.Textures;
+using Dalamud.Interface.Utility.Raii;
 using Dalamud.Plugin.Services;
 using Dalamud.Utility;
-
+using GLib.Lists;
 using GLib.Popups;
 using GLib.Popups.Decorators;
 using GLib.Widgets;
-
 using Ktisis.Common.Extensions;
 using Ktisis.Core.Attributes;
 using Ktisis.Data.Config;
 using Ktisis.Editor.Animation.Game;
 using Ktisis.Editor.Animation.Types;
 using Ktisis.Structs.Actors;
+using Lumina.Excel.Sheets;
+using Lumina.Text.ReadOnly;
+using System;
+using System.Numerics;
+using System.Threading.Tasks;
 
+#nullable enable
 namespace Ktisis.Interface.Components.Chara;
 
 [Transient]
-public class AnimationEditorTab {
-	private readonly static PoseModeEnum[] Modes = [
-		PoseModeEnum.Idle, PoseModeEnum.SitGround, PoseModeEnum.SitChair, PoseModeEnum.Sleeping
-	];
+public class AnimationEditorTab
+{
+  private static readonly PoseModeEnum[] Modes = new PoseModeEnum[4]
+  {
+    PoseModeEnum.Idle,
+    PoseModeEnum.SitGround,
+    PoseModeEnum.SitChair,
+    PoseModeEnum.Sleeping
+  };
+  private readonly ConfigManager _cfg;
+  private readonly ITextureProvider _tex;
+  private readonly GameAnimationData _animData;
+  private bool _openAnimList;
+  private readonly AnimationEditorTab.AnimationFilter _animFilter = new AnimationEditorTab.AnimationFilter();
+  private readonly PopupList<GameAnimation> _animList;
+  private bool _isSetup;
+  private uint TimelineId;
 
-	private readonly ConfigManager _cfg;
-	private readonly ITextureProvider _tex;
-	
-	private readonly GameAnimationData _animData;
+  public IAnimationEditor Editor { set; private get; }
 
-	private bool _openAnimList;
-	private readonly AnimationFilter _animFilter = new();
-	private readonly PopupList<GameAnimation> _animList;
-	
-	public IAnimationEditor Editor { set; private get; } = null!;
+  public AnimationEditorTab(ConfigManager cfg, IDataManager data, ITextureProvider tex)
+  {
+    this._cfg = cfg;
+    this._tex = tex;
+    this._animData = new GameAnimationData(data);
+    // ISSUE: reference to a compiler-generated field
+    // ISSUE: reference to a compiler-generated field
+    this._animList = new PopupList<GameAnimation>("##AnimEmoteList", new ListBox<GameAnimation>.DrawItemDelegate(this.DrawAnimationSelect)).WithSearch(AnimationEditorTab.\u003C\u003EO.\u003C0\u003E__AnimSearchPredicate ?? (AnimationEditorTab.\u003C\u003EO.\u003C0\u003E__AnimSearchPredicate = new PopupList<GameAnimation>.SearchPredicate(AnimationEditorTab.AnimSearchPredicate))).WithFilter((IFilterProvider<GameAnimation>) this._animFilter);
+  }
 
-	public AnimationEditorTab(
-		ConfigManager cfg,
-		IDataManager data,
-		ITextureProvider tex
-	) {
-		this._cfg = cfg;
-		this._tex = tex;
+  private Configuration Config => this._cfg.File;
 
-		this._animData = new GameAnimationData(data);
+  private ref bool PlayEmoteStart => ref this.Config.Editor.PlayEmoteStart;
 
-		this._animList = new PopupList<GameAnimation>("##AnimEmoteList", this.DrawAnimationSelect)
-			.WithSearch(AnimSearchPredicate)
-			.WithFilter(this._animFilter);
-	}
-	
-	// Config
+  private ref bool ForceLoop => ref this.Config.Editor.ForceLoop;
 
-	private Configuration Config => this._cfg.File;
+  public void Setup()
+  {
+    if (this._isSetup)
+      return;
+    this._isSetup = true;
+    this._animData.Build().ContinueWith((Action<Task>) (task =>
+    {
+      if (task.Exception == null)
+        return;
+      Ktisis.Ktisis.Log.Error($"Failed to fetch animations:\n{task.Exception}", Array.Empty<object>());
+    }));
+  }
 
-	private ref bool PlayEmoteStart => ref this.Config.Editor.PlayEmoteStart;
-	private ref bool ForceLoop => ref this.Config.Editor.ForceLoop;
-	
-	// Setup
+  public void Draw() => this.DrawAnimation();
 
-	private bool _isSetup;
-	
-	public void Setup() {
-		if (this._isSetup) return;
-		this._isSetup = true;
+  private static float CalcItemHeight()
+  {
+    double textLineHeight = (double) Dalamud.Bindings.ImGui.ImGui.GetTextLineHeight();
+    ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    double y = (double) ((ImGuiStylePtr) ref style).ItemInnerSpacing.Y;
+    return (float) ((textLineHeight + y) * 2.0);
+  }
 
-		this._animData.Build().ContinueWith(task => {
-			if (task.Exception != null)
-				Ktisis.Log.Error($"Failed to fetch animations:\n{task.Exception}");
-		});
-	}
-	
-	// Draw
-	
-	public void Draw() {
-		this.DrawAnimation();
-	}
-	
-	// Animation selector
-	
-	private uint TimelineId;
+  private void DrawAnimation()
+  {
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    Vector2 contentRegionAvail = Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail();
+    using (ImRaii.Child(ImU8String.op_Implicit("##animFrame"), contentRegionAvail with
+    {
+      X = contentRegionAvail.X * 0.35f
+    }))
+    {
+      Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit("Animation"));
+      this.DrawEmote();
+      Dalamud.Bindings.ImGui.ImGui.Spacing();
+      Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit("Idle Pose"));
+      this.DrawPose();
+    }
+    Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, 0.0f);
+    using (ImRaii.Child(ImU8String.op_Implicit("##tlFrame"), contentRegionAvail with
+    {
+      X = contentRegionAvail.X * 0.65f
+    }))
+      this.DrawTimelines();
+    if (this._openAnimList)
+    {
+      this._openAnimList = false;
+      this._animList.Open();
+    }
+    GameAnimation selected;
+    if (!this._animList.Draw(this._animData.GetAll(), this._animData.Count, out selected, AnimationEditorTab.CalcItemHeight()))
+      return;
+    if (!this._animFilter.SlotFilterActive)
+      this.TimelineId = selected.TimelineId;
+    this.Editor.PlayAnimation(selected, this.PlayEmoteStart);
+  }
 
-	private static float CalcItemHeight() => (ImGui.GetTextLineHeight() + ImGui.GetStyle().ItemInnerSpacing.Y) * 2;
+  private void DrawEmote()
+  {
+    ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    float x = ((ImGuiStylePtr) ref style).ItemInnerSpacing.X;
+    if (Buttons.IconButton((FontAwesomeIcon) 61442))
+      this.OpenAnimationPopup();
+    Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+    int timelineId = (int) this.TimelineId;
+    if (Dalamud.Bindings.ImGui.ImGui.InputInt(ImU8String.op_Implicit("##emote"), ref timelineId, 0, 0, new ImU8String(), (ImGuiInputTextFlags) 0))
+      this.TimelineId = (uint) timelineId;
+    if (Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Play"), new Vector2()))
+      this.PlayTimeline((uint) timelineId);
+    Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+    if (Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Reset"), new Vector2()))
+      this.ResetTimeline();
+    Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+    Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Loop"), ref this.ForceLoop);
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Play emote start"), ref this.PlayEmoteStart);
+  }
 
-	private void DrawAnimation() {
-		ImGui.Spacing();
-		
-		var avail = ImGui.GetContentRegionAvail();
-		using (var _ = ImRaii.Child("##animFrame", avail with { X = avail.X * 0.35f })) {
-			ImGui.Text("Animation");
-			this.DrawEmote();
-			ImGui.Spacing();
-			ImGui.Text("Idle Pose");
-			this.DrawPose();
-		}
-		ImGui.SameLine(0, 0);
-		using (var _ = ImRaii.Child("##tlFrame", avail with { X = avail.X * 0.65f })) {
-			this.DrawTimelines();
-		}
+  private void DrawPose()
+  {
+    PoseModeEnum mode1;
+    int pose1;
+    if (!this.Editor.TryGetModeAndPose(out mode1, out pose1))
+      return;
+    double x1 = (double) Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail().X;
+    ImGuiStylePtr style1 = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    double num1 = (double) ((ImGuiStylePtr) ref style1).ItemSpacing.X * 2.0;
+    Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth((float) (x1 - num1));
+    if (Dalamud.Bindings.ImGui.ImGui.BeginCombo(ImU8String.op_Implicit("##Mode"), ImU8String.op_Implicit(mode1.ToString()), (ImGuiComboFlags) 0))
+    {
+      foreach (PoseModeEnum mode2 in AnimationEditorTab.Modes)
+      {
+        if (Dalamud.Bindings.ImGui.ImGui.Selectable(ImU8String.op_Implicit(mode2.ToString()), mode2 == mode1, (ImGuiSelectableFlags) 0, new Vector2()))
+          this.Editor.SetPose(mode2, (byte) 0);
+      }
+      Dalamud.Bindings.ImGui.ImGui.EndCombo();
+    }
+    double x2 = (double) Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail().X;
+    ImGuiStylePtr style2 = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    double num2 = (double) ((ImGuiStylePtr) ref style2).ItemSpacing.X * 2.0;
+    Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth((float) (x2 - num2));
+    if (Dalamud.Bindings.ImGui.ImGui.InputInt(ImU8String.op_Implicit("##Pose"), ref pose1, 1, 0, new ImU8String(), (ImGuiInputTextFlags) 0))
+    {
+      int poseCount = this.Editor.GetPoseCount(mode1);
+      int pose2 = pose1 < 0 ? poseCount - 1 : pose1 % poseCount;
+      this.Editor.SetPose(mode1, (byte) pose2);
+    }
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    bool isWeaponDrawn = this.Editor.IsWeaponDrawn;
+    if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Weapon drawn"), ref isWeaponDrawn))
+      this.Editor.ToggleWeapon();
+    bool positionLockEnabled = this.Editor.PositionLockEnabled;
+    if (!Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Freeze positions"), ref positionLockEnabled))
+      return;
+    this.Editor.PositionLockEnabled = positionLockEnabled;
+  }
 
-		if (this._openAnimList) {
-			this._openAnimList = false;
-			this._animList.Open();
-		}
+  private unsafe void DrawTimelines()
+  {
+    bool speedControlEnabled = this.Editor.SpeedControlEnabled;
+    if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Enable speed control"), ref speedControlEnabled))
+      this.Editor.SpeedControlEnabled = speedControlEnabled;
+    Dalamud.Bindings.ImGui.ImGui.Spacing();
+    ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    float x = ((ImGuiStylePtr) ref style).ItemInnerSpacing.X;
+    AnimationTimeline timeline = this.Editor.GetTimeline();
+    foreach (TimelineSlot timelineSlot in Enum.GetValues<TimelineSlot>())
+    {
+      ImU8String imU8String1;
+      // ISSUE: explicit constructor call
+      ((ImU8String) ref imU8String1).\u002Ector(9, 1);
+      ((ImU8String) ref imU8String1).AppendLiteral("timeline_");
+      ((ImU8String) ref imU8String1).AppendFormatted<TimelineSlot>(timelineSlot);
+      using (ImRaii.PushId(imU8String1, true))
+      {
+        int slot = (int) timelineSlot;
+        if (Buttons.IconButton((FontAwesomeIcon) 61761, new Vector2?(new Vector2(Dalamud.Bindings.ImGui.ImGui.GetFrameHeight(), Dalamud.Bindings.ImGui.ImGui.GetFrameHeight()))))
+          this.OpenAnimationPopup(new TimelineSlot?(timelineSlot));
+        Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+        ushort id = timeline.TimelineIds[slot];
+        ActionTimeline? timelineById = this._animData.GetTimelineById((uint) id);
+        Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth(40f);
+        int num1 = (int) id;
+        imU8String1 = new ImU8String(4, 1);
+        ((ImU8String) ref imU8String1).AppendLiteral("##id");
+        ((ImU8String) ref imU8String1).AppendFormatted<int>(slot);
+        ImU8String imU8String2 = imU8String1;
+        ref int local1 = ref num1;
+        imU8String1 = new ImU8String();
+        ImU8String imU8String3 = imU8String1;
+        Dalamud.Bindings.ImGui.ImGui.InputInt(imU8String2, ref local1, 0, 0, imU8String3, (ImGuiInputTextFlags) 16384 /*0x4000*/);
+        Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+        float num2 = (float) ((double) Dalamud.Bindings.ImGui.ImGui.CalcItemWidth() - (double) Dalamud.Bindings.ImGui.ImGui.GetFrameHeight() - 40.0);
+        Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth(num2);
+        string str1;
+        if (!timelineById.HasValue)
+        {
+          str1 = (string) null;
+        }
+        else
+        {
+          ActionTimeline valueOrDefault = timelineById.GetValueOrDefault();
+          ReadOnlySeString key = ((ActionTimeline) ref valueOrDefault).Key;
+          str1 = ((ReadOnlySeString) ref key).ExtractText();
+        }
+        if (str1 == null)
+          str1 = string.Empty;
+        string str2 = str1;
+        using (ImRaii.Disabled(StringExtensions.IsNullOrEmpty(str2)))
+        {
+          imU8String1 = new ImU8String(3, 1);
+          ((ImU8String) ref imU8String1).AppendLiteral("##s");
+          ((ImU8String) ref imU8String1).AppendFormatted<int>(slot);
+          Dalamud.Bindings.ImGui.ImGui.InputText(imU8String1, ref str2, 256 /*0x0100*/, (ImGuiInputTextFlags) 16384 /*0x4000*/, (Dalamud.Bindings.ImGui.ImGui.ImGuiInputTextCallbackDelegate) null);
+        }
+        Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, 0.0f);
+        ImU8String imU8String4 = ImU8String.op_Implicit("{0}");
+        imU8String1 = new ImU8String(0, 1);
+        ((ImU8String) ref imU8String1).AppendFormatted<TimelineSlot>(timelineSlot);
+        ImU8String imU8String5 = imU8String1;
+        Dalamud.Bindings.ImGui.ImGui.LabelText(imU8String4, imU8String5);
+        using (ImRaii.Disabled(!speedControlEnabled))
+        {
+          float speed = timeline.TimelineSpeeds[slot];
+          Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth((float) ((double) Dalamud.Bindings.ImGui.ImGui.GetFrameHeight() + (double) x + 40.0));
+          imU8String1 = new ImU8String(9, 1);
+          ((ImU8String) ref imU8String1).AppendLiteral("##speed_l");
+          ((ImU8String) ref imU8String1).AppendFormatted<int>(slot);
+          ImU8String imU8String6 = imU8String1;
+          ref float local2 = ref speed;
+          imU8String1 = new ImU8String();
+          ImU8String imU8String7 = imU8String1;
+          int num3 = Dalamud.Bindings.ImGui.ImGui.InputFloat(imU8String6, ref local2, 0.0f, 0.0f, imU8String7, (ImGuiInputTextFlags) 0) ? 1 : 0;
+          Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+          Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth(num2);
+          imU8String1 = new ImU8String(9, 1);
+          ((ImU8String) ref imU8String1).AppendLiteral("##speed_r");
+          ((ImU8String) ref imU8String1).AppendFormatted<int>(slot);
+          int num4 = Dalamud.Bindings.ImGui.ImGui.SliderFloat(imU8String1, ref speed, 0.0f, 2f, ImU8String.op_Implicit(""), (ImGuiSliderFlags) 0) ? 1 : 0;
+          if ((num3 | num4) != 0)
+            this.Editor.SetTimelineSpeed((uint) slot, speed);
+        }
+        Dalamud.Bindings.ImGui.ImGui.Spacing();
+      }
+    }
+  }
 
-		if (this._animList.Draw(this._animData.GetAll(), this._animData.Count, out var anim, CalcItemHeight())) {
-			if (!this._animFilter.SlotFilterActive)
-				this.TimelineId = anim!.TimelineId;
-			this.Editor.PlayAnimation(anim!, this.PlayEmoteStart);
-		}
-	}
+  private bool DrawAnimationSelect(GameAnimation anim, bool isFocus)
+  {
+    float num = AnimationEditorTab.CalcItemHeight();
+    ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+    float x = ((ImGuiStylePtr) ref style).ItemInnerSpacing.X;
+    float cursorPosX = Dalamud.Bindings.ImGui.ImGui.GetCursorPosX();
+    bool flag = Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit(string.Empty), new Vector2(Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail().X, num));
+    Dalamud.Bindings.ImGui.ImGui.SameLine(cursorPosX, num + x);
+    Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(anim.Name));
+    Dalamud.Bindings.ImGui.ImGui.SameLine(cursorPosX, num + x);
+    Dalamud.Bindings.ImGui.ImGui.SetCursorPosY(Dalamud.Bindings.ImGui.ImGui.GetCursorPosY() + Dalamud.Bindings.ImGui.ImGui.GetTextLineHeight());
+    using (ImRaii.PushColor((ImGuiCol) 0, Dalamud.Bindings.ImGui.ImGui.GetColorU32((ImGuiCol) 0).SetAlpha((byte) 175), true))
+    {
+      ImU8String imU8String = new ImU8String(0, 1);
+      ((ImU8String) ref imU8String).AppendFormatted<TimelineSlot>(anim.Slot);
+      Dalamud.Bindings.ImGui.ImGui.Text(imU8String);
+    }
+    Dalamud.Bindings.ImGui.ImGui.SameLine(cursorPosX);
+    Vector2 vector2 = new Vector2(num, num);
+    if (anim.Icon != (ushort) 0)
+    {
+      ITextureProvider tex = this._tex;
+      GameIconLookup gameIconLookup = GameIconLookup.op_Implicit((uint) anim.Icon);
+      ref GameIconLookup local1 = ref gameIconLookup;
+      ISharedImmediateTexture immediateTexture;
+      ref ISharedImmediateTexture local2 = ref immediateTexture;
+      if (tex.TryGetFromGameIcon(ref local1, ref local2))
+      {
+        Dalamud.Bindings.ImGui.ImGui.Image(immediateTexture.GetWrapOrEmpty().Handle, vector2);
+        goto label_9;
+      }
+    }
+    Dalamud.Bindings.ImGui.ImGui.Dummy(vector2);
+label_9:
+    return flag;
+  }
 
-	private void DrawEmote() {
-		var space = ImGui.GetStyle().ItemInnerSpacing.X;
+  private void OpenAnimationPopup(TimelineSlot? slot = null)
+  {
+    bool hasValue = slot.HasValue;
+    this._animFilter.SlotFilterActive = hasValue;
+    if (hasValue)
+      this._animFilter.Slot = slot.Value;
+    this._openAnimList = true;
+  }
 
-		if (Buttons.IconButton(FontAwesomeIcon.Search))
-			this.OpenAnimationPopup();
-		
-		ImGui.SameLine(0, space);
+  private static bool AnimSearchPredicate(GameAnimation anim, string query)
+  {
+    return anim.Name.Contains(query, StringComparison.InvariantCultureIgnoreCase);
+  }
 
-		var intId = (int)this.TimelineId;
-		if (ImGui.InputInt("##emote", ref intId))
-			this.TimelineId = (uint)intId;
+  private void PlayTimeline(uint id)
+  {
+    this.Editor.PlayTimeline(id);
+    if (!this.ForceLoop)
+      return;
+    this.Editor.SetForceTimeline((ushort) id);
+  }
 
-		if (ImGui.Button("Play"))
-			this.PlayTimeline((uint)intId);
-		ImGui.SameLine(0, space);
-		if (ImGui.Button("Reset"))
-			this.ResetTimeline();
-		ImGui.SameLine(0, space);
-		ImGui.Checkbox("Loop", ref this.ForceLoop);
-		
-		ImGui.Spacing();
-		
-		ImGui.Checkbox("Play emote start", ref this.PlayEmoteStart);
-	}
+  private void ResetTimeline()
+  {
+    this.Editor.PlayTimeline(3U);
+    this.Editor.SetForceTimeline((ushort) 0);
+  }
 
-	private void DrawPose() {
-		if (!this.Editor.TryGetModeAndPose(out var mode, out var pose))
-			return;
-		
-		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.GetStyle().ItemSpacing.X * 2);
-		
-		if (ImGui.BeginCombo("##Mode", mode.ToString())) {
-			foreach (var modeType in Modes) {
-				if (ImGui.Selectable(modeType.ToString(), modeType == mode))
-					this.Editor.SetPose(modeType, 0);
-			}
-			ImGui.EndCombo();
-		}
-		
-		ImGui.SetNextItemWidth(ImGui.GetContentRegionAvail().X - ImGui.GetStyle().ItemSpacing.X * 2);
-		
-		if (ImGui.InputInt("##Pose", ref pose, 1)) {
-			var count = this.Editor.GetPoseCount(mode);
-			pose = pose < 0 ? count - 1 : pose % count;
-			this.Editor.SetPose(mode, (byte)pose);
-		}
-		
-		ImGui.Spacing();
+  private class AnimationFilter : IFilterProvider<GameAnimation>
+  {
+    private AnimationEditorTab.AnimationFilter.AnimType Type;
+    public bool SlotFilterActive;
+    public TimelineSlot Slot;
 
-		var isWeaponDrawn = this.Editor.IsWeaponDrawn;
-		if (ImGui.Checkbox("Weapon drawn", ref isWeaponDrawn))
-			this.Editor.ToggleWeapon();
+    public bool DrawOptions()
+    {
+      bool flag = false;
+      AnimationEditorTab.AnimationFilter.AnimType[] values = Enum.GetValues<AnimationEditorTab.AnimationFilter.AnimType>();
+      for (int index = 0; index < values.Length; ++index)
+      {
+        if (index % 3 != 0)
+          Dalamud.Bindings.ImGui.ImGui.SameLine();
+        AnimationEditorTab.AnimationFilter.AnimType animType = values[index];
+        ImU8String imU8String;
+        // ISSUE: explicit constructor call
+        ((ImU8String) ref imU8String).\u002Ector(0, 1);
+        ((ImU8String) ref imU8String).AppendFormatted<AnimationEditorTab.AnimationFilter.AnimType>(animType);
+        if (Dalamud.Bindings.ImGui.ImGui.RadioButton(imU8String, this.Type == animType))
+        {
+          this.Type = animType;
+          flag = true;
+        }
+      }
+      Dalamud.Bindings.ImGui.ImGui.Spacing();
+      return flag;
+    }
 
-		var posLock = this.Editor.PositionLockEnabled;
-		if (ImGui.Checkbox("Freeze positions", ref posLock))
-			this.Editor.PositionLockEnabled = posLock;
-	}
+    public bool Filter(GameAnimation item)
+    {
+      bool flag1 = !this.SlotFilterActive || this.Slot == item.Slot;
+      if (flag1)
+      {
+        bool flag2;
+        switch (item)
+        {
+          case ActionAnimation _:
+            flag2 = this.Type == AnimationEditorTab.AnimationFilter.AnimType.Action;
+            break;
+          case EmoteAnimation emoteAnimation:
+            flag2 = this.Type == (emoteAnimation.IsExpression ? AnimationEditorTab.AnimationFilter.AnimType.Expression : AnimationEditorTab.AnimationFilter.AnimType.Emote);
+            break;
+          case TimelineAnimation _:
+            flag2 = this.Type == AnimationEditorTab.AnimationFilter.AnimType.RawTimeline;
+            break;
+          default:
+            flag2 = false;
+            break;
+        }
+        flag1 = flag2;
+      }
+      return flag1;
+    }
 
-	private unsafe void DrawTimelines() {
-		var speedCtrl = this.Editor.SpeedControlEnabled;
-		if (ImGui.Checkbox("Enable speed control", ref speedCtrl))
-			this.Editor.SpeedControlEnabled = speedCtrl;
-		
-		ImGui.Spacing();
-
-		var spacing = ImGui.GetStyle().ItemInnerSpacing.X;
-		
-		var animTimeline = this.Editor.GetTimeline();
-		
-		foreach (var slot in Enum.GetValues<TimelineSlot>()) {
-			using var _id = ImRaii.PushId($"timeline_{slot}");
-
-			var index = (int)slot;
-
-			if (Buttons.IconButton(FontAwesomeIcon.EllipsisH, new Vector2(ImGui.GetFrameHeight(), ImGui.GetFrameHeight())))
-				this.OpenAnimationPopup(slot);
-			
-			ImGui.SameLine(0, spacing);
-
-			var id = animTimeline.TimelineIds[index];
-			var timeline = this._animData.GetTimelineById(id);
-
-			ImGui.SetNextItemWidth(40);
-			
-			var intId = (int)id;
-			ImGui.InputInt($"##id{index}", ref intId, 0, 0, flags: ImGuiInputTextFlags.ReadOnly);
-
-			ImGui.SameLine(0, spacing);
-			var widthR = ImGui.CalcItemWidth() - ImGui.GetFrameHeight() - 40;
-			ImGui.SetNextItemWidth(widthR);
-			
-			var key = timeline?.Key.ExtractText() ?? string.Empty;
-			using (var _disable = ImRaii.Disabled(key.IsNullOrEmpty()))
-				ImGui.InputText($"##s{index}", ref key, 256, ImGuiInputTextFlags.ReadOnly);
-			
-			ImGui.SameLine(0, 0);
-			ImGui.LabelText("{0}", $"{slot}");
-
-			using (var _disable = ImRaii.Disabled(!speedCtrl)) {
-				var speed = animTimeline.TimelineSpeeds[index];
-				ImGui.SetNextItemWidth(ImGui.GetFrameHeight() + spacing + 40);
-				var changed = ImGui.InputFloat($"##speed_l{index}", ref speed);
-				ImGui.SameLine(0, spacing);
-				ImGui.SetNextItemWidth(widthR);
-				changed |= ImGui.SliderFloat($"##speed_r{index}", ref speed, 0.0f, 2.0f, "");
-				if (changed) this.Editor.SetTimelineSpeed((uint)index, speed);
-			}
-			
-			ImGui.Spacing();
-		}
-	}
-	
-	private bool DrawAnimationSelect(GameAnimation anim, bool isFocus) {
-		var height = CalcItemHeight();
-		var space = ImGui.GetStyle().ItemInnerSpacing.X;
-		
-		var cursor = ImGui.GetCursorPosX();
-		
-		var result = ImGui.Button(string.Empty, new Vector2(ImGui.GetContentRegionAvail().X, height));
-		
-		ImGui.SameLine(cursor, height + space);
-		ImGui.Text(anim.Name);
-		
-		ImGui.SameLine(cursor, height + space);
-		ImGui.SetCursorPosY(ImGui.GetCursorPosY() + ImGui.GetTextLineHeight());
-		using (var _ = ImRaii.PushColor(ImGuiCol.Text, ImGui.GetColorU32(ImGuiCol.Text).SetAlpha(0xAF)))
-			ImGui.Text($"{anim.Slot}");
-		
-		ImGui.SameLine(cursor);
-
-		var size = new Vector2(height, height);
-		if (anim.Icon != 0 && this._tex.TryGetFromGameIcon((uint)anim.Icon, out var icon)) {
-			ImGui.Image(icon.GetWrapOrEmpty().Handle, size);
-		} else {
-			ImGui.Dummy(size);
-		}
-		
-		return result;
-	}
-
-	private void OpenAnimationPopup(TimelineSlot? slot = null) {
-		var isFilterSlot = slot != null;
-		this._animFilter.SlotFilterActive = isFilterSlot;
-		if (isFilterSlot) this._animFilter.Slot = slot!.Value;
-		this._openAnimList = true;
-	}
-
-	private static bool AnimSearchPredicate(GameAnimation anim, string query)
-		=> anim.Name.Contains(query, StringComparison.InvariantCultureIgnoreCase);
-
-	private class AnimationFilter : IFilterProvider<GameAnimation> {
-		private enum AnimType {
-			Action,
-			Emote,
-			Expression,
-			RawTimeline
-		}
-
-		private AnimType Type = AnimType.Action;
-
-		public bool SlotFilterActive;
-		public TimelineSlot Slot = TimelineSlot.FullBody;
-		
-		public bool DrawOptions() {
-			var update = false;
-			
-			var values = Enum.GetValues<AnimType>();
-			for (var i = 0; i < values.Length; i++) {
-				if ((i % 3) != 0) ImGui.SameLine();
-
-				var value = values[i];
-				if (ImGui.RadioButton($"{value}", this.Type == value)) {
-					this.Type = value;
-					update = true;
-				}
-			}
-			
-			ImGui.Spacing();
-			return update;
-		}
-		
-		public bool Filter(GameAnimation item) {
-			return (!this.SlotFilterActive || this.Slot == item.Slot) && item switch {
-				ActionAnimation => this.Type == AnimType.Action,
-				EmoteAnimation emote => this.Type == (emote.IsExpression ? AnimType.Expression: AnimType.Emote),
-				TimelineAnimation => this.Type == AnimType.RawTimeline,
-				_ => false
-			};
-		}
-	}
-	
-	// Wrappers
-
-	private void PlayTimeline(uint id) {
-		this.Editor.PlayTimeline(id);
-		if (this.ForceLoop) this.Editor.SetForceTimeline((ushort)id);
-	}
-
-	private void ResetTimeline() {
-		this.Editor.PlayTimeline(3);
-		this.Editor.SetForceTimeline(0);
-	}
+    private enum AnimType
+    {
+      Action,
+      Emote,
+      Expression,
+      RawTimeline,
+    }
+  }
 }

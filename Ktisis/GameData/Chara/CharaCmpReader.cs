@@ -1,106 +1,97 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.GameData.Chara.CharaCmpReader
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using Dalamud.Plugin.Services;
+using Ktisis.Structs.Characters;
 using System;
 using System.IO;
 
-using Dalamud.Plugin.Services;
-
-using Ktisis.Structs.Characters;
-
+#nullable enable
 namespace Ktisis.GameData.Chara;
 
-public class CharaCmpReader(BinaryReader br) {
-	private const string HumanCmpPath = "chara/xls/charamake/human.cmp";
+public class CharaCmpReader(BinaryReader br)
+{
+  private const string HumanCmpPath = "chara/xls/charamake/human.cmp";
+  private const int BlockLength = 256 /*0x0100*/;
+  private const int DataLength = 192 /*0xC0*/;
+  private const int AlphaLength = 128 /*0x80*/;
+  private const int CommonBlockCount = 5;
+  private const int CommonBlockSize = 10;
+  private const int TribeBlockSkipCount = 3;
+  private const int TribeBlockCount = 2;
+  private const int GenderBlockSize = 5120;
+  private const int TribeBlockSize = 10240;
+  private const int CommonSeekTo = 5120;
+  private const int TribesSeekTo = 13312;
+  private const uint ExtendedDataLength = 208 /*0xD0*/;
 
-	public static CharaCmpReader Open(IDataManager data) {
-		var file = data.GetFile(HumanCmpPath);
-		if (file == null)
-			throw new Exception("Failed to open human.cmp");
-		var stream = new MemoryStream(file.Data);
-		var reader = new BinaryReader(stream);
-		return new CharaCmpReader(reader);
-	}
-	
-	// Features with alpha toggles use the full block size, everything else uses 192.
-	private const int BlockLength = 256;
-	private const int DataLength = 192;
-	// Since we don't care about the transparent values, only read the ones with full alpha.
-	private const int AlphaLength = 128;
-	
-	// 5 blocks each for colorsets and UI values.
-	private const int CommonBlockCount = 5;
-	private const int CommonBlockSize = CommonBlockCount * 2;
-	
-	// 3 blocks for colorsets followed by 2 blocks for UI values.
-	private const int TribeBlockSkipCount = 3;
-	private const int TribeBlockCount = 2;
-	
-	// Repeated twice for masc and femme models.
-	private const int GenderBlockSize = sizeof(uint) * BlockLength * (TribeBlockSkipCount + TribeBlockCount);
-	private const int TribeBlockSize = GenderBlockSize * 2;
-	
-	// Skips to values intended for display in UI.
-	private const int CommonSeekTo = sizeof(uint) * BlockLength * CommonBlockCount;
-	private const int TribesSeekTo = sizeof(uint) * BlockLength * (CommonBlockSize + TribeBlockSkipCount);
+  public static CharaCmpReader Open(IDataManager data)
+  {
+    return new CharaCmpReader(new BinaryReader((Stream) new MemoryStream((data.GetFile("chara/xls/charamake/human.cmp") ?? throw new Exception("Failed to open human.cmp")).Data)));
+  }
 
-	// Special customize colors added for Dawntrail NPCs.
-	// Extended hair colors not applicable to hrothgar.
-	private const uint ExtendedDataLength = 208;
-	
-	// Read common data
-	
-	public CommonColors ReadCommon() {
-		this.SeekTo(CommonSeekTo);
+  public CommonColors ReadCommon()
+  {
+    this.SeekTo(5120U);
+    uint[] numArray1 = this.ReadArray(192U /*0xC0*/);
+    this.SeekNextBlock();
+    uint[] numArray2 = this.ReadArray(208U /*0xD0*/);
+    this.SeekNextBlock();
+    uint[] numArray3 = this.ReadArray(128U /*0x80*/);
+    this.SeekNextBlock();
+    uint[] numArray4 = this.ReadArray(208U /*0xD0*/);
+    this.SeekNextBlock();
+    uint[] numArray5 = this.ReadArray(128U /*0x80*/);
+    this.SeekNextBlock();
+    return new CommonColors()
+    {
+      EyeColors = numArray1,
+      HighlightColors = numArray2,
+      LipColors = numArray3,
+      FaceFeatureColors = numArray4,
+      FacepaintColors = numArray5
+    };
+  }
 
-		var eyeColors = this.ReadArray(DataLength);
-		this.SeekNextBlock();
-		var highlightColors = this.ReadArray(ExtendedDataLength);
-		this.SeekNextBlock();
-		var lipColors = this.ReadArray(AlphaLength);
-		this.SeekNextBlock();
-		var raceFeatColors = this.ReadArray(ExtendedDataLength);
-		this.SeekNextBlock();
-		var facePaintColors = this.ReadArray(AlphaLength);
-		this.SeekNextBlock();
+  public TribeColors ReadTribeData(Tribe tribe, Gender gender)
+  {
+    this.SeekTo((uint) (13312 + 10240 * (int) (tribe - (byte) 1) + 5120 * (int) gender));
+    uint[] numArray1 = this.ReadArray(192U /*0xC0*/);
+    this.SeekNextBlock();
+    bool flag;
+    switch (tribe)
+    {
+      case Tribe.Helion:
+      case Tribe.Lost:
+        flag = true;
+        break;
+      default:
+        flag = false;
+        break;
+    }
+    uint[] numArray2 = this.ReadArray(!flag ? 208U /*0xD0*/ : 192U /*0xC0*/);
+    return new TribeColors()
+    {
+      SkinColors = numArray1,
+      HairColors = numArray2
+    };
+  }
 
-		return new CommonColors {
-			EyeColors = eyeColors,
-			HighlightColors = highlightColors,
-			LipColors = lipColors,
-			FaceFeatureColors = raceFeatColors,
-			FacepaintColors = facePaintColors
-		};
-	}
-	
-	// Read tribe data
+  private void SeekTo(uint offset) => br.BaseStream.Seek((long) offset, (SeekOrigin) 0);
 
-	public TribeColors ReadTribeData(Tribe tribe, Gender gender) {
-		this.SeekTo(TribesSeekTo + TribeBlockSize * (uint)(tribe - 1) + GenderBlockSize * (uint)gender);
+  private uint[] ReadArray(uint length)
+  {
+    uint[] numArray = new uint[(int) length];
+    for (int index = 0; (long) index < (long) length; ++index)
+      numArray[index] = br.ReadUInt32();
+    return numArray;
+  }
 
-		var skinColors = this.ReadArray(DataLength);
-		this.SeekNextBlock();
-
-		var isHairExtended = tribe is not (Tribe.Lost or Tribe.Helion);
-		var hairColors = this.ReadArray(isHairExtended ? ExtendedDataLength : DataLength);
-
-		return new TribeColors {
-			SkinColors = skinColors,
-			HairColors = hairColors
-		};
-	}
-	
-	// Read utilities
-	
-	private void SeekTo(uint offset) => br.BaseStream.Seek(offset, SeekOrigin.Begin);
-
-	private uint[] ReadArray(uint length) {
-		var result = new uint[length];
-		for (var i = 0; i < length; i++)
-			result[i] = br.ReadUInt32();
-		return result;
-	}
-
-	private void SeekNextBlock() {
-		const uint blockSize = BlockLength * sizeof(uint);
-		var cursor = br.BaseStream.Position % blockSize;
-		br.BaseStream.Seek(blockSize - cursor, SeekOrigin.Current);
-	}
+  private void SeekNextBlock()
+  {
+    br.BaseStream.Seek(1024L /*0x0400*/ - br.BaseStream.Position % 1024L /*0x0400*/, (SeekOrigin) 1);
+  }
 }

@@ -1,56 +1,64 @@
-using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Overlay.GizmoManager
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Bindings.ImGui;
-
+using Dalamud.Plugin;
 using Ktisis.Data.Config;
+using System;
+using System.IO;
 
+#nullable enable
 namespace Ktisis.Interface.Overlay;
 
-public class GizmoManager {
-	private readonly Configuration _cfg;
+public class GizmoManager
+{
+  private readonly IDalamudPluginInterface _dpi;
+  private readonly Configuration _cfg;
+  private const string ImGuiVersion = "1.88";
+  private bool IsInit;
 
-	public GizmoManager(
-		Configuration cfg
-	) {
-		this._cfg = cfg;
-	}
-	
-	// Initialization
-	
-	private const string ImGuiVersion = "1.88";
+  public GizmoManager(IDalamudPluginInterface dpi, Configuration cfg)
+  {
+    this._dpi = dpi;
+    this._cfg = cfg;
+  }
 
-	private bool IsInit;
+  public unsafe void Initialize()
+  {
+    if (this.IsInit)
+      return;
+    bool flag = false;
+    try
+    {
+      string version = Dalamud.Bindings.ImGui.ImGui.GetVersion();
+      if (version != "1.88")
+        throw new Exception($"ImGui version mismatch! Expected {"1.88"}, got {version ?? "NULL"} instead.");
+      // ISSUE: cast to a function pointer type
+      __FnPtr<void* (UIntPtr, void*)> zero1 = (__FnPtr<void* (UIntPtr, void*)>) IntPtr.Zero;
+      // ISSUE: cast to a function pointer type
+      __FnPtr<void (void*, void*)> zero2 = (__FnPtr<void (void*, void*)>) IntPtr.Zero;
+      void* allocUD = (void*) null;
+      Dalamud.Bindings.ImGui.ImGui.GetAllocatorFunctions(&zero1, &zero2, &allocUD);
+      ImGuiContextPtr currentContext = Dalamud.Bindings.ImGui.ImGui.GetCurrentContext();
+      Ktisis.ImGuizmo.Gizmo.Load(((FileSystemInfo) this._dpi.AssemblyLocation.Directory).FullName);
+      Ktisis.ImGuizmo.Gizmo.Initialize((IntPtr) currentContext.Handle, (IntPtr) zero1, (IntPtr) zero2, (IntPtr) allocUD);
+      flag = true;
+    }
+    catch (Exception ex)
+    {
+      Ktisis.Ktisis.Log.Error($"Failed to initialize gizmo:\n{ex}", Array.Empty<object>());
+    }
+    Ktisis.Ktisis.Log.Verbose($"Completed gizmo init (success: {flag})", Array.Empty<object>());
+    this.IsInit = flag;
+  }
 
-	public unsafe void Initialize() {
-		if (this.IsInit) return;
-		
-		var success = false;
-
-		try {
-			var imVer = ImGui.GetVersion();
-			if (imVer != ImGuiVersion)
-				throw new Exception($"ImGui version mismatch! Expected {ImGuiVersion}, got {imVer ?? "NULL"} instead.");
-			
-			var alloc = (delegate*<nuint, void*, void*>)null;
-			var free = (delegate*<void*, void*, void>)null;
-			var userData = (void*)null;
-			ImGui.GetAllocatorFunctions(&alloc, &free, &userData);
-			
-			var imCtx = ImGui.GetCurrentContext();
-			ImGuizmo.Gizmo.Initialize((nint)imCtx.Handle, (nint)alloc, (nint)free, (nint)userData);
-
-			success = true;
-		} catch (Exception err) {
-			Ktisis.Log.Error($"Failed to initialize gizmo:\n{err}");
-		}
-
-		Ktisis.Log.Verbose($"Completed gizmo init (success: {success})");
-		this.IsInit = success;
-	}
-
-	public Gizmo Create(GizmoId id) {
-		if (!this.IsInit)
-			throw new Exception("Can't create gizmo as ImGuizmo is not initialized.");
-		return new Gizmo(this._cfg.Gizmo, id);
-	}
+  public Gizmo Create(GizmoId id)
+  {
+    if (!this.IsInit)
+      throw new Exception("Can't create gizmo as ImGuizmo is not initialized.");
+    return new Gizmo(this._cfg.Gizmo, id);
+  }
 }

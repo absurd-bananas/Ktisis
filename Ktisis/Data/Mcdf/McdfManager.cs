@@ -1,186 +1,143 @@
-﻿using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Data.Mcdf.McdfManager
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+using Dalamud.Game.ClientState.Objects.Types;
+using Dalamud.Plugin.Services;
+using Dalamud.Utility;
+using Ktisis.Common.Extensions;
+using Ktisis.Core.Attributes;
+using Ktisis.Interop.Ipc;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Plugin.Services;
-using Dalamud.Utility;
-
-using Ktisis.Common.Extensions;
-
-using Ktisis.Core.Attributes;
-using Ktisis.Interop.Ipc;
-using Ktisis.Services.Game;
-
+#nullable enable
 namespace Ktisis.Data.Mcdf;
 
 [Singleton]
-public sealed class McdfManager : IDisposable {
-	private readonly GPoseService _gpose;
-	private readonly IFramework _framework;
-	private readonly IpcManager _ipc;
-	private HashSet<IGameObject> actors;
-	
+public sealed class McdfManager : IDisposable
+{
+  private readonly IFramework _framework;
+  private readonly IpcManager _ipc;
 
-	public McdfManager(
-		GPoseService gpose,
-		IFramework framework,
-		IpcManager ipc
-	) {
-		this._gpose = gpose;
-		this._gpose.StateChanged += this.OnGPoseEvent;
-		this._gpose.Subscribe();
+  public McdfManager(IFramework framework, IpcManager ipc)
+  {
+    this._framework = framework;
+    this._ipc = ipc;
+  }
 
-		this._framework = framework;
-		this._ipc = ipc;
+  public void LoadAndApplyTo(string path, IGameObject actor)
+  {
+    this.LoadAndApplyToAsync(path, actor).ContinueWith((Action<Task>) (task =>
+    {
+      if (task.Exception == null)
+        return;
+      Ktisis.Ktisis.Log.Error($"Failed to load MCDF:\n{((Exception) task.Exception).InnerException}", Array.Empty<object>());
+    }), (TaskContinuationOptions) 327680 /*0x050000*/);
+  }
 
-		this.actors = new HashSet<IGameObject>();
-	}
+  private async Task LoadAndApplyToAsync(string path, IGameObject actor)
+  {
+    McdfData data;
+    Dictionary<string, string> extracted;
+    using (McdfReader reader = McdfReader.FromPath(path))
+    {
+      string tempPath = McdfManager.GetTempPath(true);
+      Ktisis.Ktisis.Log.Debug("Reading and extracting MCDF file", Array.Empty<object>());
+      data = reader.GetData();
+      extracted = reader.Extract(tempPath);
+      Dictionary<string, string> dictionary = Enumerable.ToDictionary<string, string>((IEnumerable<KeyValuePair<string, string>>) extracted);
+      foreach ((string, string) valueTuple in data.FileSwaps.SelectMany<McdfData.FileSwap, string, (string, string)>((Func<McdfData.FileSwap, IEnumerable<string>>) (x => (IEnumerable<string>) x.GamePaths), (Func<McdfData.FileSwap, string, (string, string)>) ((k, p) => (p, k.FileSwapPath))))
+        dictionary[valueTuple.Item1] = valueTuple.Item2;
+      Ktisis.Ktisis.Log.Debug("Applying MCDF data", Array.Empty<object>());
+      Guid? collectionId = this.ApplyPenumbraMods(actor, data, dictionary);
+      this.ApplyGlamourerData(actor, data);
+      await this.RedrawAndWait(actor);
+      if (collectionId.HasValue)
+        this._ipc.GetPenumbraIpc().DeleteTemporaryCollection(collectionId.Value);
+      this.ApplyCustomizeData(actor, data);
+      Ktisis.Ktisis.Log.Debug("Cleaning up extracted files", Array.Empty<object>());
+      foreach (string str in extracted.Values)
+        File.Delete(str);
+    }
+    data = (McdfData) null;
+    extracted = (Dictionary<string, string>) null;
+  }
 
-	private void OnGPoseEvent(object sender, bool active) {
-		if (!active) this.RevertAll();
-	}
-	
-	// MCDF loading
+  private void ApplyCustomizeData(IGameObject actor, McdfData data)
+  {
+    if (!this._ipc.IsCustomizeActive)
+      return;
+    CustomizeIpcProvider customizeIpc = this._ipc.GetCustomizeIpc();
+    string customizePlusData = data.CustomizePlusData;
+    string str = !StringExtensions.IsNullOrEmpty(customizePlusData) ? Encoding.UTF8.GetString(Convert.FromBase64String(customizePlusData)) : "{}";
+    Ktisis.Ktisis.Log.Info(str, Array.Empty<object>());
+    int objectIndex = (int) actor.ObjectIndex;
+    string profileJson = str;
+    customizeIpc.SetTemporaryProfile((ushort) objectIndex, profileJson);
+  }
 
-	public void LoadAndApplyTo(string path, IGameObject actor) {
-		_ = this.LoadAndApplyToAsync(path, actor).ContinueWith(task => {
-			if (task.Exception != null)
-				Ktisis.Log.Error($"Failed to load MCDF:\n{task.Exception.InnerException}");
-		}, TaskContinuationOptions.OnlyOnFaulted);
-	}
+  private void ApplyGlamourerData(IGameObject actor, McdfData data)
+  {
+    if (!this._ipc.IsGlamourerActive)
+      return;
+    this._ipc.GetGlamourerIpc().ApplyState(data.GlamourerData, (int) actor.ObjectIndex);
+  }
 
-	private async Task LoadAndApplyToAsync(string path, IGameObject actor) {
-		using var reader = McdfReader.FromPath(path);
-		
-		var temp = GetTempPath(create: true);
-		
-		Ktisis.Log.Debug("Reading and extracting MCDF file");
-		var data = reader.GetData();
-		var extracted = reader.Extract(temp);
+  private Guid? ApplyPenumbraMods(
+    IGameObject actor,
+    McdfData data,
+    Dictionary<string, string> files)
+  {
+    if (!this._ipc.IsPenumbraActive)
+      return new Guid?();
+    PenumbraIpcProvider penumbraIpc = this._ipc.GetPenumbraIpc();
+    Guid temporaryCollection = penumbraIpc.CreateTemporaryCollection($"KtisisMCDF_{actor.ObjectIndex}");
+    penumbraIpc.AssignTemporaryCollection(temporaryCollection, (int) actor.ObjectIndex);
+    Guid id = Guid.NewGuid();
+    penumbraIpc.AssignTemporaryMods(id, temporaryCollection, files);
+    penumbraIpc.AssignManipulationData(id, temporaryCollection, data.ManipulationData);
+    return new Guid?(temporaryCollection);
+  }
 
-		var files = extracted.ToDictionary();
-		foreach (var entry in data.FileSwaps.SelectMany(x => x.GamePaths, (k, p) => (GamePath: p, FilePath: k.FileSwapPath)))
-			files[entry.GamePath] = entry.FilePath;
-		
-		Ktisis.Log.Debug("Applying MCDF data");
-		// add actor to applied list - if already there, revert them before applying mcdf
-		if (!this.actors.Add(actor)) {
-			Ktisis.Log.Debug($"Actor {actor.ObjectIndex} was applied this session, reverting and redrawing...");
-			this.Revert(actor);
-			await this.RedrawAndWait(actor);
-		}
+  private async Task RedrawAndWait(IGameObject actor)
+  {
+    actor.Redraw();
+    DateTime start = DateTime.Now;
+    do
+    {
+      if (!await this._framework.RunOnFrameworkThread<bool>(new Func<bool>(((GameObjectEx) actor).IsDrawing)))
+        await Task.Delay(100);
+      else
+        goto label_2;
+    }
+    while (actor.IsValid() && (DateTime.Now - start).TotalMilliseconds < 20000.0);
+    goto label_5;
+label_2:
+    return;
+label_5:
+    Ktisis.Ktisis.Log.Warning($"Timed out waiting for '{actor.Name}' to redraw!", Array.Empty<object>());
+  }
 
-		var collectionId = this.ApplyPenumbraMods(actor, data, files);
-		this.ApplyGlamourerData(actor, data);
-		await this.RedrawAndWait(actor);
-		if (collectionId != null) {
-			var ipc = this._ipc.GetPenumbraIpc();
-			ipc.DeleteTemporaryCollection(collectionId.Value);
-		}
-		this.ApplyCustomizeData(actor, data);
-		
-		Ktisis.Log.Debug("Cleaning up extracted files");
-		foreach (var file in extracted.Values)
-			File.Delete(file);
-	}
+  private static string GetTempPath(bool create)
+  {
+    string tempPath = Path.Join(Path.GetTempPath(), "Ktisis");
+    if (create && !Directory.Exists(tempPath))
+      Directory.CreateDirectory(tempPath);
+    return tempPath;
+  }
 
-	private void ApplyCustomizeData(IGameObject actor, McdfData data) {
-		if (!this._ipc.IsCustomizeActive) return;
-		
-		var ipc = this._ipc.GetCustomizeIpc();
-		var rawData = data.CustomizePlusData;
-		var jsonData = !rawData.IsNullOrEmpty()
-			? Encoding.UTF8.GetString(Convert.FromBase64String(rawData))
-			: "{}";
-		Ktisis.Log.Info(jsonData);
-		ipc.SetTemporaryProfile(actor.ObjectIndex, jsonData);
-	}
-
-	private void ApplyGlamourerData(IGameObject actor, McdfData data) {
-		if (!this._ipc.IsGlamourerActive) return;
-		
-		var ipc = this._ipc.GetGlamourerIpc();
-		ipc.ApplyState(data.GlamourerData, actor.ObjectIndex);
-	}
-
-	private void RevertGlamourerData(string playerName) {
-		if (!this._ipc.IsGlamourerActive) return;
-
-		var ipc = this._ipc.GetGlamourerIpc();
-		ipc.RevertStateName(playerName);
-	}
-
-	private void RevertCustomizeData(ushort index) {
-		if (!this._ipc.IsCustomizeActive) return;
-
-		var ipc = this._ipc.GetCustomizeIpc();
-		ipc.DeleteTemporaryProfile(index);
-	}
-
-	private Guid? ApplyPenumbraMods(IGameObject actor, McdfData data, Dictionary<string, string> files) {
-		if (!this._ipc.IsPenumbraActive) return null;
-		
-		var ipc = this._ipc.GetPenumbraIpc();
-		var collectionId = ipc.CreateTemporaryCollection($"KtisisMCDF_{actor.ObjectIndex}");
-		ipc.AssignTemporaryCollection(collectionId, actor.ObjectIndex);
-		var id = Guid.NewGuid();
-		ipc.AssignTemporaryMods(id, collectionId, files);
-		ipc.AssignManipulationData(id, collectionId, data.ManipulationData);
-		return collectionId;
-	}
-
-	private async Task RedrawAndWait(IGameObject actor) {
-		actor.Redraw();
-		
-		var start = DateTime.Now;
-		do {
-			var isDrawing = await this._framework.RunOnFrameworkThread(actor.IsDrawing);
-			if (isDrawing) return;
-
-			await Task.Delay(100);
-		} while (actor.IsValid() && (DateTime.Now - start).TotalMilliseconds < 20000);
-		
-		Ktisis.Log.Warning($"Timed out waiting for '{actor.Name}' to redraw!");
-	}
-	
-	// Temp path
-
-	private static string GetTempPath(bool create) {
-		var path = Path.Join(Path.GetTempPath(), "Ktisis");
-		if (create && !Directory.Exists(path)) Directory.CreateDirectory(path);
-		return path;
-	}
-
-	public void Revert(IGameObject actor) {
-		Ktisis.Log.Info($"IPC - reverting Actor '{actor.ObjectIndex}' ...");
-		this.RevertGlamourerData(actor.Name.TextValue);
-		this.RevertCustomizeData(actor.ObjectIndex);
-	}
-
-	private void RevertAll() {
-		// cleanup all touched actors
-		foreach (var actor in this.actors) {
-			this.Revert(actor);
-		}
-
-		// empty actor list for next session
-		this.actors.Clear();
-		this.actors.TrimExcess();
-	}
-
-	// IDisposable
-
-	public void Dispose() {
-		Ktisis.Log.Info("Disposing MCDF manager.");
-
-		var temp = GetTempPath(create: false);
-		if (Directory.Exists(temp))
-			Directory.Delete(temp, true);
-
-		this._gpose.StateChanged -= this.OnGPoseEvent;
-	}
+  public void Dispose()
+  {
+    string tempPath = McdfManager.GetTempPath(false);
+    if (!Directory.Exists(tempPath))
+      return;
+    Directory.Delete(tempPath, true);
+  }
 }

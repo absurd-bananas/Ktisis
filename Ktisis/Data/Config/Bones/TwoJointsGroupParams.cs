@@ -1,19 +1,20 @@
-﻿using System.Collections.Generic;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Data.Config.Bones.TwoJointsGroupParams
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+using System.Collections.Generic;
+
+#nullable enable
 namespace Ktisis.Data.Config.Bones;
 
-public enum TwoJointsType {
-	None = 0,
-	Arm = 1,
-	Leg = 2
-}
-
-public class TwoJointsGroupParams {
-	public TwoJointsType Type = TwoJointsType.None;
-	
-	public List<string> FirstBone = [];
-	public List<string> FirstTwist = [];
-	public List<string> SecondBone = [];
-	public List<string> SecondTwist = [];
-	public List<string> EndBone = [];
+public class TwoJointsGroupParams
+{
+  public TwoJointsType Type;
+  public List<string> FirstBone = new List<string>();
+  public List<string> FirstTwist = new List<string>();
+  public List<string> SecondBone = new List<string>();
+  public List<string> SecondTwist = new List<string>();
+  public List<string> EndBone = new List<string>();
 }

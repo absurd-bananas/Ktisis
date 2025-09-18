@@ -1,116 +1,137 @@
-﻿using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Animation.AnimationModule
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Hooking;
 using Dalamud.Utility.Signatures;
-
 using Ktisis.Interop.Hooking;
 using Ktisis.Scene.Entities.Game;
 using Ktisis.Structs.Actors;
+using System;
+using System.Numerics;
 
+#nullable enable
 namespace Ktisis.Editor.Animation;
 
-public class AnimationModule : HookModule {
-	public AnimationModule(
-		IHookMediator hook
-	) : base(hook) { }
-	
-	public bool SpeedControlEnabled { get; set; }
-	public bool PositionLockEnabled { get; set; }
-	
-	// Speed control
+public class AnimationModule(IHookMediator hook) : HookModule(hook)
+{
+  [Signature("83 FA 0E 73 22", DetourName = "SetTimelineSpeedDetour")]
+  private Hook<AnimationModule.SetTimelineSpeedDelegate>? SetTimelineSpeedHook;
+  [Signature("E8 ?? ?? ?? ?? 84 DB 74 3A", DetourName = "UpdatePosDetour")]
+  private Hook<AnimationModule.UpdatePosDelegate> UpdatePosHook;
+  [Signature("E8 ?? ?? ?? ?? 88 45 68")]
+  public AnimationModule.PlayEmoteDelegate PlayEmote;
+  [Signature("E8 ?? ?? ?? ?? F6 46 10 01")]
+  private AnimationModule.SetEmoteModeDelegate SetEmoteMode;
+  [Signature("E8 ?? ?? ?? ?? 0F BE 53 20")]
+  private AnimationModule.EmoteControllerUpdateDrawOffsetDelegate EmoteControllerUpdateDrawOffset;
+  [Signature("E8 ?? ?? ?? ?? 80 7B 17 01")]
+  private AnimationModule.CancelTimelineDelegate CancelTimeline;
+  [Signature("E8 ?? ?? ?? ?? 4C 8B BC 24 ?? ?? ?? ?? 4C 8D 9C 24 ?? ?? ?? ?? 49 8B 5B 40")]
+  public AnimationModule.SetTimelineIdDelegate SetTimelineId;
 
-	public unsafe void SetTimelineSpeed(AnimationTimeline* timeline, uint slot, float speed)
-		=> this.SetTimelineSpeedHook?.Original(timeline, slot, speed);
+  public bool SpeedControlEnabled { get; set; }
 
-	[Signature("83 FA 0E 73 22", DetourName = nameof(SetTimelineSpeedDetour))]
-	private Hook<SetTimelineSpeedDelegate>? SetTimelineSpeedHook = null;
-	private unsafe delegate void SetTimelineSpeedDelegate(AnimationTimeline* timeline, uint slot, float speed);
+  public bool PositionLockEnabled { get; set; }
 
-	private unsafe void SetTimelineSpeedDetour(AnimationTimeline* timeline, uint slot, float speed) {
-		const int offset = CharacterEx.AnimationOffset + AnimationContainer.TimelineOffset;
+  public unsafe void SetTimelineSpeed(AnimationTimeline* timeline, uint slot, float speed)
+  {
+    Hook<AnimationModule.SetTimelineSpeedDelegate> timelineSpeedHook = this.SetTimelineSpeedHook;
+    if (timelineSpeedHook == null)
+      return;
+    timelineSpeedHook.Original(timeline, slot, speed);
+  }
 
-		if (this.SpeedControlEnabled) {
-			var chara = (CharacterEx*)((nint)timeline - offset);
-			if (chara->IsGPose) return;
-		}
+  private unsafe void SetTimelineSpeedDetour(AnimationTimeline* timeline, uint slot, float speed)
+  {
+    if (this.SpeedControlEnabled && ((CharacterEx*) ((IntPtr) timeline - new IntPtr(2608)))->IsGPose)
+      return;
+    this.SetTimelineSpeedHook.Original(timeline, slot, speed);
+  }
 
-		this.SetTimelineSpeedHook!.Original(timeline, slot, speed);
-	}
-	
-	// Position lock
-	
-	[Signature("E8 ?? ?? ?? ?? 84 DB 74 3A", DetourName = nameof(UpdatePosDetour))]
-	private Hook<UpdatePosDelegate> UpdatePosHook = null!;
-	private unsafe delegate void UpdatePosDelegate(CharacterEx* chara);
+  private unsafe void UpdatePosDetour(CharacterEx* chara)
+  {
+    if (this.PositionLockEnabled && chara->IsGPose)
+      return;
+    this.UpdatePosHook.Original(chara);
+  }
 
-	private unsafe void UpdatePosDetour(CharacterEx* chara) {
-		if (this.PositionLockEnabled && chara->IsGPose)
-			return;
-		
-		this.UpdatePosHook.Original(chara);
-	}
-	
-	// Poses
+  public unsafe void SetPose(ActorEntity actor, PoseModeEnum poseMode, byte pose)
+  {
+    EmoteModeEnum emoteModeEnum;
+    switch (poseMode)
+    {
+      case PoseModeEnum.Battle:
+        emoteModeEnum = EmoteModeEnum.Normal;
+        break;
+      case PoseModeEnum.SitChair:
+        emoteModeEnum = EmoteModeEnum.SitChair;
+        break;
+      case PoseModeEnum.SitGround:
+        emoteModeEnum = EmoteModeEnum.SitGround;
+        break;
+      case PoseModeEnum.Sleeping:
+        emoteModeEnum = EmoteModeEnum.Sleeping;
+        break;
+      default:
+        emoteModeEnum = EmoteModeEnum.Normal;
+        break;
+    }
+    EmoteModeEnum mode = emoteModeEnum;
+    CharacterEx* character = actor.IsValid ? (CharacterEx*) actor.Character : (CharacterEx*) null;
+    if ((IntPtr) character == IntPtr.Zero)
+      return;
+    int num1 = mode == EmoteModeEnum.SitChair ? 1 : 0;
+    Vector3 vector3_1;
+    Vector3 vector3_2;
+    if (num1 != 0)
+    {
+      vector3_1 = character->DrawObjectOffset;
+      vector3_2 = character->CameraOffsetSmooth;
+    }
+    else
+    {
+      vector3_1 = Vector3.Zero;
+      vector3_2 = Vector3.Zero;
+    }
+    byte pose1 = character->EmoteController.Pose;
+    if (pose == byte.MaxValue)
+      pose = pose1 != byte.MaxValue ? pose1 : (byte) 0;
+    IntPtr num2 = this.CancelTimeline(&character->Animation, IntPtr.Zero, IntPtr.Zero);
+    int num3 = this.SetEmoteMode(&character->EmoteController, mode) ? 1 : 0;
+    character->EmoteController.Mode = poseMode;
+    character->EmoteController.Pose = pose;
+    if (num1 == 0)
+      return;
+    character->EmoteController.IsDrawObjectOffset = false;
+    IntPtr num4 = this.EmoteControllerUpdateDrawOffset(&character->EmoteController);
+    character->DrawObjectOffset = vector3_1;
+    character->CameraOffsetSmooth = vector3_2;
+  }
 
-	public unsafe void SetPose(ActorEntity actor, PoseModeEnum poseMode, byte pose) {
-		var emoteMode = poseMode switch {
-			PoseModeEnum.Battle => EmoteModeEnum.Normal,
-			PoseModeEnum.SitGround => EmoteModeEnum.SitGround,
-			PoseModeEnum.SitChair => EmoteModeEnum.SitChair,
-			PoseModeEnum.Sleeping => EmoteModeEnum.Sleeping,
-			_ => EmoteModeEnum.Normal
-		};
-		
-		var chara = actor.IsValid ? (CharacterEx*)actor.Character : null;
-		if (chara == null) return;
-		
-		var isOffset = emoteMode == EmoteModeEnum.SitChair;
-		
-		Vector3 offset;
-		Vector3 offsetCam;
-		if (isOffset) {
-			offset = chara->DrawObjectOffset;
-			offsetCam = chara->CameraOffsetSmooth;
-		} else {
-			offset = Vector3.Zero;
-			offsetCam = Vector3.Zero;
-		}
-		
-		var prev = chara->EmoteController.Pose;
-		if (pose == 0xFF) pose = prev != 0xFF ? prev : byte.MinValue;
+  private unsafe delegate void SetTimelineSpeedDelegate(
+    AnimationTimeline* timeline,
+    uint slot,
+    float speed);
 
-		this.CancelTimeline(&chara->Animation, 0, 0);
-		this.SetEmoteMode(&chara->EmoteController, emoteMode);
-		chara->EmoteController.Mode = poseMode;
-		chara->EmoteController.Pose = pose;
-			
-		if (isOffset) {
-			chara->EmoteController.IsDrawObjectOffset = false;
-			this.EmoteControllerUpdateDrawOffset(&chara->EmoteController);
-			chara->DrawObjectOffset = offset;
-			chara->CameraOffsetSmooth = offsetCam;
-		}
-	}
-	
-	// Timelines
+  private unsafe delegate void UpdatePosDelegate(CharacterEx* chara);
 
-	[Signature("E8 ?? ?? ?? ?? 88 45 68")]
-	public PlayEmoteDelegate PlayEmote = null!;
-	public unsafe delegate bool PlayEmoteDelegate(EmoteController* controller, nint id, nint option, nint chair);
+  public unsafe delegate bool PlayEmoteDelegate(
+    EmoteController* controller,
+    IntPtr id,
+    IntPtr option,
+    IntPtr chair);
 
-	[Signature("E8 ?? ?? ?? ?? F6 46 10 01")]
-	private SetEmoteModeDelegate SetEmoteMode = null!;
-	private unsafe delegate bool SetEmoteModeDelegate(EmoteController* a1, EmoteModeEnum mode);
+  private unsafe delegate bool SetEmoteModeDelegate(EmoteController* a1, EmoteModeEnum mode);
 
-	[Signature("E8 ?? ?? ?? ?? 0F BE 53 20")]
-	private EmoteControllerUpdateDrawOffsetDelegate EmoteControllerUpdateDrawOffset = null!;
-	private unsafe delegate nint EmoteControllerUpdateDrawOffsetDelegate(EmoteController* a1);
+  private unsafe delegate IntPtr EmoteControllerUpdateDrawOffsetDelegate(EmoteController* a1);
 
-	[Signature("E8 ?? ?? ?? ?? 80 7B 17 01")]
-	private CancelTimelineDelegate CancelTimeline = null!;
-	private unsafe delegate nint CancelTimelineDelegate(AnimationContainer* a1, nint a2, nint a3);
-	
-	[Signature("E8 ?? ?? ?? ?? 4C 8B BC 24 ?? ?? ?? ?? 4C 8D 9C 24 ?? ?? ?? ?? 49 8B 5B 40")]
-	public SetTimelineIdDelegate SetTimelineId = null!;
-	public unsafe delegate bool SetTimelineIdDelegate(AnimationTimeline* a1, ushort a2, nint a3);
+  private unsafe delegate IntPtr CancelTimelineDelegate(
+    AnimationContainer* a1,
+    IntPtr a2,
+    IntPtr a3);
+
+  public unsafe delegate bool SetTimelineIdDelegate(AnimationTimeline* a1, ushort a2, IntPtr a3);
 }

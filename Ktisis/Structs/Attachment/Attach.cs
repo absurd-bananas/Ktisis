@@ -1,33 +1,55 @@
-using System.Runtime.InteropServices;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Structs.Attachment.Attach
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
+using System;
+using System.Runtime.InteropServices;
 
+#nullable disable
 namespace Ktisis.Structs.Attachment;
 
-public enum AttachType : uint {
-	None = 0,
-	Unk1 = 1,
-	Unk2 = 2,
-	ElementId = 3,
-	BoneIndex = 4
-}
-
 [StructLayout(LayoutKind.Explicit)]
-public struct Attach {
-	[FieldOffset(0x50)] public AttachType Type; // 1-5
-	[FieldOffset(0x54)] public uint Capacity;
-	[FieldOffset(0x58)] public unsafe Skeleton* Child;
-	[FieldOffset(0x60)] public unsafe void* Parent;
-	[FieldOffset(0x68)] public uint Count;
-	[FieldOffset(0x70)] public unsafe AttachParam* Param;
+public struct Attach
+{
+  [FieldOffset(80 /*0x50*/)]
+  public AttachType Type;
+  [FieldOffset(84)]
+  public uint Capacity;
+  [FieldOffset(88)]
+  public unsafe Skeleton* Child;
+  [FieldOffset(96 /*0x60*/)]
+  public unsafe void* Parent;
+  [FieldOffset(104)]
+  public uint Count;
+  [FieldOffset(112 /*0x70*/)]
+  public unsafe AttachParam* Param;
 
-	public bool IsActive() => this.IsValid() && this.Type != AttachType.None && this.Count > 0;
-	public unsafe bool IsValid() => this.Param != null && this.Child != null && this.Parent != null;
+  public bool IsActive() => this.IsValid() && this.Type != AttachType.None && this.Count > 0U;
 
-	public unsafe Skeleton* GetParentSkeleton() => this.Type switch {
-		AttachType.ElementId => ((CharacterBase*)this.Parent)->Skeleton,
-		AttachType.BoneIndex => (Skeleton*)this.Parent,
-		_ => null // todo
-	};
+  public unsafe bool IsValid()
+  {
+    return (IntPtr) this.Param != IntPtr.Zero && (IntPtr) this.Child != IntPtr.Zero && (IntPtr) this.Parent != IntPtr.Zero;
+  }
+
+  public unsafe Skeleton* GetParentSkeleton()
+  {
+    Skeleton* parentSkeleton;
+    switch (this.Type)
+    {
+      case AttachType.ElementId:
+        parentSkeleton = ((CharacterBase*) this.Parent)->Skeleton;
+        break;
+      case AttachType.BoneIndex:
+        parentSkeleton = (Skeleton*) this.Parent;
+        break;
+      default:
+        parentSkeleton = (Skeleton*) null;
+        break;
+    }
+    return parentSkeleton;
+  }
 }

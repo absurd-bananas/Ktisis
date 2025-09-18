@@ -1,45 +1,25 @@
-﻿using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interop.Ipc.GlamourerIpcProvider
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
 using Dalamud.Plugin;
 
-using Glamourer.Api.IpcSubscribers;
-
+#nullable enable
 namespace Ktisis.Interop.Ipc;
 
-public class GlamourerIpcProvider {
-	private readonly ApplyState _applyState;
-	private readonly ApplyStateName _applyStateName;
-	private readonly GetState _getState;
-	private readonly RevertState _revertState;
-	private readonly RevertStateName _revertStateName;
-	
-	public GlamourerIpcProvider(
-		IDalamudPluginInterface dpi
-	) {
-		this._applyState = new ApplyState(dpi);
-		this._applyStateName = new ApplyStateName(dpi);
-		this._getState = new GetState(dpi);
-		this._revertState = new RevertState(dpi);
-		this._revertStateName = new RevertStateName(dpi);
-	}
+public class GlamourerIpcProvider
+{
+  private readonly Glamourer.Api.IpcSubscribers.ApplyState _applyState;
 
-	public void ApplyState(string state, int index) {
-		this._applyState.Invoke(state, index);
-	}
+  public GlamourerIpcProvider(IDalamudPluginInterface dpi)
+  {
+    this._applyState = new Glamourer.Api.IpcSubscribers.ApplyState(dpi);
+  }
 
-	public void ApplyStateName(string state, string playerName) {
-		this._applyStateName.Invoke(state, playerName);
-	}
-
-	public void GetState(int index) {
-		this._getState.Invoke(index);
-	}
-
-	public void RevertState(int index) {
-		this._revertState.Invoke(index);
-	}
-
-	public void RevertStateName(string playerName) {
-		this._revertStateName.Invoke(playerName);
-	}
+  public void ApplyState(string state, int index)
+  {
+    int num = (int) this._applyState.Invoke(state, index);
+  }
 }
