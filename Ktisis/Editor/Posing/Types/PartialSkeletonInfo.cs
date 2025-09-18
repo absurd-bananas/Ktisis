@@ -1,49 +1,45 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Posing.Types.PartialSkeletonInfo
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 using System.Collections.Generic;
-
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
-
-using Ktisis.Common.Extensions;
 
 namespace Ktisis.Editor.Posing.Types;
 
 public class PartialSkeletonInfo {
-	public uint Id;
 	public short ConnectedBoneIndex;
 	public short ConnectedParentBoneIndex;
+	public uint Id;
 	public short[] ParentIds = Array.Empty<short>();
 
 	public PartialSkeletonInfo(uint id) {
 		this.Id = id;
 	}
-	
+
 	public unsafe void CopyPartial(uint id, PartialSkeleton partial) {
 		this.Id = id;
-
 		this.ConnectedBoneIndex = partial.ConnectedBoneIndex;
 		this.ConnectedParentBoneIndex = partial.ConnectedParentBoneIndex;
-		
-		var pose = partial.GetHavokPose(0);
-		if (pose != null && pose->Skeleton != null)
-			this.ParentIds = pose->Skeleton->ParentIndices.Copy();
+		hkaPose* havokPose = ((PartialSkeleton) ref partial ).GetHavokPose(0);
+		if ((IntPtr)havokPose != IntPtr.Zero && (IntPtr)havokPose->Skeleton != IntPtr.Zero)
+			this.ParentIds = havokPose->Skeleton->ParentIndices.Copy<short>();
 		else
 			this.ParentIds = Array.Empty<short>();
 	}
 
 	public IEnumerable<short> GetParentsOf(int id) {
-		var parent = this.ParentIds[id];
-		while (parent != -1) {
+		for (var parent = this.ParentIds[id]; parent != -1; parent = this.ParentIds[parent])
 			yield return parent;
-			parent = this.ParentIds[parent];
-		}
 	}
-	
+
 	public bool IsBoneDescendantOf(int bone, int descOf) {
-		var boneParent = this.ParentIds[bone];
-		while (boneParent != -1) {
-			if (boneParent == descOf)
+		for (var parentId = this.ParentIds[bone]; parentId != -1; parentId = this.ParentIds[parentId]) {
+			if (parentId == descOf)
 				return true;
-			boneParent = this.ParentIds[boneParent];
 		}
 		return false;
 	}

@@ -1,3 +1,10 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Factory.Creators.LightCreator
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System.Threading.Tasks;
 
 using Ktisis.Scene.Entities.World;
@@ -8,19 +15,18 @@ using Ktisis.Structs.Lights;
 
 namespace Ktisis.Scene.Factory.Creators;
 
-public interface ILightCreator : IEntityCreator<LightEntity, ILightCreator> {
-	public ILightCreator SetType(LightType type);
-}
-
-public sealed class LightCreator : EntityCreator<LightEntity, ILightCreator>, ILightCreator {
+public sealed class LightCreator :
+	EntityCreator<LightEntity, ILightCreator>,
+	ILightCreator,
+	IEntityCreator<LightEntity, ILightCreator>,
+	IEntityBuilderBase<LightEntity, ILightCreator> {
 	private LightType Type = LightType.SpotLight;
-	
-	public LightCreator(
-		ISceneManager scene
-	) : base(scene) {
+
+	public LightCreator(ISceneManager scene)
+		: base(scene) {
 		this.Name = "Light";
 	}
-	
+
 	protected override ILightCreator Builder => this;
 
 	public ILightCreator SetType(LightType type) {
@@ -29,9 +35,10 @@ public sealed class LightCreator : EntityCreator<LightEntity, ILightCreator>, IL
 	}
 
 	public async Task<LightEntity> Spawn() {
-		var light = await this.Scene.GetModule<LightModule>().Spawn();
-		light.Name = this.Name;
-		light.SetType(this.Type);
-		return light;
+		var lightCreator = this;
+		var lightEntity = await lightCreator.Scene.GetModule<LightModule>().Spawn();
+		lightEntity.Name = lightCreator.Name;
+		lightEntity.SetType(lightCreator.Type);
+		return lightEntity;
 	}
 }

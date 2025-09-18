@@ -1,8 +1,16 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Editor.EditorInterface
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 using System.Threading.Tasks;
 
 using GLib.Popups.ImFileDialog;
 
+using Ktisis.Data.Config;
 using Ktisis.Data.Files;
 using Ktisis.Editor.Context.Types;
 using Ktisis.Editor.Selection;
@@ -15,6 +23,7 @@ using Ktisis.Interface.Types;
 using Ktisis.Interface.Windows;
 using Ktisis.Interface.Windows.Editors;
 using Ktisis.Interface.Windows.Import;
+using Ktisis.Scene;
 using Ktisis.Scene.Entities;
 using Ktisis.Scene.Entities.Game;
 using Ktisis.Scene.Entities.Skeleton;
@@ -25,58 +34,50 @@ using Ktisis.Scene.Modules.Actors;
 namespace Ktisis.Interface.Editor;
 
 public class EditorInterface : IEditorInterface {
+	private readonly static FileDialogOptions CharaFileOptions = new FileDialogOptions {
+		Filters = "Character Files{.chara}",
+		Extension = ".chara"
+	};
+	private readonly static FileDialogOptions PoseFileOptions = new FileDialogOptions {
+		Filters = "Pose Files{.pose}",
+		Extension = ".pose"
+	};
+	private readonly static FileDialogOptions McdfFileOptions = new FileDialogOptions {
+		Filters = "MCDF Files{.mcdf}",
+		Extension = ".mcdf"
+	};
+	private readonly static FileDialogOptions LightFileOptions = new FileDialogOptions {
+		Filters = "Light Files{.light}",
+		Extension = ".light"
+	};
 	private readonly IEditorContext _ctx;
+	private readonly IDalamudPluginInterface _dpi;
+	private readonly GizmoManager _gizmo;
 	private readonly GuiManager _gui;
 
-	private readonly GizmoManager _gizmo;
-	
-	public EditorInterface(
-		IEditorContext ctx,
-		GuiManager gui
-	) {
+	public EditorInterface(IDalamudPluginInterface dpi, IEditorContext ctx, GuiManager gui) {
+		this._dpi = dpi;
 		this._ctx = ctx;
 		this._gui = gui;
-		this._gizmo = new(ctx.Config);
+		this._gizmo = new GizmoManager(this._dpi, ctx.Config);
 	}
-	
-	// Scene ready
 
 	public void Prepare() {
 		if (this._ctx.Config.Editor.OpenOnEnterGPose)
 			this._gui.GetOrCreate<WorkspaceWindow>(this._ctx).Open();
-
 		this._ctx.Selection.Changed += this.OnSelectChanged;
-
 		this._gizmo.Initialize();
-		this._gui.GetOrCreate<OverlayWindow>(
-			this._ctx,
-			this._gizmo.Create(GizmoId.OverlayMain)
-		).Open();
+		this._gui.GetOrCreate<OverlayWindow>(this._ctx, this._gizmo.Create(GizmoId.OverlayMain)).Open();
 	}
-
-	private void OnSelectChanged(ISelectManager sender) {
-		if (!this._ctx.Config.Editor.ToggleEditorOnSelect) return;
-
-		var open = sender.Count > 0;
-		
-		var editor = this._gui.Get<ObjectWindow>();
-		if (editor == null) {
-			if (open) this.OpenObjectEditor();
-			return;
-		}
-		editor.IsOpen = open;
-	}
-	
-	// Window wrappers
 
 	public void OpenConfigWindow() => this._gui.GetOrCreate<ConfigWindow>().Open();
 
-	public void ToggleWorkspaceWindow() => this._gui.GetOrCreate<WorkspaceWindow>(this._ctx).Toggle();
-	
-	// Editor windows
-	
+	public void ToggleWorkspaceWindow() {
+		this._gui.GetOrCreate<WorkspaceWindow>(this._ctx).Toggle();
+	}
+
 	public void OpenCameraWindow() => this._gui.GetOrCreate<CameraWindow>(this._ctx).Open();
-	
+
 	public void OpenEnvironmentWindow() {
 		var scene = this._ctx.Scene;
 		var module = scene.GetModule<EnvModule>();
@@ -84,62 +85,64 @@ public class EditorInterface : IEditorInterface {
 	}
 
 	public void OpenObjectEditor() {
-		var gizmo = this._gizmo.Create(GizmoId.TransformEditor);
-		this._gui.GetOrCreate<ObjectWindow>(this._ctx, new Gizmo2D(gizmo)).Open();
+		this._gui.GetOrCreate<ObjectWindow>(this._ctx, new Gizmo2D(this._gizmo.Create(GizmoId.TransformEditor))).Open();
 	}
 
-	public void OpenObjectEditor(SceneEntity entity) {
-		entity.Select(SelectMode.Force);
-		this.OpenObjectEditor();
+	public void OpenPosingWindow() {
+		this._gui.GetOrCreate<PosingWindow>(this._ctx, this._ctx.Locale).Open();
 	}
-
-	public void OpenPosingWindow() => this._gui.GetOrCreate<PosingWindow>(this._ctx, this._ctx.Locale).Open();
-	
-	// Context menus
 
 	public void OpenSceneCreateMenu() {
-		var menu = new SceneCreateMenuBuilder(this._ctx);
-		this._gui.AddPopup(menu.Create()).Open();
+		this._gui.AddPopup(new SceneCreateMenuBuilder(this._ctx).Create()).Open();
 	}
 
 	public void OpenSceneEntityMenu(SceneEntity entity) {
-		var menu = new SceneEntityMenuBuilder(this._ctx, entity);
-		this._gui.AddPopup(menu.Create()).Open();
+		this._gui.AddPopup(new SceneEntityMenuBuilder(this._ctx, entity).Create()).Open();
 	}
 
-	public void OpenAssignCollection(ActorEntity entity) => this._gui.CreatePopup<ActorCollectionPopup>(this._ctx, entity).Open();
+	public void OpenAssignCollection(ActorEntity entity) {
+		this._gui.CreatePopup<ActorCollectionPopup>(this._ctx, entity).Open();
+	}
 
-	public void OpenAssignCProfile(ActorEntity entity) => this._gui.CreatePopup<ActorCProfilePopup>(this._ctx, entity).Open();
+	public void OpenAssignCProfile(ActorEntity entity) {
+		this._gui.CreatePopup<ActorCProfilePopup>(this._ctx, entity).Open();
+	}
 
-	public void OpenOverworldActorList() => this._gui.CreatePopup<OverworldActorPopup>(this._ctx).Open();
-	
+	public void OpenOverworldActorList() {
+		this._gui.CreatePopup<OverworldActorPopup>(this._ctx).Open();
+	}
+
 	public void RefreshGposeActors() => this._ctx.Scene.GetModule<ActorModule>().RefreshGPoseActors();
 
-	// Entity windows
-	
-	public void OpenRenameEntity(SceneEntity entity) => this._gui.CreatePopup<EntityRenameModal>(entity).Open();
-	public void OpenSavePreset(ActorEntity entity) => this._gui.CreatePopup<PresetSaveModal>(entity).Open();
-	
+	public void OpenRenameEntity(SceneEntity entity) {
+		this._gui.CreatePopup<EntityRenameModal>(entity).Open();
+	}
+
 	public void OpenActorEditor(ActorEntity actor) {
 		if (!this._ctx.Config.Editor.UseLegacyWindowBehavior)
 			actor.Select(SelectMode.Force);
 		this.OpenEditor<ActorWindow, ActorEntity>(actor);
 	}
-	
+
 	public void OpenLightEditor(LightEntity light) {
-		if (this._ctx.Config.Editor.UseLegacyLightEditor) {
+		if (this._ctx.Config.Editor.UseLegacyLightEditor)
 			this.OpenEditor<LightWindow, LightEntity>(light);
-			return;
-		}
-		this.OpenObjectEditor(light);
+		else
+			this.OpenObjectEditor(light);
 	}
 
-	public void OpenEditor<T, TA>(TA entity) where T : EntityEditWindow<TA> where TA : SceneEntity {
-		var editor = this._gui.GetOrCreate<T>(this._ctx);
-		editor.SetTarget(entity);
-		editor.Open();
+	public void OpenLightExportNoActorSelected(Action exportLight, Configuration config) {
+		this._gui.CreatePopup<LightExportNoActorSelectedModal>(exportLight, config).Open();
 	}
-    
+
+	public void OpenEditor<T, TA>(TA entity)
+		where T : EntityEditWindow<TA>
+		where TA : SceneEntity {
+		var obj = this._gui.GetOrCreate<T>(this._ctx);
+		obj.SetTarget(entity);
+		obj.Open();
+	}
+
 	public void OpenEditorFor(SceneEntity entity) {
 		switch (entity) {
 			case ActorEntity actor:
@@ -150,61 +153,75 @@ public class EditorInterface : IEditorInterface {
 				break;
 		}
 	}
-	
-	// import/export wrappers
 
-	public void OpenCharaImport(ActorEntity actor) => this.OpenEditor<CharaImportDialog, ActorEntity>(actor);
-
-	public async Task OpenCharaExport(ActorEntity actor) {
-		var file = await this._ctx.Characters.SaveCharaFile(actor);
-		this.ExportCharaFile(file);
+	public void OpenCharaImport(ActorEntity actor) {
+		this.OpenEditor<CharaImportDialog, ActorEntity>(actor);
 	}
 
-	public void OpenPoseImport(ActorEntity actor) => this.OpenEditor<PoseImportDialog, ActorEntity>(actor);
+	public async Task OpenCharaExport(ActorEntity actor) => this.ExportCharaFile(await this._ctx.Characters.SaveCharaFile(actor));
 
-	public async Task OpenPoseExport(EntityPose pose) {
-		var file = await this._ctx.Posing.SavePoseFile(pose);
-		this.ExportPoseFile(file);
+	public void OpenPoseImport(ActorEntity actor) {
+		this.OpenEditor<PoseImportDialog, ActorEntity>(actor);
 	}
-	
-	// Import/export dialogs
-	
-	private readonly static FileDialogOptions CharaFileOptions = new() {
-		Filters = "Character Files{.chara}",
-		Extension = ".chara"
-	};
 
-	private readonly static FileDialogOptions PoseFileOptions = new() {
-		Filters = "Pose Files{.pose}",
-		Extension = ".pose"
-	};
+	public async Task OpenPoseExport(EntityPose pose) => this.ExportPoseFile(await this._ctx.Posing.SavePoseFile(pose));
 
-	private readonly static FileDialogOptions McdfFileOptions = new() {
-		Filters = "MCDF Files{.mcdf}",
-		Extension = ".mcdf"
-	};
-	
-	public void OpenCharaFile(Action<string, CharaFile> handler)
-		=> this._gui.FileDialogs.OpenFile("Open Chara File", handler, CharaFileOptions);
+	public void OpenLightImport(LightEntity light) {
+		this.OpenEditor<LightImportDialog, LightEntity>(light);
+	}
+
+	public async Task OpenLightExport(LightEntity light) => this.ExportLightFile(await this._ctx.Scene.SaveLightFile(light));
+
+	public void OpenCharaFile(Action<string, CharaFile> handler) {
+		this._gui.FileDialogs.OpenFile("Open Chara File", handler, CharaFileOptions);
+	}
 
 	public void OpenPoseFile(Action<string, PoseFile> handler) {
-		this._gui.FileDialogs.OpenFile<PoseFile>("Open Pose File", (path, file) => {
+		this._gui.FileDialogs.OpenFile("Open Pose File", (Action<string, PoseFile>)((path, file) => {
 			file.ConvertLegacyBones();
-			handler.Invoke(path, file);
-		}, PoseFileOptions);
+			handler(path, file);
+		}), PoseFileOptions);
 	}
-	
+
 	public void OpenMcdfFile(Action<string> handler) {
 		this._gui.FileDialogs.OpenFile("Open MCDF File", handler, McdfFileOptions);
+	}
+
+	public void OpenLightFile(Action<string, SceneManager.LightFile> handler) {
+		this._gui.FileDialogs.OpenFile("Open Light File", (Action<string, SceneManager.LightFile>)((path, file) => handler(path, file)), LightFileOptions);
 	}
 
 	public void OpenReferenceImages(Action<string> handler) {
 		this._gui.FileDialogs.OpenImage("image", handler);
 	}
 
-	public void ExportCharaFile(CharaFile file)
-		=> this._gui.FileDialogs.SaveFile("Export Chara File", file, CharaFileOptions);
-	
-	public void ExportPoseFile(PoseFile file)
-		=> this._gui.FileDialogs.SaveFile("Export Pose File", file, PoseFileOptions);
+	public void ExportCharaFile(CharaFile file) {
+		this._gui.FileDialogs.SaveFile("Export Chara File", file, CharaFileOptions);
+	}
+
+	public void ExportPoseFile(PoseFile file) {
+		this._gui.FileDialogs.SaveFile("Export Pose File", file, PoseFileOptions);
+	}
+
+	public void ExportLightFile(SceneManager.LightFile file) {
+		this._gui.FileDialogs.SaveFile("Export Light File", file, LightFileOptions);
+	}
+
+	private void OnSelectChanged(ISelectManager sender) {
+		if (!this._ctx.Config.Editor.ToggleEditorOnSelect)
+			return;
+		var flag = sender.Count > 0;
+		var objectWindow = this._gui.Get<ObjectWindow>();
+		if (objectWindow == null) {
+			if (!flag)
+				return;
+			this.OpenObjectEditor();
+		} else
+			objectWindow.IsOpen = flag;
+	}
+
+	public void OpenObjectEditor(SceneEntity entity) {
+		entity.Select(SelectMode.Force);
+		this.OpenObjectEditor();
+	}
 }

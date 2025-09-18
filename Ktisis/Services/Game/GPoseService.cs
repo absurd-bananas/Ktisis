@@ -1,40 +1,27 @@
-using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Services.Game.GPoseService
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Objects;
-using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Plugin.Services;
+#nullable enable
+using System;
 
 using Ktisis.Core.Attributes;
 using Ktisis.Events;
 
 namespace Ktisis.Services.Game;
 
-public delegate void GPoseStateHandler(GPoseService sender, bool state);
-
 [Singleton]
 public class GPoseService : IDisposable {
 	private readonly IClientState _clientState;
 	private readonly IFramework _framework;
-	private readonly ITargetManager _targets;
-	
-	private readonly Event<Action> _updateEvent;
-	public event Action Update {
-		add => this._updateEvent.Add(value);
-		remove => this._updateEvent.Remove(value);
-	}
-
 	private readonly Event<Action<GPoseService, bool>> _gposeEvent;
-	public event GPoseStateHandler StateChanged {
-		add => this._gposeEvent.Add(value.Invoke);
-		remove => this._gposeEvent.Remove(value.Invoke);
-	}
-	
+	private readonly ITargetManager _targets;
+	private readonly Event<Action> _updateEvent;
 	private bool _isActive;
+	private bool _isSubscribed;
 
-	public bool IsGPosing => this._clientState.IsGPosing;
-
-	public IGameObject? GPoseTarget => this._targets.GPoseTarget;
-	
 	public GPoseService(
 		IClientState clientState,
 		IFramework framework,
@@ -49,29 +36,45 @@ public class GPoseService : IDisposable {
 		this._gposeEvent = gposeEvent;
 	}
 
-	private bool _isSubscribed;
+	public bool IsGPosing => this._clientState.IsGPosing;
+
+	public IGameObject? GPoseTarget => this._targets.GPoseTarget;
+
+	public void Dispose() {
+		// ISSUE: method pointer
+		this._framework.Update -= new IFramework.OnUpdateDelegate((object)this, __methodptr(OnFrameworkUpdate));
+		this._isSubscribed = false;
+	}
+
+	public event Action Update {
+		add => this._updateEvent.Add(value);
+		remove => this._updateEvent.Remove(value);
+	}
+
+	public event GPoseStateHandler StateChanged {
+		add => this._gposeEvent.Add(value.Invoke);
+		remove => this._gposeEvent.Remove(value.Invoke);
+	}
 
 	public void Subscribe() {
-		if (this._isSubscribed) return;
-		this._framework.Update += this.OnFrameworkUpdate;
+		if (this._isSubscribed)
+			return;
+		// ISSUE: method pointer
+		this._framework.Update += new IFramework.OnUpdateDelegate((object)this, __methodptr(OnFrameworkUpdate));
 		this._isSubscribed = true;
 	}
 
 	public void Reset() => this._isActive = false;
 
 	private void OnFrameworkUpdate(IFramework sender) {
-		var state = this.IsGPosing;
-		if (this._isActive != state) {
-			this._isActive = state;
-			Ktisis.Log.Info($"GPose state changed: {state}");
-			this._gposeEvent.Invoke(this, state);
+		var isGposing = this.IsGPosing;
+		if (this._isActive != isGposing) {
+			this._isActive = isGposing;
+			Ktisis.Ktisis.Log.Info($"GPose state changed: {isGposing}", Array.Empty<object>());
+			this._gposeEvent.Invoke<GPoseService, bool>(this, isGposing);
 		}
-		
-		if (state) this._updateEvent.Invoke();
-	}
-
-	public void Dispose() {
-		this._framework.Update -= this.OnFrameworkUpdate;
-		this._isSubscribed = false;
+		if (!isGposing)
+			return;
+		this._updateEvent.Invoke();
 	}
 }

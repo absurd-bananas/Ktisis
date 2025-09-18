@@ -1,11 +1,12 @@
-using System.Diagnostics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Overlay.OverlayWindow
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
 using System.Linq;
-using Matrix4x4 = System.Numerics.Matrix4x4;
-
-using Dalamud.Bindings.ImGui;
-using Dalamud.Plugin.Services;
-
-using FFXIVClientStructs.FFXIV.Common.Math;
 
 using Ktisis.Editor.Context.Types;
 using Ktisis.Editor.Transforms.Types;
@@ -16,122 +17,157 @@ using Ktisis.Services.Game;
 namespace Ktisis.Interface.Overlay;
 
 public class OverlayWindow : KtisisWindow {
-	private const ImGuiWindowFlags WindowFlags = ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoBackground
-		| ImGuiWindowFlags.NoInputs | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoBringToFrontOnFocus;
-
-	private readonly IGameGui _gui;
-	
+	private const ImGuiWindowFlags WindowFlags = (ImGuiWindowFlags)795563;
 	private readonly IEditorContext _ctx;
 	private readonly IGizmo _gizmo;
+	private readonly IGameGui _gui;
 	private readonly SceneDraw _sceneDraw;
+	private ITransformMemento? Transform;
 
-	public OverlayWindow(
-		IGameGui gui,
-		IEditorContext ctx,
-		IGizmo gizmo,
-		SceneDraw draw
-	) : base("##KtisisOverlay", WindowFlags) {
+	public OverlayWindow(IGameGui gui, IEditorContext ctx, IGizmo gizmo, SceneDraw draw)
+		: base("##KtisisOverlay", (ImGuiWindowFlags)795563) {
 		this._gui = gui;
 		this._ctx = ctx;
 		this._gizmo = gizmo;
 		this._sceneDraw = draw;
 		this._sceneDraw.SetContext(ctx);
-		this.PositionCondition = ImGuiCond.Always;
+		this.PositionCondition = (ImGuiCond)1;
 	}
-	
-	private ITransformMemento? Transform;
 
-	public override void PreOpenCheck() {
-		if (this._ctx.IsValid) return;
-		Ktisis.Log.Verbose("Context for overlay window is stale, closing...");
+	public virtual void PreOpenCheck() {
+		if (this._ctx.IsValid)
+			return;
+		Ktisis.Ktisis.Log.Verbose("Context for overlay window is stale, closing...", Array.Empty<object>());
 		this.Close();
 	}
 
-	public override void PreDraw() {
-		this.Size = ImGui.GetIO().DisplaySize;
-		this.Position = Vector2.Zero;
+	public virtual void PreDraw() {
+		ImGuiIOPtr io = Dalamud.Bindings.ImGui.ImGui.GetIO();
+		this.Size = new Vector2?(((ImGuiIOPtr) ref io).DisplaySize);
+		this.Position = new Vector2?(Vector2.op_Implicit(Vector2.Zero));
 	}
-	
-	// Main draw function
 
-	public override void Draw() {
-		if (!this._ctx.Config.Overlay.Visible) return;
-		
-		//var t = new Stopwatch();
-		//t.Start();
-		
-		var gizmo = this.DrawGizmo();
-		this._sceneDraw.DrawScene(gizmo: gizmo, gizmoIsEnded: this._gizmo.IsEnded);
-		
-		//t.Stop();
-		//this.DrawDebug(t);
+	public virtual void Draw() {
+		if (!this._ctx.Config.Overlay.Visible)
+			return;
+		this._sceneDraw.DrawScene(this.DrawGizmo(), this._gizmo.IsEnded);
 	}
 
 	private bool DrawGizmo() {
 		if (!this._ctx.Config.Gizmo.Visible)
 			return false;
-		
 		var target = this._ctx.Transform.Target;
-		var transform = target?.GetTransform();
+		Ktisis.Common.Utility.Transform transform = target?.GetTransform();
 		if (target == null || transform == null)
 			return false;
-		
-		var view = CameraService.GetViewMatrix();
-		var proj = CameraService.GetProjectionMatrix();
-		if (view == null || proj == null || this.Size == null)
+		Matrix4x4? viewMatrix = CameraService.GetViewMatrix();
+		Matrix4x4? projectionMatrix = CameraService.GetProjectionMatrix();
+		if (!viewMatrix.HasValue || !projectionMatrix.HasValue || !this.Size.HasValue)
 			return false;
-
-		var size = this.Size.Value;
-		this._gizmo.SetMatrix(view.Value, proj.Value);
-		this._gizmo.BeginFrame(Vector2.Zero, size);
-
-		var cfg = this._ctx.Config.Gizmo;
-		this._gizmo.Mode = cfg.Mode;
-		this._gizmo.Operation = cfg.Operation;
-		this._gizmo.AllowAxisFlip = cfg.AllowAxisFlip;
-
-		var matrix = transform.ComposeMatrix();
-		var isManipulate = this._gizmo.Manipulate(ref matrix, out _);
-		var isRaySnap = this.HandleShiftRaycast(ref matrix);
-		if (isManipulate || isRaySnap) {
-			this.Transform ??= this._ctx.Transform.Begin(target);
+		Vector2 size = this.Size.Value;
+		this._gizmo.SetMatrix(viewMatrix.Value, projectionMatrix.Value);
+		this._gizmo.BeginFrame(Vector2.op_Implicit(Vector2.Zero), size);
+		var gizmo = this._ctx.Config.Gizmo;
+		this._gizmo.Mode = gizmo.Mode;
+		this._gizmo.Operation = gizmo.Operation;
+		this._gizmo.AllowAxisFlip = gizmo.AllowAxisFlip;
+		Matrix4x4 matrix = transform.ComposeMatrix();
+		if (this._gizmo.Manipulate(ref matrix, out Matrix4x4 _) | this.HandleShiftRaycast(ref matrix)) {
+			if (this.Transform == null)
+				this.Transform = this._ctx.Transform.Begin(target);
 			this.Transform.SetMatrix(matrix);
 		}
-
 		this._gizmo.EndFrame();
 		if (this._gizmo.IsEnded) {
 			this.Transform?.Dispatch();
 			this.Transform = null;
 		}
-
 		return true;
 	}
 
 	private bool HandleShiftRaycast(ref Matrix4x4 matrix) {
-		if (!this._ctx.Config.Gizmo.AllowRaySnap)
+		Vector3 vector3;
+		if (!this._ctx.Config.Gizmo.AllowRaySnap || !Dalamud.Bindings.ImGui.ImGui.IsKeyDown((ImGuiKey)642) || !Ktisis.ImGuizmo.Gizmo.IsUsing || Ktisis.ImGuizmo.Gizmo.CurrentOperation != Operation.TRANSLATE ||
+			!this._gui.ScreenToWorld(Dalamud.Bindings.ImGui.ImGui.GetMousePos(), ref vector3, 100000f))
 			return false;
-		
-		if (!ImGui.IsKeyDown(ImGuiKey.ModShift) || !ImGuizmo.Gizmo.IsUsing || ImGuizmo.Gizmo.CurrentOperation != Operation.TRANSLATE)
-			return false;
-
-		if (!this._gui.ScreenToWorld(ImGui.GetMousePos(), out var hitPos))
-			return false;
-
-		matrix.Translation = hitPos;
+		matrix.Translation = vector3;
 		return true;
 	}
 
 	private void DrawDebug(Stopwatch t) {
-		ImGui.SetCursorPosY(ImGui.GetStyle().WindowPadding.Y);
-		for (var i = 0; i < 5; i++)
-			ImGui.Spacing();
-		ImGui.Text($"Context: {this._ctx.GetHashCode():X} ({this._ctx.IsValid})");
-		ImGui.Text($"Scene: {this._ctx.Scene.GetHashCode():X} {this._ctx.Scene.UpdateTime:00.00}ms");
-		ImGui.Text($"Overlay: {this.GetHashCode()} {t.Elapsed.TotalMilliseconds:00.00}ms");
-		ImGui.Text($"Gizmo: {this._gizmo.GetHashCode():X} {this._gizmo.Id} ({this._gizmo.Operation}, {ImGuizmo.Gizmo.IsUsing})");
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		Dalamud.Bindings.ImGui.ImGui.SetCursorPosY(((ImGuiStylePtr) ref style).WindowPadding.Y);
+		for (var index = 0; index < 5; ++index)
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+		ImU8String imU8String;
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(12, 2);
+		((ImU8String) ref imU8String).AppendLiteral("Context: ");
+		((ImU8String) ref imU8String).AppendFormatted<int>(this._ctx.GetHashCode(), "X");
+		((ImU8String) ref imU8String).AppendLiteral(" (");
+		((ImU8String) ref imU8String).AppendFormatted<bool>(this._ctx.IsValid);
+		((ImU8String) ref imU8String).AppendLiteral(")");
+		Dalamud.Bindings.ImGui.ImGui.Text(imU8String);
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(10, 2);
+		((ImU8String) ref imU8String).AppendLiteral("Scene: ");
+		((ImU8String) ref imU8String).AppendFormatted<int>(this._ctx.Scene.GetHashCode(), "X");
+		((ImU8String) ref imU8String).AppendLiteral(" ");
+		((ImU8String) ref imU8String).AppendFormatted<double>(this._ctx.Scene.UpdateTime, "00.00");
+		((ImU8String) ref imU8String).AppendLiteral("ms");
+		Dalamud.Bindings.ImGui.ImGui.Text(imU8String);
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(12, 2);
+		((ImU8String) ref imU8String).AppendLiteral("Overlay: ");
+		((ImU8String) ref imU8String).AppendFormatted<int>(this.GetHashCode());
+		((ImU8String) ref imU8String).AppendLiteral(" ");
+		((ImU8String) ref imU8String).AppendFormatted<double>(t.Elapsed.TotalMilliseconds, "00.00");
+		((ImU8String) ref imU8String).AppendLiteral("ms");
+		Dalamud.Bindings.ImGui.ImGui.Text(imU8String);
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(13, 4);
+		((ImU8String) ref imU8String).AppendLiteral("Gizmo: ");
+		((ImU8String) ref imU8String).AppendFormatted<int>(this._gizmo.GetHashCode(), "X");
+		((ImU8String) ref imU8String).AppendLiteral(" ");
+		((ImU8String) ref imU8String).AppendFormatted<GizmoId>(this._gizmo.Id);
+		((ImU8String) ref imU8String).AppendLiteral(" (");
+		((ImU8String) ref imU8String).AppendFormatted<Operation>(this._gizmo.Operation);
+		((ImU8String) ref imU8String).AppendLiteral(", ");
+		((ImU8String) ref imU8String).AppendFormatted<bool>(Ktisis.ImGuizmo.Gizmo.IsUsing);
+		((ImU8String) ref imU8String).AppendLiteral(")");
+		Dalamud.Bindings.ImGui.ImGui.Text(imU8String);
 		var target = this._ctx.Transform.Target;
-		ImGui.Text($"Target: {target?.GetHashCode() ?? 0:X7} {target?.GetType().Name ?? "NULL"} ({target?.Targets?.Count() ?? 0}, {target?.Primary?.Name ?? "NULL"})");
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(14, 4);
+		((ImU8String) ref imU8String).AppendLiteral("Target: ");
+		((ImU8String) ref imU8String).AppendFormatted<int>(target != null ? target.GetHashCode() : 0, "X7");
+		((ImU8String) ref imU8String).AppendLiteral(" ");
+		((ImU8String) ref imU8String).AppendFormatted<string>(target?.GetType().Name ?? "NULL");
+		((ImU8String) ref imU8String).AppendLiteral(" (");
+		ref ImU8String local = ref imU8String;
+		int? nullable;
+		if (target == null) {
+			nullable = new int?();
+		} else {
+			var targets = target.Targets;
+			nullable = targets != null ? targets.Count() : new int?();
+		}
+		var valueOrDefault = nullable.GetValueOrDefault();
+		((ImU8String) ref local).AppendFormatted<int>(valueOrDefault);
+		((ImU8String) ref imU8String).AppendLiteral(", ");
+		((ImU8String) ref imU8String).AppendFormatted<string>(target?.Primary?.Name ?? "NULL");
+		((ImU8String) ref imU8String).AppendLiteral(")");
+		Dalamud.Bindings.ImGui.ImGui.Text(imU8String);
 		var history = this._ctx.Actions.History;
-		ImGui.Text($"History: {history.Count} ({history.CanUndo}, {history.CanRedo})");
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(14, 3);
+		((ImU8String) ref imU8String).AppendLiteral("History: ");
+		((ImU8String) ref imU8String).AppendFormatted<int>(history.Count);
+		((ImU8String) ref imU8String).AppendLiteral(" (");
+		((ImU8String) ref imU8String).AppendFormatted<bool>(history.CanUndo);
+		((ImU8String) ref imU8String).AppendLiteral(", ");
+		((ImU8String) ref imU8String).AppendFormatted<bool>(history.CanRedo);
+		((ImU8String) ref imU8String).AppendLiteral(")");
+		Dalamud.Bindings.ImGui.ImGui.Text(imU8String);
 	}
 }

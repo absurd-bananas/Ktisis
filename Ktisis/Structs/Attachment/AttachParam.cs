@@ -1,12 +1,20 @@
-using System.Runtime.InteropServices;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Structs.Attachment.AttachParam
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Graphics;
+#nullable disable
+using System.Runtime.InteropServices;
 
 namespace Ktisis.Structs.Attachment;
 
-[StructLayout(LayoutKind.Explicit, Size = 0x40)]
+[StructLayout(LayoutKind.Explicit, Size = 64 /*0x40*/)]
 public struct AttachParam {
-	[FieldOffset(0x00)] public ushort ChildId;
-	[FieldOffset(0x02)] public ushort ParentId;
-	[FieldOffset(0x10)] public Transform Transform;
+	[FieldOffset(0)]
+	public ushort ChildId;
+	[FieldOffset(2)]
+	public ushort ParentId;
+	[FieldOffset(16 /*0x10*/)]
+	public Transform Transform;
 }

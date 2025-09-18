@@ -1,499 +1,474 @@
-using System;
-using System.Linq;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Chara.CustomizeEditorTab
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Interface;
-using Dalamud.Interface.Textures;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Plugin.Services;
-using Dalamud.Bindings.ImGui;
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using GLib.Widgets;
 
-using Ktisis.Structs.Characters;
 using Ktisis.Core.Attributes;
 using Ktisis.Editor.Characters.Make;
 using Ktisis.Editor.Characters.Types;
 using Ktisis.Interface.Components.Chara.Popup;
 using Ktisis.Services.Data;
+using Ktisis.Structs.Characters;
 
 namespace Ktisis.Interface.Components.Chara;
 
 [Transient]
 public class CustomizeEditorTab {
+	private const float SideRatio = 0.35f;
+	private const string LegacyTexPath = "chara/common/texture/decal_equip/_stigma.tex";
+	private readonly static Vector2 MaxButtonSize;
+	private readonly static CustomizeIndex[] FeatIconParams;
+	private readonly ParamColorSelectPopup _colorPopup = new ParamColorSelectPopup();
 	private readonly IDataManager _data;
-	private readonly ITextureProvider _tex;
 	private readonly CustomizeService _discovery;
-
-	private readonly MakeTypeData _makeTypeData = new();
-
-	private readonly ParamColorSelectPopup _colorPopup = new();
 	private readonly FeatureSelectPopup _featurePopup;
-	
-	public ICustomizeEditor Editor { set; private get; } = null!;
-	
-	public CustomizeEditorTab(
-		IDataManager data,
-		ITextureProvider tex,
-		CustomizeService discovery
-	) {
+	private readonly MakeTypeData _makeTypeData = new MakeTypeData();
+	private readonly ITextureProvider _tex;
+	private bool _isSetup;
+	private Vector2 ButtonSize = MaxButtonSize;
+
+	static CustomizeEditorTab() {
+		// ISSUE: unable to decompile the method.
+	}
+
+	public CustomizeEditorTab(IDataManager data, ITextureProvider tex, CustomizeService discovery) {
 		this._data = data;
 		this._tex = tex;
 		this._discovery = discovery;
 		this._featurePopup = new FeatureSelectPopup(tex);
 	}
-	
-	// Setup
 
-	private bool _isSetup;
-	
+	public ICustomizeEditor Editor { set; private get; }
+
 	public void Setup() {
-		if (this._isSetup) return;
+		if (this._isSetup)
+			return;
 		this._isSetup = true;
 		this._makeTypeData.Build(this._data, this._discovery).ContinueWith(task => {
-			if (task.Exception != null)
-				Ktisis.Log.Error($"Failed to build customize data:\n{task.Exception}");
+			if (task.Exception == null)
+				return;
+			Ktisis.Ktisis.Log.Error($"Failed to build customize data:\n{task.Exception}", Array.Empty<object>());
 		});
 	}
-	
-	// Draw
-	
+
 	public void Draw() {
 		this.ButtonSize = CalcButtonSize();
-		
-		var tribe = (Tribe)this.Editor.GetCustomization(CustomizeIndex.Tribe);
-		var gender = (Gender)this.Editor.GetCustomization(CustomizeIndex.Gender);
-		
-		var data = this._makeTypeData.GetData(tribe, gender);
-		if (data == null) return;
-
+		var data = this._makeTypeData.GetData((Tribe)this.Editor.GetCustomization((CustomizeIndex)4), (Gender)this.Editor.GetCustomization((CustomizeIndex)1));
+		if (data == null)
+			return;
 		this.Draw(data);
-
 		this._colorPopup.Draw(this.Editor);
 		this._featurePopup.Draw(this.Editor);
 	}
 
 	private void Draw(MakeTypeRace data) {
 		this.DrawSideFrame(data);
-		ImGui.SameLine();
+		Dalamud.Bindings.ImGui.ImGui.SameLine();
 		this.DrawMainFrame(data);
 	}
-	
-	// Side frame
-
-	private const float SideRatio = 0.35f;
 
 	private void DrawSideFrame(MakeTypeRace data) {
-		var size = ImGui.GetContentRegionAvail();
-		size.X = MathF.Max(size.X * SideRatio, 240.0f);
-		using var _frame = ImRaii.Child("##CustomizeSideFrame", size, true);
-
-		var cX = ImGui.GetCursorPosX();
-		this.DrawBodySelect(data.Gender);
-		ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
-		ImGui.SetNextItemWidth(ImGui.CalcItemWidth() - (ImGui.GetCursorPosX() - cX));
-		this.DrawTribeSelect(data.Tribe);
-		
-		ImGui.Spacing();
-
-		this.DrawFeatSlider(CustomizeIndex.Height, data);
-		this.DrawFeatSlider(CustomizeIndex.BustSize, data);
-		this.DrawFeatSlider(CustomizeIndex.RaceFeatureSize, data);
-		
-		ImGui.Spacing();
-		
-		this.DrawFeatParams(CustomizeIndex.EyeShape, data);
-		this.DrawEyeColorSwitch();
-		this.DrawIrisSizeSwitch();
-		
-		ImGui.Spacing();
-		
-		this.DrawFeatParams(CustomizeIndex.LipStyle, data);
-		this.DrawLipColorSwitch();
-		
-        ImGui.Spacing();
-        
-		this.DrawFeatParams(CustomizeIndex.Eyebrows, data);
-		this.DrawFeatParams(CustomizeIndex.NoseShape, data);
-		this.DrawFeatParams(CustomizeIndex.JawShape, data);
+		Vector2 contentRegionAvail = Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail();
+		contentRegionAvail.X = MathF.Max(contentRegionAvail.X * 0.35f, 240f);
+		using (ImRaii.Child(ImU8String.op_Implicit("##CustomizeSideFrame"), contentRegionAvail, true)) {
+			float cursorPosX = Dalamud.Bindings.ImGui.ImGui.GetCursorPosX();
+			this.DrawBodySelect(data.Gender);
+			ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+			Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+			Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth(Dalamud.Bindings.ImGui.ImGui.CalcItemWidth() - (Dalamud.Bindings.ImGui.ImGui.GetCursorPosX() - cursorPosX));
+			this.DrawTribeSelect(data.Tribe);
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			this.DrawFeatSlider((CustomizeIndex)3, data);
+			this.DrawFeatSlider((CustomizeIndex)23, data);
+			this.DrawFeatSlider((CustomizeIndex)21, data);
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			this.DrawFeatParams((CustomizeIndex)16 /*0x10*/, data);
+			this.DrawEyeColorSwitch();
+			this.DrawIrisSizeSwitch();
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			this.DrawFeatParams((CustomizeIndex)19, data);
+			this.DrawLipColorSwitch();
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			this.DrawFeatParams((CustomizeIndex)14, data);
+			this.DrawFeatParams((CustomizeIndex)17, data);
+			this.DrawFeatParams((CustomizeIndex)18, data);
+		}
 	}
-	
-	// Body + Tribe selectors
 
 	private void DrawBodySelect(Gender current) {
-		var icon = current == Gender.Masculine ? FontAwesomeIcon.Mars : FontAwesomeIcon.Venus;
-		if (Buttons.IconButton(icon))
-			this.Editor.SetCustomization(CustomizeIndex.Gender, (byte)(current == Gender.Feminine ? 0 : 1));
+		if (!Buttons.IconButton(current == Gender.Masculine ? (FontAwesomeIcon)61986 : (FontAwesomeIcon)61985))
+			return;
+		this.Editor.SetCustomization((CustomizeIndex)1, (byte)(current != Gender.Feminine));
 	}
 
 	private void DrawTribeSelect(Tribe current) {
-		using var _combo = ImRaii.Combo("Body", current.ToString());
-		if (!_combo.Success) return;
-		
-		foreach (var tribe in Enum.GetValues<Tribe>()) {
-			if (ImGui.Selectable(tribe.ToString(), tribe == current)) {
-				this.Editor.Prepare()
-					.SetCustomization(CustomizeIndex.Tribe, (byte)tribe)
-					.SetCustomization(CustomizeIndex.Race, (byte)Math.Floor(((decimal)tribe + 1) / 2))
-					.Apply();
+		using (ImRaii.IEndObject iendObject = ImRaii.Combo(ImU8String.op_Implicit("Body"), ImU8String.op_Implicit(current.ToString()))) {
+			if (!iendObject.Success)
+				return;
+			foreach (Tribe tribe in Enum.GetValues<Tribe>()) {
+				if (Dalamud.Bindings.ImGui.ImGui.Selectable(ImU8String.op_Implicit(tribe.ToString()), tribe == current, (ImGuiSelectableFlags)0, new Vector2()))
+					this.Editor.Prepare().SetCustomization((CustomizeIndex)4, (byte)tribe).SetCustomization((CustomizeIndex)0, (byte)Math.Floor(((byte)tribe + 1M) / 2M)).Apply();
 			}
 		}
 	}
-	
-	// Sliders
 
 	private void DrawSlider(string label, CustomizeIndex index) {
-		var intValue = (int)this.Editor.GetCustomization(index);
-		if (ImGui.SliderInt(label, ref intValue, 0, 100))
-			this.Editor.SetCustomization(index, (byte)intValue);
+		var customization = (int)this.Editor.GetCustomization(index);
+		if (!Dalamud.Bindings.ImGui.ImGui.SliderInt(ImU8String.op_Implicit(label), ref customization, 0, 100, new ImU8String(), (ImGuiSliderFlags)0))
+			return;
+		this.Editor.SetCustomization(index, (byte)customization);
 	}
 
 	private void DrawFeatSlider(CustomizeIndex index, MakeTypeRace data) {
-		var feat = data.GetFeature(index);
-		if (feat == null) return;
-		this.DrawSlider(feat.Name, index);
+		var feature = data.GetFeature(index);
+		if (feature == null)
+			return;
+		this.DrawSlider(feature.Name, index);
 	}
-	
-	// Params
 
 	private void DrawFeatParams(CustomizeIndex index, MakeTypeRace data) {
-		var feat = data.GetFeature(index);
-		if (feat == null) return;
-
-		var baseValue = this.Editor.GetCustomization(index);
-		var current = (byte)(baseValue & ~0x80);
-
-		var isZeroIndex = feat.Params.FirstOrDefault()?.Value == 0;
-
-		var intValue = (int)current;
-		if (isZeroIndex) intValue++;
-		if (ImGui.InputInt(feat.Name, ref intValue, 1) && intValue >= (isZeroIndex ? 1 : 0)) {
-			var newValue = (byte)(isZeroIndex ? --intValue : intValue);
-			this.Editor.SetCustomization(index, (byte)(newValue | (baseValue & 0x80)));
-		}
+		var feature = data.GetFeature(index);
+		if (feature == null)
+			return;
+		var customization = this.Editor.GetCustomization(index);
+		var num1 = (int)(byte)(customization & 4294967167U);
+		var nullable1 = feature.Params.FirstOrDefault()?.Value;
+		var nullable2 = nullable1.HasValue ? nullable1.GetValueOrDefault() : new int?();
+		var num2 = 0;
+		var flag = nullable2.GetValueOrDefault() == num2 & nullable2.HasValue;
+		var num3 = num1;
+		if (flag)
+			++num3;
+		if (!Dalamud.Bindings.ImGui.ImGui.InputInt(ImU8String.op_Implicit(feature.Name), ref num3, 1, 0, new ImU8String(), (ImGuiInputTextFlags)0) || num3 < (flag ? 1 : 0))
+			return;
+		int num4;
+		if (!flag)
+			num4 = num3;
+		else
+			num3 = num4 = num3 - 1;
+		var num5 = (byte)num4;
+		this.Editor.SetCustomization(index, (byte)(num5 | customization & 128U /*0x80*/));
 	}
-	
-	// Iris size
 
 	private void DrawIrisSizeSwitch() {
-		var cursor = ImGui.GetCursorPosX();
-		ImGui.SameLine(0 ,0);
-		using var _group = ImRaii.Group();
-		ImGui.SetCursorPosX(cursor);
-		
-		var eyes = this.Editor.GetCustomization(CustomizeIndex.EyeShape);
-		var isSmall = (eyes & 0x80) != 0;
-		if (ImGui.Checkbox("Small Iris", ref isSmall))
-			this.Editor.SetCustomization(CustomizeIndex.EyeShape, (byte)(eyes ^ 0x80));
+		float cursorPosX = Dalamud.Bindings.ImGui.ImGui.GetCursorPosX();
+		Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, 0.0f);
+		using (ImRaii.Group()) {
+			Dalamud.Bindings.ImGui.ImGui.SetCursorPosX(cursorPosX);
+			var customization = this.Editor.GetCustomization((CustomizeIndex)16 /*0x10*/);
+			var flag = (customization & 128U /*0x80*/) > 0U;
+			if (!Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Small Iris"), ref flag))
+				return;
+			this.Editor.SetCustomization((CustomizeIndex)16 /*0x10*/, (byte)(customization ^ 128U /*0x80*/));
+		}
 	}
-	
-	// Main frame
 
 	private void DrawMainFrame(MakeTypeRace data) {
-		using var _frame = ImRaii.Child("##CustomizeMainFrame", ImGui.GetContentRegionAvail());
-		if (!_frame.Success) return;
-
-		ImGui.Spacing();
-		this.DrawSkinHairColors(data);
-		ImGui.Spacing();
-		this.DrawFacePaintOptions(data);
-		ImGui.Spacing();
-
-		if (ImGui.CollapsingHeader("Primary Features"))
-			this.DrawFeatIconParams(data);
-		
-		ImGui.Spacing();
-
-		var faceFeatLabel = "Facial Features";
-		var faceFeat = data.GetFeature(CustomizeIndex.FaceFeatures);
-		if (faceFeat != null && HasUniqueFeature(data.Tribe))
-			faceFeatLabel += $" / {faceFeat.Name}";
-		faceFeatLabel += " / Tattoos";
-		
-		if (ImGui.CollapsingHeader(faceFeatLabel))
+		using (ImRaii.IEndObject iendObject = ImRaii.Child(ImU8String.op_Implicit("##CustomizeMainFrame"), Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail())) {
+			if (!iendObject.Success)
+				return;
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			this.DrawSkinHairColors(data);
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			this.DrawFacePaintOptions(data);
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			if (Dalamud.Bindings.ImGui.ImGui.CollapsingHeader(ImU8String.op_Implicit("Primary Features"), (ImGuiTreeNodeFlags)0))
+				this.DrawFeatIconParams(data);
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			var str = "Facial Features";
+			var feature = data.GetFeature((CustomizeIndex)12);
+			if (feature != null && HasUniqueFeature(data.Tribe))
+				str = $"{str} / {feature.Name}";
+			if (!Dalamud.Bindings.ImGui.ImGui.CollapsingHeader(ImU8String.op_Implicit(str + " / Tattoos"), (ImGuiTreeNodeFlags)0))
+				return;
 			this.DrawFacialFeatures(data);
+		}
 	}
 
-	private static bool HasUniqueFeature(Tribe tribe)
-		=> tribe is Tribe.Wildwood or Tribe.MoonKeeper or Tribe.Raen or Tribe.Xaela;
-	
-	// Icons
-	
-	private const string LegacyTexPath = "chara/common/texture/decal_equip/_stigma.tex";
-
-	private readonly static Vector2 MaxButtonSize = new(64, 64);
-	
-	private Vector2 ButtonSize = MaxButtonSize;
+	private static bool HasUniqueFeature(Tribe tribe) {
+		bool flag;
+		switch (tribe) {
+			case Tribe.Wildwood:
+			case Tribe.MoonKeeper:
+			case Tribe.Raen:
+			case Tribe.Xaela:
+				flag = true;
+				break;
+			default:
+				flag = false;
+				break;
+		}
+		return flag;
+	}
 
 	private static Vector2 CalcButtonSize() {
-		var width = ImGui.GetWindowSize().X * (1 - SideRatio);
-		var widthVec2 = new Vector2(width, width);
-		return Vector2.Min(MaxButtonSize, widthVec2 / 8f);
+		var num = Dalamud.Bindings.ImGui.ImGui.GetWindowSize().X * 0.65f;
+		Vector2 vector2 = new Vector2(num, num);
+		return Vector2.Min(MaxButtonSize, vector2 / 8f);
 	}
-	
-	// Icon params
-
-	private readonly static CustomizeIndex[] FeatIconParams = [
-		CustomizeIndex.FaceType,
-		CustomizeIndex.HairStyle,
-		CustomizeIndex.Facepaint,
-		CustomizeIndex.RaceFeatureType
-	];
 
 	private void DrawFeatIconParams(MakeTypeRace data) {
-		var style = ImGui.GetStyle();
-		var width = ImGui.GetContentRegionAvail().X / 2 - this.ButtonSize.X - (style.FramePadding.X + style.ItemSpacing.X) * 2;
-		ImGui.PushItemWidth(width);
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		Dalamud.Bindings.ImGui.ImGui.PushItemWidth((float)((double)Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail().X / 2.0 - (double)this.ButtonSize.X - ((double)((ImGuiStylePtr) ref style).FramePadding.X +
+			(double)((ImGuiStylePtr) ref style).ItemSpacing.X) *2.0));
 		try {
-			var i = 0;
-			var isSameLine = false;
-			foreach (var feat in FeatIconParams) {
-				if (!this.DrawFeatIconParams(data, feat)) continue;
-				isSameLine = ++i % 2 != 0;
-				if (isSameLine) ImGui.SameLine();
+			var num = 0;
+			var flag = false;
+			foreach (int featIconParam in FeatIconParams) {
+				CustomizeIndex index = (CustomizeIndex)featIconParam;
+				if (this.DrawFeatIconParams(data, index)) {
+					flag = ++num % 2 != 0;
+					if (flag)
+						Dalamud.Bindings.ImGui.ImGui.SameLine();
+				}
 			}
-			if (isSameLine) ImGui.Dummy(Vector2.Zero);
+			if (!flag)
+				return;
+			Dalamud.Bindings.ImGui.ImGui.Dummy(Vector2.Zero);
 		} finally {
-			ImGui.PopItemWidth();
+			Dalamud.Bindings.ImGui.ImGui.PopItemWidth();
 		}
 	}
 
 	private bool DrawFeatIconParams(MakeTypeRace data, CustomizeIndex index) {
-		var feat = data.GetFeature(index);
-		if (feat == null) return false;
-		
-		var baseValue = this.Editor.GetCustomization(index);
-		
-		var canFlip = index == CustomizeIndex.Facepaint;
-		var value = canFlip ? (byte)(baseValue & ~0x80) : baseValue;
-
-		var active = feat.Params.FirstOrDefault(param => param.Value == value);
-		if (this.DrawFeatIconButton($"{value}", active))
-			this._featurePopup.Open(feat);
-		
-		var btnHeight = ImGui.GetItemRectSize().Y;
-
-		ImGui.SameLine();
-		using var _group = ImRaii.Group();
-		
-		var padHeight = btnHeight / 2 - (ImGui.GetFrameHeightWithSpacing() + UiBuilder.IconFont.FontSize);
-		ImGui.Dummy(Vector2.Zero with { Y = padHeight });
-		
-		ImGui.Text(feat.Name);
-
-		var intValue = (int)value;
-		if (ImGui.InputInt($"##Input_{feat.Index}", ref intValue, 1)) {
-			var valid = index != CustomizeIndex.FaceType || feat.Params.Any(p => p.Value == value);
-			if (valid) this.Editor.SetCustomization(index, canFlip ? (byte)(intValue | baseValue & 0x80) : (byte)intValue);
+		var feature = data.GetFeature(index);
+		if (feature == null)
+			return false;
+		var customization = this.Editor.GetCustomization(index);
+		bool flag = index == 24;
+		var value = flag ? (byte)(customization & 4294967167U) : customization;
+		var makeTypeParam = feature.Params.FirstOrDefault(param => param.Value == value);
+		if (this.DrawFeatIconButton($"{value}", makeTypeParam))
+			this._featurePopup.Open(feature);
+		float y = Dalamud.Bindings.ImGui.ImGui.GetItemRectSize().Y;
+		Dalamud.Bindings.ImGui.ImGui.SameLine();
+		using (ImRaii.Group()) {
+			var num1 = y / 2.0;
+			var heightWithSpacing = (double)Dalamud.Bindings.ImGui.ImGui.GetFrameHeightWithSpacing();
+			ImFontPtr iconFont = UiBuilder.IconFont;
+			var num2 = (double)((ImFontPtr) ref iconFont ).FontSize;
+			var num3 = heightWithSpacing + num2;
+			var num4 = (float)(num1 - num3);
+			Dalamud.Bindings.ImGui.ImGui.Dummy(Vector2.Zero with {
+				Y = num4
+			});
+			Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(feature.Name));
+			var num5 = (int)value;
+			ImU8String imU8String = new ImU8String(8, 1);
+			((ImU8String) ref imU8String).AppendLiteral("##Input_");
+			((ImU8String) ref imU8String).AppendFormatted<CustomizeIndex>(feature.Index);
+			if (Dalamud.Bindings.ImGui.ImGui.InputInt(imU8String, ref num5, 1, 0, new ImU8String(), (ImGuiInputTextFlags)0) && (index != 5 ? 1 : feature.Params.Any(p => p.Value == value) ? 1 : 0) != 0)
+				this.Editor.SetCustomization(index, flag ? (byte)(num5 | customization & 128 /*0x80*/) : (byte)num5);
+			return true;
 		}
-
-		return true;
 	}
-	
+
 	private bool DrawFeatIconButton(string fallback, MakeTypeParam? param) {
-		using var _col = ImRaii.PushColor(ImGuiCol.Button, 0);
-
-		ISharedImmediateTexture? icon = null;
-		if (param != null && param.Graphic != 0)
-			this._tex.TryGetFromGameIcon(param.Graphic, out icon);
-
-		bool clicked;
-		if (icon != null)
-			clicked = ImGui.ImageButton(icon.GetWrapOrEmpty().Handle, this.ButtonSize);
-		else
-			clicked = ImGui.Button(fallback, this.ButtonSize + ImGui.GetStyle().FramePadding * 2);
-		return clicked;
+		using (ImRaii.PushColor((ImGuiCol)21, 0U, true)) {
+			ISharedImmediateTexture immediateTexture = (ISharedImmediateTexture)null;
+			if (param != null && param.Graphic != 0U) {
+				ITextureProvider tex = this._tex;
+				GameIconLookup gameIconLookup = GameIconLookup.op_Implicit(param.Graphic);
+				ref GameIconLookup local1 = ref gameIconLookup;
+				ref ISharedImmediateTexture local2 = ref immediateTexture;
+				tex.TryGetFromGameIcon(ref local1, ref local2);
+			}
+			bool flag;
+			if (immediateTexture != null) {
+				flag = Dalamud.Bindings.ImGui.ImGui.ImageButton(immediateTexture.GetWrapOrEmpty().Handle, this.ButtonSize);
+			} else {
+				ImU8String imU8String = ImU8String.op_Implicit(fallback);
+				Vector2 buttonSize = this.ButtonSize;
+				ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+				Vector2 vector2_1 = ((ImGuiStylePtr) ref style ).FramePadding * 2f;
+				Vector2 vector2_2 = buttonSize + vector2_1;
+				flag = Dalamud.Bindings.ImGui.ImGui.Button(imU8String, vector2_2);
+			}
+			return flag;
+		}
 	}
 
 	private void DrawFacePaintOptions(MakeTypeRace data) {
-		var cursor = ImGui.GetCursorPosX() + ImGui.GetStyle().FramePadding.X;
-        
-		ImGui.SetCursorPosX(cursor);
-		using var _group = ImRaii.Group();
-		
-		this.DrawFeatColor(CustomizeIndex.FacepaintColor, data);
-
-		ImGui.SameLine(0);
-		
-		var facePaint = this.Editor.GetCustomization(CustomizeIndex.Facepaint);
-		var isFlipped = (facePaint & 0x80) != 0;
-		if (ImGui.Checkbox("Flip Face Paint", ref isFlipped))
-			this.Editor.SetCustomization(CustomizeIndex.Facepaint, (byte)(facePaint ^ 0x80));
+		var cursorPosX = (double)Dalamud.Bindings.ImGui.ImGui.GetCursorPosX();
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		var x = (double)((ImGuiStylePtr) ref style ).FramePadding.X;
+		Dalamud.Bindings.ImGui.ImGui.SetCursorPosX((float)(cursorPosX + x));
+		using (ImRaii.Group()) {
+			this.DrawFeatColor((CustomizeIndex)25, data);
+			Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f);
+			var customization = this.Editor.GetCustomization((CustomizeIndex)24);
+			var flag = (customization & 128U /*0x80*/) > 0U;
+			if (!Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Flip Face Paint"), ref flag))
+				return;
+			this.Editor.SetCustomization((CustomizeIndex)24, (byte)(customization ^ 128U /*0x80*/));
+		}
 	}
-	
-	// Facial features
-	
-	private void DrawFacialFeatures(MakeTypeRace data) {
-		var style = ImGui.GetStyle();
-        
-		var current = this.Editor.GetCustomization(CustomizeIndex.FaceFeatures);
-		
-		this.DrawFacialFeatureToggles(data, current);
-		
-		ImGui.Spacing();
 
-		var space = style.ItemInnerSpacing.X + (this.ButtonSize.X + style.FramePadding.X * 2) * 4;
-		
-		ImGui.SetCursorPosX(ImGui.GetCursorPosX() + style.FramePadding.X);
-		ImGui.SetNextItemWidth(space / 2);
-		var intValue = (int)current;
-		if (ImGui.InputInt("##FaceFeatureFlags", ref intValue, 1))
-			this.Editor.SetCustomization(CustomizeIndex.FaceFeatures, (byte)intValue);
-		
-		var colorFeat = data.GetFeature(CustomizeIndex.FaceFeaturesColor);
-		if (colorFeat == null) return;
-		
-		var colors = this._makeTypeData.GetColors(CustomizeIndex.FaceFeaturesColor);
-		ImGui.SameLine(0, style.ItemSpacing.X);
-		this.DrawColorButton(CustomizeIndex.FaceFeaturesColor, colors);
-		ImGui.SameLine(0, style.ItemInnerSpacing.X);
-		ImGui.Text(colorFeat.Name);
+	private void DrawFacialFeatures(MakeTypeRace data) {
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		var customization = this.Editor.GetCustomization((CustomizeIndex)12);
+		this.DrawFacialFeatureToggles(data, customization);
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		var num1 = (double)((ImGuiStylePtr) ref style ).ItemInnerSpacing.X + ((double)this.ButtonSize.X + (double)((ImGuiStylePtr) ref style).FramePadding.X * 2.0) *4.0;
+		Dalamud.Bindings.ImGui.ImGui.SetCursorPosX(Dalamud.Bindings.ImGui.ImGui.GetCursorPosX() + ((ImGuiStylePtr) ref style).FramePadding.X);
+		Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth((float)(num1 / 2.0));
+		var num2 = (int)customization;
+		if (Dalamud.Bindings.ImGui.ImGui.InputInt(ImU8String.op_Implicit("##FaceFeatureFlags"), ref num2, 1, 0, new ImU8String(), (ImGuiInputTextFlags)0))
+			this.Editor.SetCustomization((CustomizeIndex)12, (byte)num2);
+		var feature = data.GetFeature((CustomizeIndex)13);
+		if (feature == null)
+			return;
+		var colors = this._makeTypeData.GetColors((CustomizeIndex)13);
+		Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemSpacing.X);
+		this.DrawColorButton((CustomizeIndex)13, colors);
+		Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+		Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(feature.Name));
 	}
 
 	private void DrawFacialFeatureToggles(MakeTypeRace data, byte current) {
-		using var _group = ImRaii.Group();
-		var style = ImGui.GetStyle();
-		
-		var faceId = this.Editor.GetCustomization(CustomizeIndex.FaceType);
-		if (!data.FaceFeatureIcons.TryGetValue(faceId, out var iconIds))
-			iconIds = data.FaceFeatureIcons.Values.FirstOrDefault();
-		iconIds ??= Array.Empty<uint>();
-
-		var icons = iconIds
-			.Select(id => this._tex.GetFromGameIcon(id))
-			.Append(this._tex.GetFromGame(LegacyTexPath));
-		
-		var i = 0;
-		foreach (var icon in icons) {
-			if (i++ % 4 != 0)
-				ImGui.SameLine(0, style.ItemInnerSpacing.X);
-
-			var flag = (byte)Math.Pow(2, i - 1);
-			var isActive = (current & flag) != 0;
-
-			using var _col = ImRaii.PushColor(ImGuiCol.Button, isActive ? ImGui.GetColorU32(ImGuiCol.ButtonActive) : 0);
-
-			bool button;
-			if (icon != null)
-				button = ImGui.ImageButton(icon.GetWrapOrEmpty().Handle, this.ButtonSize);
-			else
-				button = ImGui.Button($"{i}", this.ButtonSize + style.FramePadding * 2);
-			if (button)
-				this.Editor.SetCustomization(CustomizeIndex.FaceFeatures, (byte)(current ^ flag));
+		using (ImRaii.Group()) {
+			ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+			var customization = this.Editor.GetCustomization((CustomizeIndex)5);
+			uint[] source;
+			if (!data.FaceFeatureIcons.TryGetValue(customization, out source))
+				source = data.FaceFeatureIcons.Values.FirstOrDefault();
+			if (source == null)
+				source = Array.Empty<uint>();
+			IEnumerable<ISharedImmediateTexture> immediateTextures = source.Select((Func<uint, ISharedImmediateTexture>)(id => {
+				ITextureProvider tex = this._tex;
+				GameIconLookup gameIconLookup = GameIconLookup.op_Implicit(id);
+				ref GameIconLookup local = ref gameIconLookup;
+				return tex.GetFromGameIcon(ref local);
+			})).Append(this._tex.GetFromGame("chara/common/texture/decal_equip/_stigma.tex"));
+			var num1 = 0;
+			foreach (ISharedImmediateTexture immediateTexture in immediateTextures) {
+				if (num1++ % 4 != 0)
+					Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X)
+				;
+				var num2 = (byte)Math.Pow(2.0, num1 - 1);
+				using (ImRaii.PushColor((ImGuiCol)21, (current & (uint)num2) > 0U ? Dalamud.Bindings.ImGui.ImGui.GetColorU32((ImGuiCol)23) : 0U, true)) {
+					bool flag;
+					if (immediateTexture != null) {
+						flag = Dalamud.Bindings.ImGui.ImGui.ImageButton(immediateTexture.GetWrapOrEmpty().Handle, this.ButtonSize);
+					} else {
+						ImU8String imU8String = new ImU8String(0, 1);
+						((ImU8String) ref imU8String).AppendFormatted<int>(num1);
+						flag = Dalamud.Bindings.ImGui.ImGui.Button(imU8String, this.ButtonSize + ((ImGuiStylePtr) ref style).FramePadding * 2f);
+					}
+					if (flag)
+						this.Editor.SetCustomization((CustomizeIndex)12, (byte)(current ^ (uint)num2));
+				}
+			}
 		}
 	}
-	
-	// Colors
-	
+
 	private void DrawSkinHairColors(MakeTypeRace data) {
-		var style = ImGui.GetStyle();
-		ImGui.SetCursorPosX(ImGui.GetCursorPosX() + style.CellPadding.X);
-		using var _group = ImRaii.Group();
-		this.DrawFeatColor(CustomizeIndex.SkinColor, data);
-		ImGui.SameLine();
-		this.DrawFeatColor(CustomizeIndex.HairColor, data);
-		ImGui.SameLine();
-		this.DrawHighlights();
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		Dalamud.Bindings.ImGui.ImGui.SetCursorPosX(Dalamud.Bindings.ImGui.ImGui.GetCursorPosX() + ((ImGuiStylePtr) ref style).CellPadding.X);
+		using (ImRaii.Group()) {
+			this.DrawFeatColor((CustomizeIndex)8, data);
+			Dalamud.Bindings.ImGui.ImGui.SameLine();
+			this.DrawFeatColor((CustomizeIndex)10, data);
+			Dalamud.Bindings.ImGui.ImGui.SameLine();
+			this.DrawHighlights();
+		}
 	}
 
 	private void DrawColorButton(CustomizeIndex index, uint[] colors) {
-		var value = this.Editor.GetCustomization(index);
-		if (colors.Length == 0x80)
-			value = (byte)(value & ~0x80);
-
-		var color = value < colors.Length ? colors[value] : 0;
-		var colorVec = ImGui.ColorConvertU32ToFloat4(color);
-		if (ImGui.ColorButton($"{value}##{index}", colorVec))
-			this._colorPopup.Open(index, colors);
+		var customization = this.Editor.GetCustomization(index);
+		if (colors.Length == 128 /*0x80*/)
+			customization &= 127 /*0x7F*/;
+		Vector4 float4 = Dalamud.Bindings.ImGui.ImGui.ColorConvertU32ToFloat4(customization < colors.Length ? colors[customization] : 0U);
+		ImU8String imU8String;
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(2, 2);
+		((ImU8String) ref imU8String).AppendFormatted<byte>(customization);
+		((ImU8String) ref imU8String).AppendLiteral("##");
+		((ImU8String) ref imU8String).AppendFormatted<CustomizeIndex>(index);
+		if (!Dalamud.Bindings.ImGui.ImGui.ColorButton(imU8String, ref float4, (ImGuiColorEditFlags)0, new Vector2()))
+			return;
+		this._colorPopup.Open(index, colors);
 	}
 
 	private void DrawFeatColor(CustomizeIndex index, MakeTypeRace data) {
-		var feat = data.GetFeature(index);
-		if (feat == null) return;
-		
-		using var _group = ImRaii.Group();
-
-		var colors = this._makeTypeData.GetColors(index, data.Tribe, data.Gender);
-		this.DrawColorButton(index, colors);
-		
-		ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
-		
-		ImGui.Text(feat.Name);
+		var feature = data.GetFeature(index);
+		if (feature == null)
+			return;
+		using (ImRaii.Group()) {
+			var colors = this._makeTypeData.GetColors(index, data.Tribe, data.Gender);
+			this.DrawColorButton(index, colors);
+			ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+			Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+			Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(feature.Name));
+		}
 	}
 
 	private void DrawHighlights() {
-		var style = ImGui.GetStyle();
-
-		using var _group = ImRaii.Group();
-
-		var hasHighlightValue = this.Editor.GetCustomization(CustomizeIndex.HasHighlights);
-		var hasHighlights = (hasHighlightValue & 0x80) != 0;
-		if (ImGui.Checkbox("##HighlightToggle", ref hasHighlights))
-			this.Editor.SetCustomization(CustomizeIndex.HasHighlights, (byte)(hasHighlightValue ^ 0x80));
-		
-		ImGui.SameLine(0, style.ItemInnerSpacing.X);
-        
-		var colors = this._makeTypeData.GetColors(CustomizeIndex.HairColor2);
-		using var _disable = ImRaii.Disabled(!hasHighlights);
-		this.DrawColorButton(CustomizeIndex.HairColor2, colors);
-		ImGui.SameLine(0, style.ItemInnerSpacing.X);
-		ImGui.Text("Highlights");
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		using (ImRaii.Group()) {
+			var customization = this.Editor.GetCustomization((CustomizeIndex)7);
+			var flag = (customization & 128U /*0x80*/) > 0U;
+			if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("##HighlightToggle"), ref flag))
+				this.Editor.SetCustomization((CustomizeIndex)7, (byte)(customization ^ 128U /*0x80*/));
+			Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+			var colors = this._makeTypeData.GetColors((CustomizeIndex)11);
+			using (ImRaii.Disabled(!flag)) {
+				this.DrawColorButton((CustomizeIndex)11, colors);
+				Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+				Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit("Highlights"));
+			}
+		}
 	}
 
 	private void DrawEyeColorSwitch() {
-		var colors = this._makeTypeData.GetColors(CustomizeIndex.EyeColor);
-		if (colors.Length == 0) return;
-
-		var isHetero = this.Editor.GetHeterochromia();
-
-		var style = ImGui.GetStyle();
-		var frame = ImGui.GetFrameHeight();
-		var pos = ImGui.GetCursorPosX() + ImGui.CalcItemWidth() - frame * 3 - style.ItemInnerSpacing.X * 2;
-		ImGui.SetCursorPosX(pos);
-		
-		using var _group = ImRaii.Group();
-
-		using (var _ = ImRaii.PushColor(ImGuiCol.Button, 0)) {
-			var icon = isHetero ? FontAwesomeIcon.Unlink : FontAwesomeIcon.Link;
-			if (Buttons.IconButton(icon, new Vector2(frame, frame))) {
-				isHetero = !isHetero;
-				this.Editor.SetHeterochromia(isHetero);
+		var colors = this._makeTypeData.GetColors((CustomizeIndex)9);
+		if (colors.Length == 0)
+			return;
+		var enabled = this.Editor.GetHeterochromia();
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		float frameHeight = Dalamud.Bindings.ImGui.ImGui.GetFrameHeight();
+		Dalamud.Bindings.ImGui.ImGui.SetCursorPosX((float)((double)Dalamud.Bindings.ImGui.ImGui.GetCursorPosX() + (double)Dalamud.Bindings.ImGui.ImGui.CalcItemWidth() - frameHeight * 3.0 - (double)((ImGuiStylePtr) ref style).ItemInnerSpacing.X *
+			2.0));
+		using (ImRaii.Group()) {
+			using (ImRaii.PushColor((ImGuiCol)21, 0U, true)) {
+				if (Buttons.IconButton(enabled ? (FontAwesomeIcon)61735 : (FontAwesomeIcon)61633, new Vector2?(new Vector2(frameHeight, frameHeight)))) {
+					enabled = !enabled;
+					this.Editor.SetHeterochromia(enabled);
+				}
 			}
+			Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+			using (ImRaii.Disabled(!enabled))
+				this.DrawColorButton(enabled ? (CustomizeIndex)9 : (CustomizeIndex)15, colors);
+			Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+			this.DrawColorButton(enabled ? (CustomizeIndex)15 : (CustomizeIndex)9, colors);
+			Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+			Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit("Eye Color"));
 		}
-
-		ImGui.SameLine(0, style.ItemInnerSpacing.X);
-		
-		// Swapped when heterochromia is toggled for UX purposes.
-		using (var _ = ImRaii.Disabled(!isHetero))
-			this.DrawColorButton(isHetero ? CustomizeIndex.EyeColor : CustomizeIndex.EyeColor2, colors);
-		ImGui.SameLine(0, style.ItemInnerSpacing.X);
-		this.DrawColorButton(isHetero ? CustomizeIndex.EyeColor2 : CustomizeIndex.EyeColor, colors);
-
-		ImGui.SameLine(0, style.ItemInnerSpacing.X);
-		ImGui.Text("Eye Color");
 	}
 
 	private void DrawLipColorSwitch() {
-		var colors = this._makeTypeData.GetColors(CustomizeIndex.LipColor);
-		if (colors.Length == 0) return;
-		
-		var style = ImGui.GetStyle();
-		var frame = ImGui.GetFrameHeight();
-		var pos = ImGui.GetCursorPosX() + ImGui.CalcItemWidth() - frame * 2 - style.ItemInnerSpacing.X;
-		ImGui.SetCursorPosX(pos);
-
-		var lipType = this.Editor.GetCustomization(CustomizeIndex.LipStyle);
-		var toggled = (lipType & 0x80) != 0;
-		if (ImGui.Checkbox("##ToggleLipColor", ref toggled))
-			this.Editor.SetCustomization(CustomizeIndex.LipStyle, (byte)(lipType ^ 0x80));
-		
-		ImGui.SameLine(0, style.ItemInnerSpacing.X);
-
-		using (var _ = ImRaii.Disabled(!toggled))
-			this.DrawColorButton(CustomizeIndex.LipColor, colors);
-
-		ImGui.SameLine(0, style.ItemInnerSpacing.X);
-		ImGui.Text("Lipstick");
+		var colors = this._makeTypeData.GetColors((CustomizeIndex)20);
+		if (colors.Length == 0)
+			return;
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		float frameHeight = Dalamud.Bindings.ImGui.ImGui.GetFrameHeight();
+		Dalamud.Bindings.ImGui.ImGui.SetCursorPosX((float)((double)Dalamud.Bindings.ImGui.ImGui.GetCursorPosX() + (double)Dalamud.Bindings.ImGui.ImGui.CalcItemWidth() - frameHeight * 2.0) - ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+		var customization = this.Editor.GetCustomization((CustomizeIndex)19);
+		var flag = (customization & 128U /*0x80*/) > 0U;
+		if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("##ToggleLipColor"), ref flag))
+			this.Editor.SetCustomization((CustomizeIndex)19, (byte)(customization ^ 128U /*0x80*/));
+		Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+		using (ImRaii.Disabled(!flag))
+			this.DrawColorButton((CustomizeIndex)20, colors);
+		Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+		Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit("Lipstick"));
 	}
 }

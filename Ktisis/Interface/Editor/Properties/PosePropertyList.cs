@@ -1,10 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Editor.Properties.PosePropertyList
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Interface;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+#nullable enable
+using System.Linq;
 
 using GLib.Widgets;
 
@@ -23,175 +24,163 @@ using Ktisis.Scene.Entities.Skeleton.Constraints;
 namespace Ktisis.Interface.Editor.Properties;
 
 public class PosePropertyList : ObjectPropertyList {
+	private const string IkCfgPopup = "##IkCfgPopup";
 	private readonly IEditorContext _ctx;
 	private readonly LocaleManager _locale;
-	
-	public PosePropertyList(
-		IEditorContext ctx,
-		LocaleManager locale
-	) {
+
+	public PosePropertyList(IEditorContext ctx, LocaleManager locale) {
 		this._ctx = ctx;
 		this._locale = locale;
 	}
 
-	private const string IkCfgPopup = "##IkCfgPopup";
-	
 	public override void Invoke(IPropertyListBuilder builder, SceneEntity entity) {
-		if (!TryGetEntityPose(entity, out var pose))
+		EntityPose pose;
+		if (!TryGetEntityPose(entity, out pose))
 			return;
-		
-		builder.AddHeader("Pose", () => this.DrawPoseTab(pose), priority: 1);
-		if (pose.IkController.GroupCount > 0)
-			builder.AddHeader("Inverse Kinematics", () => this.DrawConstraintsTab(pose), priority: 2);
+		builder.AddHeader("Pose", () => this.DrawPoseTab(pose), 1);
+		if (pose.IkController.GroupCount <= 0)
+			return;
+		builder.AddHeader("Inverse Kinematics", () => this.DrawConstraintsTab(pose), 2);
 	}
 
 	private void DrawPoseTab(EntityPose pose) {
-		var spacing = ImGui.GetStyle().ItemInnerSpacing.X;
-		
-		// Parenting toggle
-		ImGui.Checkbox(this._locale.Translate("transform_edit.transforms.parenting"), ref this._ctx.Config.Gizmo.ParentBones);
-		
-		// Import/export
-		
-		if (pose.Parent is not ActorEntity actor) return;
-		ImGui.Spacing();
-		
-		if (ImGui.Button("Import"))
-			this._ctx.Interface.OpenPoseImport(actor);
-		ImGui.SameLine(0, spacing);
-		if (ImGui.Button("Export"))
-			this._ctx.Interface.OpenPoseExport(pose);
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		float x = ((ImGuiStylePtr) ref style ).ItemInnerSpacing.X;
+		Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit(this._locale.Translate("transform_edit.transforms.parenting")), ref this._ctx.Config.Gizmo.ParentBones);
+		if (!(pose.Parent is ActorEntity parent))
+			return;
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Separator();
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Flip Yaw Correction"), ref this._ctx.Config.Editor.FlipYawCorrection);
+		Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Flip Rotation Correction"), ref this._ctx.Config.Editor.FlipRotationCorrection);
+		if (Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Flip Pose"), new Vector2()))
+			this._ctx.Posing.ApplyPoseFlip(parent);
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Separator();
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		if (Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Import"), new Vector2()))
+			this._ctx.Interface.OpenPoseImport(parent);
+		Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+		if (!Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Export"), new Vector2()))
+			return;
+		this._ctx.Interface.OpenPoseExport(pose);
 	}
-	
-	// Inverse Kinematics
 
 	private void DrawConstraintsTab(EntityPose pose) {
-		var style = ImGui.GetStyle();
-		var spacing = style.ItemInnerSpacing.X;
-		
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		float x = ((ImGuiStylePtr) ref style ).ItemInnerSpacing.X;
 		foreach (var (name, group) in pose.IkController.GetGroups()) {
-			if (!TryGetGroupEndNode(pose, group, out var node))
-				continue;
-
-			using var _ = ImRaii.PushId($"IkProp_{name}");
-			
-			var enabled = group.IsEnabled;
-			if (ImGui.Checkbox(" " + this._locale.Translate($"boneCategory.{name}"), ref enabled))
-				node.Toggle();
-
-			var btnSpace = Icons.CalcIconSize(FontAwesomeIcon.HandPointer).X
-				+ Icons.CalcIconSize(FontAwesomeIcon.EllipsisH).X
-				+ spacing * 3;
-
-			ImGui.SameLine(0, spacing);
-			ImGui.SameLine(0, ImGui.GetContentRegionAvail().X - btnSpace);
-
-			using (ImRaii.PushColor(ImGuiCol.Button, ImGui.GetColorU32(ImGuiCol.ButtonActive), node.IsSelected)) {
-				var canSelect = !node.IsSelected || this._ctx.Selection.Count > 1;
-				if (Buttons.IconButtonTooltip(FontAwesomeIcon.HandPointer, "Select", Vector2.Zero) && canSelect)
-					node.Select(GuiHelpers.GetSelectMode());
+			IkEndNode node;
+			if (TryGetGroupEndNode(pose, group, out node)) {
+				ImU8String imU8String = new ImU8String(7, 1);
+				((ImU8String) ref imU8String).AppendLiteral("IkProp_");
+				((ImU8String) ref imU8String).AppendFormatted<string>(name);
+				using (ImRaii.PushId(imU8String, true)) {
+					var isEnabled = group.IsEnabled;
+					if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit(" " + this._locale.Translate("boneCategory." + name)), ref isEnabled))
+						group.IsEnabled = isEnabled;
+					var num = (float)((double)Icons.CalcIconSize((FontAwesomeIcon)62042).X + (double)Icons.CalcIconSize((FontAwesomeIcon)61761).X + x * 3.0);
+					Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+					Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail().X - num);
+					using (ImRaii.PushColor((ImGuiCol)21, Dalamud.Bindings.ImGui.ImGui.GetColorU32((ImGuiCol)23), node.IsSelected)) {
+						var flag = !node.IsSelected || this._ctx.Selection.Count > 1;
+						if (Buttons.IconButtonTooltip((FontAwesomeIcon)62042, "Select", new Vector2?(Vector2.Zero)) & flag)
+							node.Select(GuiHelpers.GetSelectMode());
+					}
+					Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+					if (Buttons.IconButtonTooltip((FontAwesomeIcon)61761, "Configure", new Vector2?(Vector2.Zero)))
+						Dalamud.Bindings.ImGui.ImGui.OpenPopup(ImU8String.op_Implicit("##IkCfgPopup"), (ImGuiPopupFlags)0);
+					if (Dalamud.Bindings.ImGui.ImGui.IsPopupOpen(ImU8String.op_Implicit("##IkCfgPopup"), (ImGuiPopupFlags)0)) {
+						using (ImRaii.IEndObject iendObject = ImRaii.Popup(ImU8String.op_Implicit("##IkCfgPopup"))) {
+							if (iendObject.Success)
+								this.DrawIkConfig(node);
+						}
+					}
+				}
 			}
-
-			ImGui.SameLine(0, spacing);
-
-			if (Buttons.IconButtonTooltip(FontAwesomeIcon.EllipsisH, "Configure", Vector2.Zero))
-				ImGui.OpenPopup(IkCfgPopup);
-
-			if (!ImGui.IsPopupOpen(IkCfgPopup)) continue;
-			
-			using var popup = ImRaii.Popup(IkCfgPopup);
-			if (popup.Success) this.DrawIkConfig(node);
 		}
 	}
 
 	private void DrawIkConfig(IIkNode ik) {
 		var isEnabled = ik.IsEnabled;
-		if (ImGui.Checkbox("Enabled", ref isEnabled)) {
+		if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Enabled"), ref isEnabled)) {
 			if (isEnabled)
 				ik.Enable();
 			else
 				ik.Disable();
 		}
-		
-		ImGui.Spacing();
-		ImGui.Separator();
-		ImGui.Spacing();
-		
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Separator();
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
 		switch (ik) {
-			case ICcdNode node:
-				this.DrawCcd(node);
+			case ICcdNode node1:
+				this.DrawCcd(node1);
 				break;
-			case ITwoJointsNode node:
-				this.DrawTwoJoints(node);
+			case ITwoJointsNode node2:
+				this.DrawTwoJoints(node2);
 				break;
 		}
 	}
-	
-	// IK: CCD
 
 	private void DrawCcd(ICcdNode node) {
-		ImGui.SliderFloat(this._locale.Translate("transform_edit.ik.ccd.gain"), ref node.Group.Gain, 0.0f, 1.0f, "%.2f");
-		ImGui.SliderInt(this._locale.Translate("transform_edit.ik.ccd.iterations"), ref node.Group.Iterations, 0, 60);
+		Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit(this._locale.Translate("transform_edit.ik.ccd.gain")), ref node.Group.Gain, 0.0f, 1f, ImU8String.op_Implicit("%.2f"), (ImGuiSliderFlags)0);
+		Dalamud.Bindings.ImGui.ImGui.SliderInt(ImU8String.op_Implicit(this._locale.Translate("transform_edit.ik.ccd.iterations")), ref node.Group.Iterations, 0, 60, new ImU8String(), (ImGuiSliderFlags)0);
 	}
-	
-	// IK: Two Joints
 
 	private void DrawTwoJoints(ITwoJointsNode node) {
-		ImGui.Checkbox(this._locale.Translate("transform_edit.ik.two_joints.enforce"), ref node.Group.EnforceRotation);
-		
-		ImGui.Spacing();
-		
-		ImGui.Text(this._locale.Translate("transform_edit.ik.two_joints.mode"));
+		Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit(this._locale.Translate("transform_edit.ik.two_joints.enforce")), ref node.Group.EnforceRotation);
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(this._locale.Translate("transform_edit.ik.two_joints.mode")));
 		DrawIkMode(this._locale.Translate("transform_edit.ik.two_joints.fixed"), TwoJointsMode.Fixed, node.Group);
 		DrawIkMode(this._locale.Translate("transform_edit.ik.two_joints.relative"), TwoJointsMode.Relative, node.Group);
-		
-		ImGui.Spacing();
-		ImGui.Separator();
-		ImGui.Spacing();
-		
-		ImGui.Text(this._locale.Translate("transform_edit.ik.two_joints.gain"));
-		ImGui.SliderFloat("Shoulder##FirstWeight", ref node.Group.FirstBoneGain, 0.0f, 1.0f, "%.2f");
-		ImGui.SliderFloat("Elbow##SecondWeight", ref node.Group.SecondBoneGain, 0.0f, 1.0f, "%.2f");
-		ImGui.SliderFloat("Hand##HandWeight", ref node.Group.EndBoneGain, 0.0f, 1.0f, "%.2f");
-		
-		ImGui.Spacing();
-		ImGui.Separator();
-		ImGui.Spacing();
-		
-		ImGui.Text(this._locale.Translate("transform_edit.ik.two_joints.hinges"));
-		ImGui.Spacing();
-		ImGui.SliderFloat("Minimum", ref node.Group.MinHingeAngle, -1.0f, 1.0f, "%.2f");
-		ImGui.SliderFloat("Maximum", ref node.Group.MaxHingeAngle, -1.0f, 1.0f, "%.2f");
-		ImGui.SliderFloat3("Axis", ref node.Group.HingeAxis, -1.0f, 1.0f, "%.2f");
-		
-		ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Separator();
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(this._locale.Translate("transform_edit.ik.two_joints.gain")));
+		Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Shoulder##FirstWeight"), ref node.Group.FirstBoneGain, 0.0f, 1f, ImU8String.op_Implicit("%.2f"), (ImGuiSliderFlags)0);
+		Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Elbow##SecondWeight"), ref node.Group.SecondBoneGain, 0.0f, 1f, ImU8String.op_Implicit("%.2f"), (ImGuiSliderFlags)0);
+		Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Hand##HandWeight"), ref node.Group.EndBoneGain, 0.0f, 1f, ImU8String.op_Implicit("%.2f"), (ImGuiSliderFlags)0);
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Separator();
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(this._locale.Translate("transform_edit.ik.two_joints.hinges")));
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Minimum"), ref node.Group.MinHingeAngle, -1f, 1f, ImU8String.op_Implicit("%.2f"), (ImGuiSliderFlags)0);
+		Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Maximum"), ref node.Group.MaxHingeAngle, -1f, 1f, ImU8String.op_Implicit("%.2f"), (ImGuiSliderFlags)0);
+		Dalamud.Bindings.ImGui.ImGui.SliderFloat3(ImU8String.op_Implicit("Axis"), ref node.Group.HingeAxis, -1f, 1f, ImU8String.op_Implicit("%.2f"), (ImGuiSliderFlags)0);
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
 	}
 
 	private static void DrawIkMode(string label, TwoJointsMode mode, TwoJointsGroup group) {
-		var value = group.Mode == mode;
-		if (ImGui.RadioButton(label, value))
-			group.Mode = mode;
+		var flag = group.Mode == mode;
+		if (!Dalamud.Bindings.ImGui.ImGui.RadioButton(ImU8String.op_Implicit(label), flag))
+			return;
+		group.Mode = mode;
 	}
-	
-	// Entity helpers
 
 	private static bool TryGetEntityPose(SceneEntity entity, [NotNullWhen(true)] out EntityPose? result) {
-		result = entity switch {
-			ActorEntity actor => actor.Pose,
-			BoneNode node => node.Pose,
-			EntityPose pose => pose,
-			_ => null
-		};
+		EntityPose entityPose1;
+		switch (entity) {
+			case ActorEntity actorEntity:
+				entityPose1 = actorEntity.Pose;
+				break;
+			case BoneNode boneNode:
+				entityPose1 = boneNode.Pose;
+				break;
+			case EntityPose entityPose2:
+				entityPose1 = entityPose2;
+				break;
+			default:
+				entityPose1 = null;
+				break;
+		}
+		result = entityPose1;
 		return result != null;
 	}
 
-	private static bool TryGetGroupEndNode(EntityPose pose, IIkGroup group, [NotNullWhen(true)] out IkEndNode? node) {
-		node = pose.Recurse().FirstOrDefault(
-			node => node is IkEndNode {
-				Parent: IkNodeGroupBase grpNode
-			} && grpNode.Group == group
-		) as IkEndNode;
-
-		return node != null;
+	private static bool TryGetGroupEndNode(EntityPose pose, IIkGroup group, [NotNullWhen(true)] out IkEndNode? node1) {
+		node1 = pose.Recurse().FirstOrDefault(node2 => node2 is IkEndNode && node2.Parent is IkNodeGroupBase parent && parent.Group == group) as IkEndNode;
+		return node1 != null;
 	}
 }

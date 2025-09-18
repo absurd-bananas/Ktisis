@@ -1,3 +1,11 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Localization.LocaleManager
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
 using System.Collections.Generic;
 
 using Ktisis.Core.Attributes;
@@ -9,53 +17,40 @@ namespace Ktisis.Localization;
 
 [Singleton]
 public class LocaleManager {
-	// Service
-
 	private readonly ConfigManager _cfg;
-	
-	private readonly LocaleDataLoader Loader = new();
-	
+	private readonly LocaleDataLoader Loader = new LocaleDataLoader();
 	private LocaleData? Data;
 
-	public LocaleManager(
-		ConfigManager cfg
-	) {
+	public LocaleManager(ConfigManager cfg) {
 		this._cfg = cfg;
 	}
 
-	public void Initialize() {
-		// TODO: Listen for locale changes.
-		this.LoadLocale(this._cfg.File.Locale.LocaleId);
-	}
-	
-	// Localization methods
+	public void Initialize() => this.LoadLocale(this._cfg.File.Locale.LocaleId);
 
-	public string Translate(string handle, Dictionary<string, string>? parameters = null) {
-		return this.Data?.Translate(handle, parameters) ?? handle;
-	}
+	public string Translate(string handle, Dictionary<string, string>? parameters = null) => this.Data?.Translate(handle, parameters) ?? handle;
 
 	public bool HasTranslationFor(string handle) {
-		return this.Data?.HasTranslationFor(handle) ?? false;
+		var data = this.Data;
+		return data != null && data.HasTranslationFor(handle);
 	}
 
 	public void LoadLocale(string technicalName) {
-		Ktisis.Log.Verbose($"Reading localization file for '{technicalName}'");
-		if (this.Data == null || this.Data.MetaData.TechnicalName != technicalName)
-			this.Data = this.Loader.LoadData(technicalName);
+		Ktisis.Ktisis.Log.Verbose($"Reading localization file for '{technicalName}'", Array.Empty<object>());
+		if (this.Data != null && !(this.Data.MetaData.TechnicalName != technicalName))
+			return;
+		this.Data = this.Loader.LoadData(technicalName);
 	}
-	
-	// Helpers
-	
-	public string GetBoneName(PartialBoneInfo bone) => this.GetBoneName(bone.Name);
 
-	public string GetBoneName(string name) {
-		var key = $"bone.{name}";
-		var friendly_bone_names = this._cfg.File.Categories.ShowFriendlyBoneNames;
-		return friendly_bone_names && this.HasTranslationFor(key) ? this.Translate(key) : name;
+	public string GetBoneName(PartialBoneInfo bone, bool untranslated = false) => this.GetBoneName(bone.Name, untranslated);
+
+	public string GetBoneName(string name, bool untranslated) {
+		var handle = "bone." + name;
+		var friendlyBoneNames = this._cfg.File.Categories.ShowFriendlyBoneNames;
+		return !(!untranslated & friendlyBoneNames) || !this.HasTranslationFor(handle) ? name : this.Translate(handle);
 	}
 
 	public string GetCategoryName(BoneCategory category) {
-		var key = $"boneCategory.{category.Name}";
-		return this.HasTranslationFor(key) ? this.Translate(key) : category.Name;
+		var handle = "boneCategory." + category.Name;
+		return !this.HasTranslationFor(handle) ? category.Name : this.Translate(handle);
 	}
 }

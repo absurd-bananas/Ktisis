@@ -1,0 +1,564 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--Project was exported from assembly: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll-->
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{5E422689-D6B9-4E4B-BD0C-518F0D932F5E}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AssemblyName>KtisisPyon</AssemblyName>
+    <TargetFrameworkVersion>v9.0</TargetFrameworkVersion>
+    <ApplicationVersion>0.3.9.5</ApplicationVersion>
+    <FileAlignment>512</FileAlignment>
+    <RootNamespace>Ktisis</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="GLib">
+      <HintPath>lib\GLib.dll</HintPath>
+    </Reference>
+    <Reference Include="Glamourer.Api">
+      <HintPath>lib\Glamourer.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="ImGuizmo.NET">
+      <HintPath>lib\ImGuizmo.NET.dll</HintPath>
+    </Reference>
+    <Reference Include="K4os.Compression.LZ4.Legacy">
+      <HintPath>lib\K4os.Compression.LZ4.Legacy.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection">
+      <HintPath>lib\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions">
+      <HintPath>lib\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Penumbra.Api">
+      <HintPath>lib\Penumbra.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Collections" />
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.Primitives" />
+    <Reference Include="System.ComponentModel.TypeConverter" />
+    <Reference Include="System.Diagnostics.Process" />
+    <Reference Include="System.Drawing.Primitives" />
+    <Reference Include="System.Linq" />
+    <Reference Include="System.Numerics.Vectors" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.InteropServices" />
+    <Reference Include="System.Threading" />
+    <Reference Include="System.Xml.ReaderWriter" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="GameVersion.cs" />
+    <Compile Include="Ktisis.cs" />
+    <Compile Include="Actions\ActionService.cs" />
+    <Compile Include="Actions\Types\ActionBase.cs" />
+    <Compile Include="Actions\Types\IMemento.cs" />
+    <Compile Include="Actions\Types\KeyAction.cs" />
+    <Compile Include="Actions\Types\ActionAttribute.cs" />
+    <Compile Include="Actions\Handlers\Select\DeselectAction.cs" />
+    <Compile Include="Actions\Handlers\Pose\PoseFlipAction.cs" />
+    <Compile Include="Actions\Handlers\Overlay\OverlayToggleAction.cs" />
+    <Compile Include="Actions\Handlers\Output\ToggleHiResAction.cs" />
+    <Compile Include="Actions\Handlers\History\RedoAction.cs" />
+    <Compile Include="Actions\Handlers\History\UndoAction.cs" />
+    <Compile Include="Actions\Handlers\Gizmo\GizmoModeAction.cs" />
+    <Compile Include="Actions\Handlers\Gizmo\GizmoOpActions.cs" />
+    <Compile Include="Actions\Handlers\Gizmo\1GizmoOpActions.cs" />
+    <Compile Include="Actions\Handlers\Gizmo\2GizmoOpActions.cs" />
+    <Compile Include="Actions\Handlers\Gizmo\3GizmoOpActions.cs" />
+    <Compile Include="Actions\Handlers\Gizmo\4GizmoOpActions.cs" />
+    <Compile Include="Actions\Handlers\Gizmo\GizmoToggleAction.cs" />
+    <Compile Include="Actions\Handlers\Camera\CameraNextAction.cs" />
+    <Compile Include="Actions\Handlers\Camera\CameraOffsetToTargetModelAction.cs" />
+    <Compile Include="Actions\Handlers\Camera\CameraOffsetToTargetPoseAction.cs" />
+    <Compile Include="Actions\Handlers\Camera\CameraPreviousAction.cs" />
+    <Compile Include="Actions\Handlers\Camera\FreecamToggleAction.cs" />
+    <Compile Include="Actions\Binds\IKeybind.cs" />
+    <Compile Include="Actions\Binds\KeybindTrigger.cs" />
+    <Compile Include="Actions\Binds\KeybindInfo.cs" />
+    <Compile Include="Actions\Binds\KeyCombo.cs" />
+    <Compile Include="Editor\EditorState.cs" />
+    <Compile Include="Editor\Transforms\TransformHandler.cs" />
+    <Compile Include="Editor\Transforms\TransformResolver.cs" />
+    <Compile Include="Editor\Transforms\TransformSetup.cs" />
+    <Compile Include="Editor\Transforms\TransformTarget.cs" />
+    <Compile Include="Editor\Transforms\Types\ITransformHandler.cs" />
+    <Compile Include="Editor\Transforms\Types\ITransformMemento.cs" />
+    <Compile Include="Editor\Transforms\Types\ITransformTarget.cs" />
+    <Compile Include="Editor\Transforms\Types\SelectiveFlipType.cs" />
+    <Compile Include="Editor\Selection\SelectMode.cs" />
+    <Compile Include="Editor\Selection\SelectChangedHandler.cs" />
+    <Compile Include="Editor\Selection\ISelectManager.cs" />
+    <Compile Include="Editor\Selection\SelectManager.cs" />
+    <Compile Include="Editor\Context\ContextBuilder.cs" />
+    <Compile Include="Editor\Context\ContextManager.cs" />
+    <Compile Include="Editor\Context\EditorContext.cs" />
+    <Compile Include="Editor\Context\Types\IEditorContext.cs" />
+    <Compile Include="Editor\Characters\CharacterManager.cs" />
+    <Compile Include="Editor\Characters\EnableDrawHandler.cs" />
+    <Compile Include="Editor\Characters\CharacterModule.cs" />
+    <Compile Include="Editor\Characters\SaveModes.cs" />
+    <Compile Include="Editor\Characters\EntityCharaConverter.cs" />
+    <Compile Include="Editor\Characters\Types\DisableDrawHandler.cs" />
+    <Compile Include="Editor\Characters\Types\ICharacterManager.cs" />
+    <Compile Include="Editor\Characters\Types\ICustomizeBatch.cs" />
+    <Compile Include="Editor\Characters\Types\ICustomizeEditor.cs" />
+    <Compile Include="Editor\Characters\Types\IEquipmentEditor.cs" />
+    <Compile Include="Editor\Characters\State\AppearanceState.cs" />
+    <Compile Include="Editor\Characters\State\CustomizeState.cs" />
+    <Compile Include="Editor\Characters\State\EquipIndex.cs" />
+    <Compile Include="Editor\Characters\State\EquipIndexEx.cs" />
+    <Compile Include="Editor\Characters\State\EquipmentState.cs" />
+    <Compile Include="Editor\Characters\State\EquipmentToggle.cs" />
+    <Compile Include="Editor\Characters\State\WeaponIndex.cs" />
+    <Compile Include="Editor\Characters\State\WeaponIndexEx.cs" />
+    <Compile Include="Editor\Characters\State\WeaponState.cs" />
+    <Compile Include="Editor\Characters\Make\MakeTypeData.cs" />
+    <Compile Include="Editor\Characters\Make\MakeTypeFeature.cs" />
+    <Compile Include="Editor\Characters\Make\MakeTypeParam.cs" />
+    <Compile Include="Editor\Characters\Make\MakeTypeRace.cs" />
+    <Compile Include="Editor\Characters\Handlers\CustomizeEditor.cs" />
+    <Compile Include="Editor\Characters\Handlers\EquipmentEditor.cs" />
+    <Compile Include="Editor\Camera\ICameraManager.cs" />
+    <Compile Include="Editor\Camera\CameraManager.cs" />
+    <Compile Include="Editor\Camera\CameraModule.cs" />
+    <Compile Include="Editor\Camera\Types\CameraFlags.cs" />
+    <Compile Include="Editor\Camera\Types\EditorCamera.cs" />
+    <Compile Include="Editor\Camera\Types\KtisisCamera.cs" />
+    <Compile Include="Editor\Camera\Types\WorkCamera.cs" />
+    <Compile Include="Editor\Animation\AnimationManager.cs" />
+    <Compile Include="Editor\Animation\AnimationModule.cs" />
+    <Compile Include="Editor\Animation\Types\IAnimationEditor.cs" />
+    <Compile Include="Editor\Animation\Types\IAnimationManager.cs" />
+    <Compile Include="Editor\Animation\Types\TimelineSlot.cs" />
+    <Compile Include="Editor\Animation\Handlers\AnimationEditor.cs" />
+    <Compile Include="Editor\Animation\Game\ActionAnimation.cs" />
+    <Compile Include="Editor\Animation\Game\EmoteAnimation.cs" />
+    <Compile Include="Editor\Animation\Game\GameAnimation.cs" />
+    <Compile Include="Editor\Animation\Game\GameAnimationData.cs" />
+    <Compile Include="Editor\Animation\Game\TimelineAnimation.cs" />
+    <Compile Include="Editor\Actions\IActionManager.cs" />
+    <Compile Include="Editor\Actions\ActionManager.cs" />
+    <Compile Include="Editor\Actions\IHistoryManager.cs" />
+    <Compile Include="Editor\Actions\HistoryManager.cs" />
+    <Compile Include="Editor\Actions\Input\KeyInvokeHandler.cs" />
+    <Compile Include="Editor\Actions\Input\IInputManager.cs" />
+    <Compile Include="Editor\Actions\Input\InputManager.cs" />
+    <Compile Include="Editor\Actions\Input\VirtualKeyState.cs" />
+    <Compile Include="Editor\Actions\Input\KeyEventHandler.cs" />
+    <Compile Include="Editor\Actions\Input\InputModule.cs" />
+    <Compile Include="Editor\Posing\HavokPosing.cs" />
+    <Compile Include="Editor\Posing\PosingManager.cs" />
+    <Compile Include="Editor\Posing\SkeletonInitHandler.cs" />
+    <Compile Include="Editor\Posing\PosingModule.cs" />
+    <Compile Include="Editor\Posing\Types\BoneEnumerator.cs" />
+    <Compile Include="Editor\Posing\Types\BoneTypeInclusion.cs" />
+    <Compile Include="Editor\Posing\Types\IPosingManager.cs" />
+    <Compile Include="Editor\Posing\Types\PartialBoneInfo.cs" />
+    <Compile Include="Editor\Posing\Types\PartialSkeletonInfo.cs" />
+    <Compile Include="Editor\Posing\Ik\IIkController.cs" />
+    <Compile Include="Editor\Posing\Ik\IkController.cs" />
+    <Compile Include="Editor\Posing\Ik\IkModule.cs" />
+    <Compile Include="Editor\Posing\Ik\Types\IIkGroup.cs" />
+    <Compile Include="Editor\Posing\Ik\TwoJoints\TwoJointsMode.cs" />
+    <Compile Include="Editor\Posing\Ik\TwoJoints\TwoJointsGroup.cs" />
+    <Compile Include="Editor\Posing\Ik\TwoJoints\TwoJointsSolver.cs" />
+    <Compile Include="Editor\Posing\Ik\Ccd\CcdGroup.cs" />
+    <Compile Include="Editor\Posing\Ik\Ccd\CcdSolver.cs" />
+    <Compile Include="Editor\Posing\AutoSave\PoseAutoSave.cs" />
+    <Compile Include="Editor\Posing\Attachment\IAttachManager.cs" />
+    <Compile Include="Editor\Posing\Attachment\AttachManager.cs" />
+    <Compile Include="Editor\Posing\Attachment\AttachUtility.cs" />
+    <Compile Include="Actions\Types\MultipleMemento.cs" />
+    <Compile Include="Editor\Posing\Data\EntityPoseConverter.cs" />
+    <Compile Include="Editor\Posing\Data\PoseTransforms.cs" />
+    <Compile Include="Editor\Posing\Data\PoseMode.cs" />
+    <Compile Include="Editor\Posing\Data\PoseContainer.cs" />
+    <Compile Include="Editor\Posing\Data\PoseMemento.cs" />
+    <Compile Include="Editor\Posing\Data\SkeletonPoseData.cs" />
+    <Compile Include="Common\Utility\GuiHelpers.cs" />
+    <Compile Include="Common\Utility\HkaEulerAngles.cs" />
+    <Compile Include="Common\Utility\KeyHelpers.cs" />
+    <Compile Include="Common\Utility\MathHelpers.cs" />
+    <Compile Include="Common\Utility\PlayerNameUtil.cs" />
+    <Compile Include="Common\Utility\ResourceUtil.cs" />
+    <Compile Include="Common\Utility\Transform.cs" />
+    <Compile Include="Common\Extensions\ButtonsEx.cs" />
+    <Compile Include="Common\Extensions\GameObjectEx.cs" />
+    <Compile Include="Common\Extensions\HavokEx.cs" />
+    <Compile Include="Common\Extensions\LuminaEx.cs" />
+    <Compile Include="Common\Extensions\NumericEx.cs" />
+    <Compile Include="Common\Extensions\StringEx.cs" />
+    <Compile Include="Common\Extensions\TransformEx.cs" />
+    <Compile Include="Common\Extensions\VectorEx.cs" />
+    <Compile Include="Core\DIBuilder.cs" />
+    <Compile Include="Core\PluginContext.cs" />
+    <Compile Include="Core\ServiceComposer.cs" />
+    <Compile Include="Core\Types\IPluginContext.cs" />
+    <Compile Include="Core\Attributes\ServiceAttribute.cs" />
+    <Compile Include="Core\Attributes\SingletonAttribute.cs" />
+    <Compile Include="Core\Attributes\TransientAttribute.cs" />
+    <Compile Include="Core\Attributes\VersionAttribute.cs" />
+    <Compile Include="Data\Serialization\CategoryReader.cs" />
+    <Compile Include="Data\Serialization\PoseViewReader.cs" />
+    <Compile Include="Data\Serialization\SchemaReader.cs" />
+    <Compile Include="Data\Mcdf\McdfData.cs" />
+    <Compile Include="Data\Mcdf\McdfHeader.cs" />
+    <Compile Include="Data\Mcdf\McdfManager.cs" />
+    <Compile Include="Data\Mcdf\McdfReader.cs" />
+    <Compile Include="Data\Json\BlockBufferJsonReader.cs" />
+    <Compile Include="Data\Json\JsonFileSerializer.cs" />
+    <Compile Include="Data\Json\JsonReaderExtensions.cs" />
+    <Compile Include="Data\Json\Converters\DeserializerDefaultAttribute.cs" />
+    <Compile Include="Data\Json\Converters\JsonFileConverter.cs" />
+    <Compile Include="Data\Json\Converters\NumericConverters.cs" />
+    <Compile Include="Data\Json\Converters\1NumericConverters.cs" />
+    <Compile Include="Data\Json\Converters\2NumericConverters.cs" />
+    <Compile Include="Data\Json\Converters\3NumericConverters.cs" />
+    <Compile Include="Data\Files\CharaFile.cs" />
+    <Compile Include="Data\Files\JsonFile.cs" />
+    <Compile Include="Data\Files\PoseFile.cs" />
+    <Compile Include="Data\Config\OnConfigSaved.cs" />
+    <Compile Include="Data\Config\ConfigManager.cs" />
+    <Compile Include="Data\Config\Configuration.cs" />
+    <Compile Include="Data\Config\Sections\AutoSaveConfig.cs" />
+    <Compile Include="Data\Config\Sections\CameraConfig.cs" />
+    <Compile Include="Data\Config\Sections\CategoryConfig.cs" />
+    <Compile Include="Data\Config\Sections\EditorConfig.cs" />
+    <Compile Include="Data\Config\Sections\FileConfig.cs" />
+    <Compile Include="Data\Config\Sections\GizmoConfig.cs" />
+    <Compile Include="Data\Config\Sections\LocaleConfig.cs" />
+    <Compile Include="Data\Config\Sections\OverlayConfig.cs" />
+    <Compile Include="Data\Config\Sections\PyonConfig.cs" />
+    <Compile Include="Data\Config\Pose2D\PoseViewBone.cs" />
+    <Compile Include="Data\Config\Pose2D\PoseViewEntry.cs" />
+    <Compile Include="Data\Config\Pose2D\PoseViewSchema.cs" />
+    <Compile Include="Data\Config\Entity\DisplayMode.cs" />
+    <Compile Include="Data\Config\Entity\EntityDisplay.cs" />
+    <Compile Include="Data\Config\Bones\BoneCategory.cs" />
+    <Compile Include="Data\Config\Bones\CategoryBone.cs" />
+    <Compile Include="Data\Config\Bones\CcdGroupParams.cs" />
+    <Compile Include="Data\Config\Bones\TwoJointsType.cs" />
+    <Compile Include="Data\Config\Bones\TwoJointsGroupParams.cs" />
+    <Compile Include="Data\Config\Actions\ActionKeybind.cs" />
+    <Compile Include="Data\Config\Actions\InputConfig.cs" />
+    <Compile Include="Events\AsyncEvent.cs" />
+    <Compile Include="Events\Event.cs" />
+    <Compile Include="Events\EventBase.cs" />
+    <Compile Include="GameData\Excel\BattleNpc.cs" />
+    <Compile Include="GameData\Excel\CharaMakeType.cs" />
+    <Compile Include="GameData\Excel\EventNpc.cs" />
+    <Compile Include="GameData\Excel\Glasses.cs" />
+    <Compile Include="GameData\Excel\EquipSlot.cs" />
+    <Compile Include="GameData\Excel\ItemModel.cs" />
+    <Compile Include="GameData\Excel\ItemSheet.cs" />
+    <Compile Include="GameData\Excel\NpcEquipment.cs" />
+    <Compile Include="GameData\Excel\ResidentNpc.cs" />
+    <Compile Include="GameData\Excel\Types\INpcBase.cs" />
+    <Compile Include="GameData\Chara\CharaCmpReader.cs" />
+    <Compile Include="GameData\Chara\CommonColors.cs" />
+    <Compile Include="GameData\Chara\TribeColors.cs" />
+    <Compile Include="Interface\FileDialogManager.cs" />
+    <Compile Include="Interface\GuiManager.cs" />
+    <Compile Include="Interface\Windows\CameraWindow.cs" />
+    <Compile Include="Interface\Windows\ConfigWindow.cs" />
+    <Compile Include="Interface\Windows\EditObjectWindow.cs" />
+    <Compile Include="Interface\Windows\PosingWindow.cs" />
+    <Compile Include="Interface\Windows\TransformWindow.cs" />
+    <Compile Include="Interface\Windows\WorkspaceWindow.cs" />
+    <Compile Include="Interface\Windows\Import\CharaImportDialog.cs" />
+    <Compile Include="Interface\Windows\Import\LightImportDialog.cs" />
+    <Compile Include="Interface\Windows\Import\PoseImportDialog.cs" />
+    <Compile Include="Interface\Windows\Editors\ActorWindow.cs" />
+    <Compile Include="Interface\Windows\Editors\EnvWindow.cs" />
+    <Compile Include="Interface\Windows\Editors\LightWindow.cs" />
+    <Compile Include="Interface\Widgets\InputUInt.cs" />
+    <Compile Include="Interface\Widgets\ToggleButton.cs" />
+    <Compile Include="Interface\Widgets\Environment\DayTimeControls.cs" />
+    <Compile Include="Interface\Types\EntityEditWindow.cs" />
+    <Compile Include="Interface\Types\KtisisPopup.cs" />
+    <Compile Include="Interface\Types\KtisisWindow.cs" />
+    <Compile Include="Interface\Overlay\GizmoId.cs" />
+    <Compile Include="Interface\Overlay\IGizmo.cs" />
+    <Compile Include="Interface\Overlay\Gizmo.cs" />
+    <Compile Include="Interface\Overlay\GizmoManager.cs" />
+    <Compile Include="Interface\Overlay\OverlayWindow.cs" />
+    <Compile Include="Interface\Overlay\RefOverlay.cs" />
+    <Compile Include="Interface\Overlay\SceneDraw.cs" />
+    <Compile Include="Interface\Overlay\ISelectableFrame.cs" />
+    <Compile Include="Interface\Overlay\IItemSelect.cs" />
+    <Compile Include="Interface\Overlay\SelectableGui.cs" />
+    <Compile Include="Interface\Editor\EditorInterface.cs" />
+    <Compile Include="Interface\Editor\Types\IEditorInterface.cs" />
+    <Compile Include="Interface\Editor\Properties\ActorPropertyList.cs" />
+    <Compile Include="Interface\Editor\Properties\BasePropertyList.cs" />
+    <Compile Include="Interface\Editor\Properties\ImagePropertyList.cs" />
+    <Compile Include="Interface\Editor\Properties\LightPropertyList.cs" />
+    <Compile Include="Interface\Editor\Properties\PosePropertyList.cs" />
+    <Compile Include="Interface\Editor\Properties\WeaponPropertyList.cs" />
+    <Compile Include="Interface\Editor\Properties\Types\IPropertyListBuilder.cs" />
+    <Compile Include="Interface\Editor\Properties\Types\ObjectPropertyList.cs" />
+    <Compile Include="Interface\Editor\Popup\ActorCollectionPopup.cs" />
+    <Compile Include="Interface\Editor\Popup\ActorCProfilePopup.cs" />
+    <Compile Include="Interface\Editor\Popup\EntityRenameModal.cs" />
+    <Compile Include="Interface\Editor\Popup\LightExportNoActorSelectedModal.cs" />
+    <Compile Include="Interface\Editor\Popup\OverworldActorPopup.cs" />
+    <Compile Include="Interface\Editor\Context\SceneCreateMenuBuilder.cs" />
+    <Compile Include="Interface\Editor\Context\SceneEntityMenuBuilder.cs" />
+    <Compile Include="Interface\Components\Workspace\CameraSelector.cs" />
+    <Compile Include="Interface\Components\Workspace\SceneDragDropHandler.cs" />
+    <Compile Include="Interface\Components\Workspace\SceneTree.cs" />
+    <Compile Include="Interface\Components\Workspace\WorkspaceState.cs" />
+    <Compile Include="Interface\Components\Transforms\Gizmo2D.cs" />
+    <Compile Include="Interface\Components\Transforms\TransformTableFlags.cs" />
+    <Compile Include="Interface\Components\Transforms\TransformTable.cs" />
+    <Compile Include="Interface\Components\Posing\PoseViewRenderer.cs" />
+    <Compile Include="Interface\Components\Posing\Types\IViewFrame.cs" />
+    <Compile Include="Interface\Components\Objects\PropertyEditor.cs" />
+    <Compile Include="Interface\Components\Files\FileSelect.cs" />
+    <Compile Include="Interface\Components\Environment\SetTextureSelect.cs" />
+    <Compile Include="Interface\Components\Environment\WeatherSelect.cs" />
+    <Compile Include="Interface\Components\Environment\Editors\EditorBase.cs" />
+    <Compile Include="Interface\Components\Environment\Editors\FogEditor.cs" />
+    <Compile Include="Interface\Components\Environment\Editors\LightingEditor.cs" />
+    <Compile Include="Interface\Components\Environment\Editors\ParticlesEditor.cs" />
+    <Compile Include="Interface\Components\Environment\Editors\RainEditor.cs" />
+    <Compile Include="Interface\Components\Environment\Editors\SkyEditor.cs" />
+    <Compile Include="Interface\Components\Environment\Editors\StarsEditor.cs" />
+    <Compile Include="Interface\Components\Environment\Editors\WindEditor.cs" />
+    <Compile Include="Interface\Components\Config\ActionKeybindEditor.cs" />
+    <Compile Include="Interface\Components\Config\BoneCategoryEditor.cs" />
+    <Compile Include="Interface\Components\Config\GizmoStyleEditor.cs" />
+    <Compile Include="Interface\Components\Chara\AnimationEditorTab.cs" />
+    <Compile Include="Interface\Components\Chara\CharaImportUI.cs" />
+    <Compile Include="Interface\Components\Chara\CustomizeEditorTab.cs" />
+    <Compile Include="Interface\Components\Chara\EquipmentEditorTab.cs" />
+    <Compile Include="Interface\Components\Chara\Types\EquipInfo.cs" />
+    <Compile Include="Interface\Components\Chara\Types\ItemInfo.cs" />
+    <Compile Include="Interface\Components\Chara\Types\WeaponInfo.cs" />
+    <Compile Include="Interface\Components\Chara\Select\OnNpcSelected.cs" />
+    <Compile Include="Interface\Components\Chara\Select\NpcSelect.cs" />
+    <Compile Include="Interface\Components\Chara\Popup\FeatureSelectPopup.cs" />
+    <Compile Include="Interface\Components\Chara\Popup\ParamColorSelectPopup.cs" />
+    <Compile Include="Interop\Alloc.cs" />
+    <Compile Include="Interop\DllResolver.cs" />
+    <Compile Include="Interop\InteropService.cs" />
+    <Compile Include="Interop\Ipc\CustomizeIpcProvider.cs" />
+    <Compile Include="Interop\Ipc\GlamourerIpcProvider.cs" />
+    <Compile Include="Interop\Ipc\IpcManager.cs" />
+    <Compile Include="Interop\Ipc\MareIpcProvider.cs" />
+    <Compile Include="Interop\Ipc\PenumbraIpcProvider.cs" />
+    <Compile Include="Interop\Hooking\IHookModule.cs" />
+    <Compile Include="Interop\Hooking\HookModule.cs" />
+    <Compile Include="Interop\Hooking\HookScope.cs" />
+    <Compile Include="Interop\Hooking\HookWrapper.cs" />
+    <Compile Include="Interop\Hooking\1HookWrapper.cs" />
+    <Compile Include="Interop\Hooking\IHookMediator.cs" />
+    <Compile Include="Legacy\LegacyMigrator.cs" />
+    <Compile Include="Legacy\Interface\MigratorWindow.cs" />
+    <Compile Include="Localization\LocaleData.cs" />
+    <Compile Include="Localization\LocaleDataLoader.cs" />
+    <Compile Include="Localization\LocaleManager.cs" />
+    <Compile Include="Localization\LocaleMetaData.cs" />
+    <Compile Include="Scene\SceneManager.cs" />
+    <Compile Include="Scene\SceneModuleContainer.cs" />
+    <Compile Include="Scene\Types\EntityType.cs" />
+    <Compile Include="Scene\Types\IComposite.cs" />
+    <Compile Include="Scene\Types\ISceneManager.cs" />
+    <Compile Include="Scene\Modules\EnvOverride.cs" />
+    <Compile Include="Scene\Modules\IEnvModule.cs" />
+    <Compile Include="Scene\Modules\EnvModule.cs" />
+    <Compile Include="Scene\Modules\GroupPoseModule.cs" />
+    <Compile Include="Scene\Modules\SceneModule.cs" />
+    <Compile Include="Scene\Modules\Lights\LightModule.cs" />
+    <Compile Include="Scene\Modules\Lights\LightSpawner.cs" />
+    <Compile Include="Scene\Modules\Actors\ActorModule.cs" />
+    <Compile Include="Scene\Modules\Actors\ActorSpawner.cs" />
+    <Compile Include="Scene\Factory\EntityFactory.cs" />
+    <Compile Include="Scene\Factory\Types\EntityBuilder.cs" />
+    <Compile Include="Scene\Factory\Types\1EntityBuilder.cs" />
+    <Compile Include="Scene\Factory\Types\EntityBuilderBase.cs" />
+    <Compile Include="Scene\Factory\Types\1EntityBuilderBase.cs" />
+    <Compile Include="Scene\Factory\Types\EntityCreator.cs" />
+    <Compile Include="Scene\Factory\Types\1EntityCreator.cs" />
+    <Compile Include="Scene\Factory\Types\IEntityFactory.cs" />
+    <Compile Include="Scene\Factory\Creators\IActorCreator.cs" />
+    <Compile Include="Scene\Factory\Creators\ActorCreator.cs" />
+    <Compile Include="Scene\Factory\Creators\ILightCreator.cs" />
+    <Compile Include="Scene\Factory\Creators\LightCreator.cs" />
+    <Compile Include="Scene\Factory\Builders\IActorBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\ActorBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\ILightBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\LightBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\IObjectBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\ObjectBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\IPoseBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\IBoneTreeBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\PoseBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\IRefImageBuilder.cs" />
+    <Compile Include="Scene\Factory\Builders\RefImageBuilder.cs" />
+    <Compile Include="Scene\Entities\SceneEntity.cs" />
+    <Compile Include="Scene\Entities\SceneRoot.cs" />
+    <Compile Include="Scene\Entities\World\LightEntityFlags.cs" />
+    <Compile Include="Scene\Entities\World\LightEntity.cs" />
+    <Compile Include="Scene\Entities\World\WorldEntity.cs" />
+    <Compile Include="Scene\Entities\Utility\ReferenceImage.cs" />
+    <Compile Include="Scene\Entities\Skeleton\BoneNode.cs" />
+    <Compile Include="Scene\Entities\Skeleton\BoneNodeGroup.cs" />
+    <Compile Include="Scene\Entities\Skeleton\EntityPose.cs" />
+    <Compile Include="Scene\Entities\Skeleton\SkeletonGroup.cs" />
+    <Compile Include="Scene\Entities\Skeleton\SkeletonNode.cs" />
+    <Compile Include="Scene\Entities\Skeleton\Constraints\CcdEndNode.cs" />
+    <Compile Include="Scene\Entities\Skeleton\Constraints\IkEndNode.cs" />
+    <Compile Include="Scene\Entities\Skeleton\Constraints\IkNodeGroup.cs" />
+    <Compile Include="Scene\Entities\Skeleton\Constraints\1IkNodeGroup.cs" />
+    <Compile Include="Scene\Entities\Skeleton\Constraints\TwoJointEndNode.cs" />
+    <Compile Include="Scene\Entities\Game\ActorEntity.cs" />
+    <Compile Include="Scene\Entities\Character\CharaEntity.cs" />
+    <Compile Include="Scene\Entities\Character\WeaponEntity.cs" />
+    <Compile Include="Scene\Decor\IAttachable.cs" />
+    <Compile Include="Scene\Decor\IAttachTarget.cs" />
+    <Compile Include="Scene\Decor\ICharacter.cs" />
+    <Compile Include="Scene\Decor\IConfigurable.cs" />
+    <Compile Include="Scene\Decor\IDeletable.cs" />
+    <Compile Include="Scene\Decor\ISkeleton.cs" />
+    <Compile Include="Scene\Decor\ITransform.cs" />
+    <Compile Include="Scene\Decor\IVisibility.cs" />
+    <Compile Include="Scene\Decor\Ik\ICcdNode.cs" />
+    <Compile Include="Scene\Decor\Ik\IIkNode.cs" />
+    <Compile Include="Scene\Decor\Ik\ITwoJointsNode.cs" />
+    <Compile Include="Services\Plugin\CommandService.cs" />
+    <Compile Include="Services\Plugin\DalamudServices.cs" />
+    <Compile Include="Services\Meta\ImageDataProvider.cs" />
+    <Compile Include="Services\Game\ActorService.cs" />
+    <Compile Include="Services\Game\CameraService.cs" />
+    <Compile Include="Services\Game\GPoseStateHandler.cs" />
+    <Compile Include="Services\Game\GPoseService.cs" />
+    <Compile Include="Services\Game\VfxService.cs" />
+    <Compile Include="Services\Environment\WeatherInfo.cs" />
+    <Compile Include="Services\Environment\WeatherService.cs" />
+    <Compile Include="Services\Data\CustomizeService.cs" />
+    <Compile Include="Services\Data\FormatService.cs" />
+    <Compile Include="Services\Data\INameResolver.cs" />
+    <Compile Include="Services\Data\NamingService.cs" />
+    <Compile Include="Services\Data\NpcService.cs" />
+    <Compile Include="Structs\Vfx\SchedulerVfx.cs" />
+    <Compile Include="Structs\Vfx\VfxControl.cs" />
+    <Compile Include="Structs\Vfx\VfxObject.cs" />
+    <Compile Include="Structs\Vfx\VfxResourceHandle.cs" />
+    <Compile Include="Structs\Vfx\VfxResourceInstance.cs" />
+    <Compile Include="Structs\Vfx\Apricot\ApricotCore.cs" />
+    <Compile Include="Structs\Vfx\Apricot\ApricotInstance.cs" />
+    <Compile Include="Structs\Vfx\Apricot\InstanceContainer.cs" />
+    <Compile Include="Structs\Lights\LightFlags.cs" />
+    <Compile Include="Structs\Lights\LightType.cs" />
+    <Compile Include="Structs\Lights\FalloffType.cs" />
+    <Compile Include="Structs\Lights\RenderLight.cs" />
+    <Compile Include="Structs\Lights\SceneLight.cs" />
+    <Compile Include="Structs\Input\InputDeviceManager.cs" />
+    <Compile Include="Structs\Input\KeyboardDeviceData.cs" />
+    <Compile Include="Structs\Input\KeyboardQueue.cs" />
+    <Compile Include="Structs\Input\QueueEntry.cs" />
+    <Compile Include="Structs\Input\KeyEvent.cs" />
+    <Compile Include="Structs\Input\MouseButton.cs" />
+    <Compile Include="Structs\Input\MouseDeviceData.cs" />
+    <Compile Include="Structs\Havok\CcdIkConstraint.cs" />
+    <Compile Include="Structs\Havok\CcdIkSolver.cs" />
+    <Compile Include="Structs\Havok\TwoJointsIkSetup.cs" />
+    <Compile Include="Structs\GPose\GPoseState.cs" />
+    <Compile Include="Structs\Events\GPoseActorEvent.cs" />
+    <Compile Include="Structs\Env\EnvManagerEx.cs" />
+    <Compile Include="Structs\Env\EnvSimulator.cs" />
+    <Compile Include="Structs\Env\EnvState.cs" />
+    <Compile Include="Structs\Env\Weather\EnvClouds.cs" />
+    <Compile Include="Structs\Env\Weather\EnvDust.cs" />
+    <Compile Include="Structs\Env\Weather\EnvFog.cs" />
+    <Compile Include="Structs\Env\Weather\EnvLighting.cs" />
+    <Compile Include="Structs\Env\Weather\EnvRain.cs" />
+    <Compile Include="Structs\Env\Weather\EnvStars.cs" />
+    <Compile Include="Structs\Env\Weather\EnvWind.cs" />
+    <Compile Include="Structs\Common\ColorHDR.cs" />
+    <Compile Include="Structs\Common\ObjectUnion.cs" />
+    <Compile Include="Structs\Common\PtrList.cs" />
+    <Compile Include="Structs\Characters\CharacterBaseEx.cs" />
+    <Compile Include="Structs\Characters\CustomizeContainer.cs" />
+    <Compile Include="Structs\Characters\FacialFeature.cs" />
+    <Compile Include="Structs\Characters\Gender.cs" />
+    <Compile Include="Structs\Characters\Race.cs" />
+    <Compile Include="Structs\Characters\Tribe.cs" />
+    <Compile Include="Structs\Characters\Age.cs" />
+    <Compile Include="Structs\Characters\EquipmentContainer.cs" />
+    <Compile Include="Structs\Characters\WeaponContainer.cs" />
+    <Compile Include="Structs\Characters\WetnessState.cs" />
+    <Compile Include="Structs\Camera\GameCameraEx.cs" />
+    <Compile Include="Structs\Camera\RenderCameraEx.cs" />
+    <Compile Include="Structs\Attachment\AttachType.cs" />
+    <Compile Include="Structs\Attachment\Attach.cs" />
+    <Compile Include="Structs\Attachment\AttachParam.cs" />
+    <Compile Include="Structs\Attachment\ElementId.cs" />
+    <Compile Include="Structs\Attachment\ElementParam.cs" />
+    <Compile Include="Structs\Animation\AnimationControl.cs" />
+    <Compile Include="Structs\Animation\MotionAnimation.cs" />
+    <Compile Include="Structs\Animation\MotionControl.cs" />
+    <Compile Include="Structs\Animation\SchedulerState.cs" />
+    <Compile Include="Structs\Animation\SchedulerTimeline.cs" />
+    <Compile Include="Structs\Animation\SkeletonEx.cs" />
+    <Compile Include="Structs\Animation\TimelineController.cs" />
+    <Compile Include="Structs\Animation\TimelineGroup.cs" />
+    <Compile Include="Structs\Animation\TimelineTrack.cs" />
+    <Compile Include="Structs\Animation\TrackController.cs" />
+    <Compile Include="Structs\Animation\Clips\BaseClip.cs" />
+    <Compile Include="Structs\Animation\Clips\ChildTimelineClip.cs" />
+    <Compile Include="Structs\Animation\Clips\ClipType.cs" />
+    <Compile Include="Structs\Animation\Clips\HavokAnimationClip.cs" />
+    <Compile Include="Structs\Animation\Clips\VfxClip.cs" />
+    <Compile Include="Structs\Actors\AnimationContainer.cs" />
+    <Compile Include="Structs\Actors\AnimationTimeline.cs" />
+    <Compile Include="Structs\Actors\CombatFlags.cs" />
+    <Compile Include="Structs\Actors\EmoteModeEnum.cs" />
+    <Compile Include="Structs\Actors\CharacterEx.cs" />
+    <Compile Include="Structs\Actors\PoseModeEnum.cs" />
+    <Compile Include="Structs\Actors\EmoteController.cs" />
+    <Compile Include="Editor\Transforms\Types\Axis.cs" />
+    <Compile Include="Common\Utility\Win32.cs" />
+    <Compile Include="_003C_003Ey__InlineArray2`1.cs" />
+    <Compile Include="_003C_003Ey__InlineArray4`1.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="KtisisPyon\Data\Images\ahmi.png" />
+    <EmbeddedResource Include="KtisisPyon\Data\Images\ahmi_face.png" />
+    <EmbeddedResource Include="KtisisPyon\Data\Images\armor.png" />
+    <EmbeddedResource Include="KtisisPyon\Data\Images\ears.png" />
+    <EmbeddedResource Include="KtisisPyon\Data\Images\hands.png" />
+    <EmbeddedResource Include="KtisisPyon\Data\Images\lips.png" />
+    <EmbeddedResource Include="KtisisPyon\Data\Images\mouth.png" />
+    <EmbeddedResource Include="KtisisPyon\Data\Images\tail.png" />
+    <EmbeddedResource Include="KtisisPyon\Data\Library\bnpc-index.json" />
+    <EmbeddedResource Include="KtisisPyon\Data\Schema\Categories.xml" />
+    <EmbeddedResource Include="KtisisPyon\Data\Schema\Views.xml" />
+    <EmbeddedResource Include="KtisisPyon\Localization\Data\en_US.json" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

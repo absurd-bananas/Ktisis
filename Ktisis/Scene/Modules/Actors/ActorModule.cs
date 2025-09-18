@@ -1,26 +1,20 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Modules.Actors.ActorModule
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Hooking;
-using Dalamud.Utility.Signatures;
-using Dalamud.Plugin.Services;
-
-using FFXIVClientStructs.FFXIV.Client.Game.Object;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-using Character = FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
-using CSGameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
-
-using Ktisis.Structs.GPose;
-using Ktisis.Structs.Actors;
+using Ktisis.Common.Utility;
 using Ktisis.Interop.Hooking;
 using Ktisis.Scene.Entities.Game;
-using Ktisis.Common.Extensions;
-using Ktisis.Common.Utility;
 using Ktisis.Scene.Types;
 using Ktisis.Services.Game;
-using Ktisis.Structs.Camera;
+using Ktisis.Structs.GPose;
 
 namespace Ktisis.Scene.Modules.Actors;
 
@@ -29,9 +23,12 @@ public class ActorModule : SceneModule {
 	private readonly IClientState _clientState;
 	private readonly IFramework _framework;
 	private readonly GroupPoseModule _gpose;
-	
 	private readonly ActorSpawner _spawner;
-	
+	[Signature("45 33 D2 4C 8D 81 ?? ?? ?? ?? 41 8B C2 4C 8B C9 49 3B 10")]
+	private RemoveCharacterDelegate _removeCharacter;
+	[Signature("40 56 57 48 83 EC 38 48 89 5C 24 ??", DetourName = "AddCharacterDetour")]
+	private Hook<AddCharacterDelegate>? AddCharacterHook;
+
 	public ActorModule(
 		IHookMediator hook,
 		ISceneManager scene,
@@ -39,7 +36,8 @@ public class ActorModule : SceneModule {
 		IClientState clientState,
 		IFramework framework,
 		GroupPoseModule gpose
-	) : base(hook, scene) {
+	)
+		: base(hook, scene) {
 		this._actors = actors;
 		this._clientState = clientState;
 		this._framework = framework;
@@ -48,240 +46,148 @@ public class ActorModule : SceneModule {
 	}
 
 	public override void Setup() {
-		foreach (var actor in this._actors.GetGPoseActors())
-			this.AddActor(actor, false);
-		
+		foreach (IGameObject gposeActor in this._actors.GetGPoseActors())
+			this.AddActor(gposeActor, false);
 		this.Subscribe();
-		
 		this.EnableAll();
 		this._spawner.TryInitialize();
 	}
-	
-	// Events
 
-	private unsafe void Subscribe() {
+	private void Subscribe() {
 		this.Scene.Context.Characters.OnDisableDraw += this.OnDisableDraw;
 	}
 
 	private unsafe void OnDisableDraw(IGameObject gameObject, DrawObject* drawObject) {
-		if (!this.IsInit || !this.Scene.IsValid) return;
-
-		var entity = this.Scene.GetEntityForActor(gameObject);
-		if (entity == null) return;
-		
-		entity.Address = nint.Zero;
-		
-		Ktisis.Log.Debug($"Invalidated object address for entity '{entity.Name}' ({gameObject.ObjectIndex})");
+		if (!this.IsInit || !this.Scene.IsValid)
+			return;
+		var entityForActor = this.Scene.GetEntityForActor(gameObject);
+		if (entityForActor == null)
+			return;
+		entityForActor.Address = IntPtr.Zero;
+		Ktisis.Ktisis.Log.Debug($"Invalidated object address for entity '{entityForActor.Name}' ({gameObject.ObjectIndex})", Array.Empty<object>());
 	}
-	
-	// Spawning
 
 	public async Task<ActorEntity> Spawn() {
-		var localPlayer = this._clientState.LocalPlayer;
-		if (localPlayer == null)
-			throw new Exception("Local player not found.");
-		
-		var address = await this._spawner.CreateActor(localPlayer);
-		var entity = this.AddSpawnedActor(address);
-		entity.Actor.SetName(PlayerNameUtil.CalcActorName(entity.Actor.ObjectIndex));
-		entity.Actor.SetWorld((ushort)localPlayer.CurrentWorld.RowId);
-		this.ReassignParentIndex(entity.Actor);
-		return entity;
+		IPlayerCharacter localPlayer = this._clientState.LocalPlayer;
+		var actorEntity1 = localPlayer != null ? this.AddSpawnedActor(await this._spawner.CreateActor((IGameObject)localPlayer)) : throw new Exception("Local player not found.");
+		actorEntity1.Actor.SetName(PlayerNameUtil.CalcActorName(actorEntity1.Actor.ObjectIndex));
+		actorEntity1.Actor.SetWorld((ushort)localPlayer.CurrentWorld.RowId);
+		this.ReassignParentIndex(actorEntity1.Actor);
+		var actorEntity2 = actorEntity1;
+		localPlayer = (IPlayerCharacter)null;
+		return actorEntity2;
 	}
 
 	public async Task<ActorEntity> AddFromOverworld(IGameObject actor) {
-		if (!this._spawner.IsInit)
-			throw new Exception("Actor spawner is uninitialized.");
-		var address = await this._spawner.CreateActor(actor);
-		var entity = this.AddSpawnedActor(address);
-		entity.Actor.SetTargetable(true);
-		return entity;
+		var actorEntity = this._spawner.IsInit ? this.AddSpawnedActor(await this._spawner.CreateActor(actor)) : throw new Exception("Actor spawner is uninitialized.");
+		actorEntity.Actor.SetTargetable(true);
+		return actorEntity;
 	}
 
-	private ActorEntity AddSpawnedActor(nint address) {
-		var entity = this.AddActor(address, false);
-		if (entity == null)
+	private ActorEntity AddSpawnedActor(IntPtr address) {
+		var actorEntity = this.AddActor(address, false);
+		if (actorEntity == null)
 			throw new Exception("Failed to create entity for spawned actor.");
-		entity.IsManaged = true;
-		return entity;
+		actorEntity.IsManaged = true;
+		return actorEntity;
 	}
-	
-	// Deletion
-	
+
 	public unsafe void Delete(ActorEntity actor) {
 		if (this._gpose.IsPrimaryActor(actor)) {
-			Ktisis.Log.Warning("Refusing to delete primary actor.");
-			return;
+			Ktisis.Ktisis.Log.Warning("Refusing to delete primary actor.", Array.Empty<object>());
+		} else {
+			var gpose = this._gpose.GetGPoseState();
+			if ((IntPtr)gpose == IntPtr.Zero)
+				return;
+			GameObject* gameObject = (GameObject*)actor.Actor.Address;
+			this._framework.RunOnFrameworkThread((Action)(() => {
+				ClientObjectManager* clientObjectManagerPtr = ClientObjectManager.Instance();
+				var indexByObject = (ushort)((ClientObjectManager)(IntPtr)clientObjectManagerPtr).GetIndexByObject(gameObject);
+				var num = this._removeCharacter(gpose, gameObject);
+				if (indexByObject == ushort.MaxValue)
+					return;
+				((ClientObjectManager)(IntPtr)clientObjectManagerPtr).DeleteObjectByIndex(indexByObject, (byte)1);
+			}));
+			actor.Remove();
 		}
-		
-		var gpose = this._gpose.GetGPoseState();
-		if (gpose == null) return;
-
-		var gameObject = (CSGameObject*)actor.Actor.Address;
-		this._framework.RunOnFrameworkThread(() => {
-			var mgr = ClientObjectManager.Instance();
-			var index = (ushort)mgr->GetIndexByObject(gameObject);
-			this._removeCharacter(gpose, gameObject);
-			if (index != ushort.MaxValue)
-				mgr->DeleteObjectByIndex(index, 1);
-		});
-		
-		actor.Remove();
 	}
-	
-	// Spawned actor state
 
 	private void ReassignParentIndex(IGameObject gameObject) {
-		var ipcMgr = this.Scene.Context.Plugin.Ipc;
-		if (ipcMgr.IsPenumbraActive) {
-			var penumbra = ipcMgr.GetPenumbraIpc();
-			penumbra.SetAssignedParentIndex(gameObject, gameObject.ObjectIndex);
-		}
-		if (ipcMgr.IsCustomizeActive) {
-			var customize = ipcMgr.GetCustomizeIpc();
-			
-			if (customize.IsCompatible())
-				customize.SetCutsceneParentIndex(gameObject.ObjectIndex, gameObject.ObjectIndex);
-		}
+		var ipc = this.Scene.Context.Plugin.Ipc;
+		if (ipc.IsPenumbraActive)
+			ipc.GetPenumbraIpc().SetAssignedParentIndex(gameObject, (int)gameObject.ObjectIndex);
+		if (!ipc.IsCustomizeActive)
+			return;
+		var customizeIpc = ipc.GetCustomizeIpc();
+		if (!customizeIpc.IsCompatible())
+			return;
+		customizeIpc.SetCutsceneParentIndex((int)gameObject.ObjectIndex, (int)gameObject.ObjectIndex);
 	}
-	
-	// Entities
 
-	private ActorEntity? AddActor(nint address, bool addCompanion) {
-		var actor = this._actors.GetAddress(address);
-		if (actor is { ObjectIndex: not 200 })
-			return this.AddActor(actor, addCompanion);
-		Ktisis.Log.Warning($"Actor address at 0x{address:X} is invalid.");
+	private ActorEntity? AddActor(IntPtr address, bool addCompanion) {
+		IGameObject address1 = this._actors.GetAddress(address);
+		if (address1 != null && address1.ObjectIndex != 200)
+			return this.AddActor(address1, addCompanion);
+		Ktisis.Ktisis.Log.Warning($"Actor address at 0x{address:X} is invalid.", Array.Empty<object>());
 		return null;
 	}
 
 	private ActorEntity? AddActor(IGameObject actor, bool addCompanion) {
 		if (!actor.IsValid()) {
-			Ktisis.Log.Warning($"Actor address at 0x{actor.Address:X} is invalid.");
+			Ktisis.Ktisis.Log.Warning($"Actor address at 0x{actor.Address:X} is invalid.", Array.Empty<object>());
 			return null;
 		}
-		
-		var result = this.Scene.Factory.BuildActor(actor).Add();
-		if (addCompanion)
-			this.AddCompanion(actor);
-		return result;
+		var actorEntity = this.Scene.Factory.BuildActor(actor).Add();
+		if (!addCompanion)
+			return actorEntity;
+		this.AddCompanion(actor);
+		return actorEntity;
 	}
 
 	private unsafe void AddCompanion(IGameObject owner) {
-		var chara = (Character*)owner.Address;
-		if (chara == null || chara->CompanionObject == null) return;
-		
-		var actor = this._actors.GetAddress((nint)chara->CompanionObject);
-		if (actor is null or { ObjectIndex: 0 } || !actor.IsValid()) return;
-		
-		this.Scene.Factory.BuildActor(actor).Add();
+		FFXIVClientStructs.FFXIV.Client.Game.Character.Character* address1 = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)owner.Address;
+		if ((IntPtr)address1 == IntPtr.Zero || (IntPtr)address1->CompanionObject == IntPtr.Zero)
+			return;
+		IGameObject address2 = this._actors.GetAddress((IntPtr)address1->CompanionObject);
+		if (address2 == null || address2.ObjectIndex == 0 || !address2.IsValid())
+			return;
+		this.Scene.Factory.BuildActor(address2).Add();
 	}
-	
-	public void RefreshGPoseActors() {
-		var current = this.Scene.Children
-			.Where(entity => entity is ActorEntity)
-			.Cast<ActorEntity>()
-			.ToList();
 
-		foreach (var actor in current) {
-			if (!actor.IsValid) continue;
-
-			var entityForActor = this.Scene.GetEntityForActor(actor.Actor);
-			if (entityForActor == null) continue;
-
-			unsafe {
-				if (entityForActor.Character != null) continue;
+	public unsafe void RefreshGPoseActors() {
+		foreach (var actorEntity in this.Scene.Children.Where(entity => entity is ActorEntity).Cast<ActorEntity>().ToList()) {
+			if (actorEntity.IsValid) {
+				var entityForActor = this.Scene.GetEntityForActor(actorEntity.Actor);
+				if (entityForActor != null && (IntPtr)entityForActor.Character == IntPtr.Zero)
+					this.Delete(entityForActor);
 			}
-
-			this.Delete(entityForActor);
 		}
-
-		foreach (var actor in this._actors.GetGPoseActors()) {
-			if (this.Scene.GetEntityForActor(actor) is not null) continue;
-			this.AddActor(actor, false);
+		foreach (IGameObject gposeActor in this._actors.GetGPoseActors()) {
+			if (this.Scene.GetEntityForActor(gposeActor) == null)
+				this.AddActor(gposeActor, false);
 		}
 	}
-	
-	// Hooks
-	
-	[Signature("40 56 57 48 83 EC 38 48 89 5C 24 ??", DetourName = nameof(AddCharacterDetour))]
-	private Hook<AddCharacterDelegate>? AddCharacterHook = null!;
-	private delegate void AddCharacterDelegate(nint a1, nint a2, ulong a3, nint a4);
 
-	private void AddCharacterDetour(nint gpose, nint address, ulong id, nint a4) {
-		this.AddCharacterHook!.Original(gpose, address, id, a4);
-		if (!this.CheckValid()) return;
-		
+	private void AddCharacterDetour(IntPtr gpose, IntPtr address, ulong id, IntPtr a4) {
+		this.AddCharacterHook.Original(gpose, address, id, a4);
+		if (!this.CheckValid())
+			return;
 		try {
-			if (id != 0xE0000000)
-				this.AddActor(address, true);
-		} catch (Exception err) {
-			Ktisis.Log.Error($"Failed to handle character add for 0x{address:X}:\n{err}");
+			if (id == 3758096384UL /*0xE0000000*/)
+				return;
+			this.AddActor(address, true);
+		} catch (Exception ex) {
+			Ktisis.Ktisis.Log.Error($"Failed to handle character add for 0x{address:X}:\n{ex}", Array.Empty<object>());
 		}
 	}
-
-	[Signature("45 33 D2 4C 8D 81 ?? ?? ?? ?? 41 8B C2 4C 8B C9 49 3B 10")]
-	private RemoveCharacterDelegate _removeCharacter = null!;
-	private unsafe delegate nint RemoveCharacterDelegate(GPoseState* gpose, CSGameObject* gameObject);
-
-	[Signature("E8 ?? ?? ?? ?? 8B D6 48 8B CF E8 ?? ?? ?? ?? EB 2A")]
-	private ActorLookAtDelegate _actorLookAt = null!;
-	private unsafe delegate char ActorLookAtDelegate(ActorGaze* writeTo, Gaze* readFrom, GazeControl bodyPart, IntPtr unk4);
-
-	[Signature("E8 ?? ?? ?? ?? 48 83 C3 08 48 83 EF 01 75 CF", DetourName = nameof(ControlGazeDetour))]
-	private Hook <ControlGazeDelegate>? ControlGazeHook = null!;
-	private delegate void ControlGazeDelegate(nint a1);
-	private unsafe void ControlGazeDetour(nint a1) {
-		if (!this.CheckValid()) return;
-
-		// check current scene ActorEntities
-		var current = this.Scene.Children
-			.OfType<ActorEntity>()
-			.ToList();
-
-		foreach (ActorEntity actor in current) {
-			// valid actor with a modified gaze to use
-			if (!actor.IsValid || actor.Gaze == null) continue;
-
-			// actor address matches character being detoured
-			if (actor.Actor.Address != a1 - CharacterEx.GazeOffset) continue;
-
-			// get a characterEx we can work with from the gaze being detoured
-			var detourCharacterEx = (CharacterEx*)(a1 - CharacterEx.GazeOffset);
-			// get the ktisis-made ActorGaze on matched ActorEntity
-			var gaze = (ActorGaze)actor.Gaze;
-			// overwrite gaze at a1 with stored gaze for each gazetype on ActorEntity
-			for (var i = -1; i < 3; i++) {
-				var type = (GazeControl)i;
-				var ctrl = gaze[type];
-				if (ctrl.Mode != 0) {
-					if (ctrl.Mode == GazeMode._KtisisFollowCam_) {
-						var camera = GameCameraEx.GetActive();
-						if (camera != null) {
-							ctrl.Pos = camera->Position;
-							gaze[type] = ctrl;
-						}
-						ctrl.Mode = GazeMode.Target;
-					}
-
-					this._actorLookAt(&detourCharacterEx->Gaze, &ctrl, type, IntPtr.Zero);
-
-					if (type == GazeControl.All)
-						break;
-				}
-			}
-		}
-
-		// call original after we've made our modifications
-		this.ControlGazeHook!.Original(a1);
-	}
-
-	
-	// Disposal
 
 	public override void Dispose() {
 		base.Dispose();
 		this._spawner.Dispose();
 		GC.SuppressFinalize(this);
 	}
+
+	private delegate void AddCharacterDelegate(IntPtr a1, IntPtr a2, ulong a3, IntPtr a4);
+
+	private unsafe delegate IntPtr RemoveCharacterDelegate(GPoseState* gpose, GameObject* gameObject);
 }

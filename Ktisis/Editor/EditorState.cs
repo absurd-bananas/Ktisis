@@ -1,3 +1,10 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.EditorState
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 
 using Ktisis.Editor.Actions;
@@ -17,30 +24,42 @@ namespace Ktisis.Editor;
 public class EditorState : IDisposable {
 	private readonly IEditorContext _context;
 	private readonly HookScope _scope;
-	
-	public bool IsValid => this.IsInit && this._context.IsGPosing && !this.IsDisposing;
-	
-	public required IActionManager Actions { get; init; }
-	public required IAnimationManager Animation { get; init; }
-	public required ICameraManager Cameras { get; init; }
-	public required ICharacterManager Characters { get; init; }
-	public required IEditorInterface Interface { get; init; }
-	public required IPosingManager Posing { get; init; }
-	public required ISceneManager Scene { get; init; }
-	public required ISelectManager Selection { get; init; }
-	public required ITransformHandler Transform { get; init; }
-    
-	public EditorState(
-		IEditorContext context,
-		HookScope scope
-	) {
+	private bool IsDisposing;
+	private bool IsInit;
+
+	public EditorState(IEditorContext context, HookScope scope) {
 		this._context = context;
 		this._scope = scope;
 	}
-	
-	// Initialization
-	
-	private bool IsInit;
+
+	public bool IsValid => this.IsInit && this._context.IsGPosing && !this.IsDisposing;
+
+	public required IActionManager Actions { get; init; }
+
+	public required IAnimationManager Animation { get; init; }
+
+	public required ICameraManager Cameras { get; init; }
+
+	public required ICharacterManager Characters { get; init; }
+
+	public required IEditorInterface Interface { get; init; }
+
+	public required IPosingManager Posing { get; init; }
+
+	public required ISceneManager Scene { get; init; }
+
+	public required ISelectManager Selection { get; init; }
+
+	public required ITransformHandler Transform { get; init; }
+
+	public void Dispose() {
+		this.IsDisposing = true;
+		this._scope.Dispose();
+		this.Scene.Dispose();
+		this.Posing.Dispose();
+		this.Cameras.Dispose();
+		GC.SuppressFinalize(this);
+	}
 
 	public void Initialize() {
 		try {
@@ -55,31 +74,15 @@ public class EditorState : IDisposable {
 			this.Dispose();
 			throw;
 		}
-
 		try {
 			this.Interface.Prepare();
-		} catch (Exception err) {
-			Ktisis.Log.Error($"Error preparing interface:\n{err}");
+		} catch (Exception ex) {
+			Ktisis.Ktisis.Log.Error($"Error preparing interface:\n{ex}", Array.Empty<object>());
 		}
 	}
-	
-	// Update handler
 
 	public void Update() {
 		this.Scene.Update();
 		this.Selection.Update();
-	}
-	
-	// Disposal
-
-	private bool IsDisposing;
-
-	public void Dispose() {
-		this.IsDisposing = true;
-		this._scope.Dispose();
-		this.Scene.Dispose();
-		this.Posing.Dispose();
-		this.Cameras.Dispose();
-		GC.SuppressFinalize(this);
 	}
 }

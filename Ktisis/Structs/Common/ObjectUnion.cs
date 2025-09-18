@@ -1,12 +1,19 @@
-﻿using System.Runtime.InteropServices;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Structs.Common.ObjectUnion
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable disable
+using System;
 
 namespace Ktisis.Structs.Common;
 
-[StructLayout(LayoutKind.Sequential)]
 public struct ObjectUnion {
-	public unsafe nint** __vfTable;
-	public nint Data;
+	public unsafe IntPtr** __vfTable;
+	public IntPtr Data;
 
-	public nint GetObjectPointer() => (this.Data & 1) != 0 ? this.Data & ~7 : nint.Zero;
-	public short GetObjectIndex() => (this.Data & 4) != 0 ? (short)(this.Data >> 3) : (short)(-1);
+	public IntPtr GetObjectPointer() => (this.Data & new IntPtr(1)) == IntPtr.Zero ? IntPtr.Zero : this.Data & new IntPtr(-8);
+
+	public short GetObjectIndex() => (this.Data & new IntPtr(4)) == IntPtr.Zero ? (short)-1 : (short)(this.Data >> 3);
 }

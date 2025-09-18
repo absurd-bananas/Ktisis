@@ -1,42 +1,71 @@
-using System;
-using System.Runtime.InteropServices;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Structs.Characters.CustomizeContainer
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Objects.Enums;
+#nullable disable
+using System.Runtime.InteropServices;
 
 namespace Ktisis.Structs.Characters;
 
-[StructLayout(LayoutKind.Explicit, Size = Size)]
+[StructLayout(LayoutKind.Explicit, Size = 26)]
 public struct CustomizeContainer {
-	public const int Size = 0x1A;
-
-	[FieldOffset(0x00)] public unsafe fixed byte Bytes[Size];
-	
-	[FieldOffset((int)CustomizeIndex.BustSize)] public byte BustSize;
-	[FieldOffset((int)CustomizeIndex.Eyebrows)] public byte Eyebrows;
-	[FieldOffset((int)CustomizeIndex.EyeColor)] public byte EyeColor;
-	[FieldOffset((int)CustomizeIndex.EyeColor2)] public byte EyeColor2;
-	[FieldOffset((int)CustomizeIndex.EyeShape)] public byte EyeShape;
-	[FieldOffset((int)CustomizeIndex.FaceFeatures)] public byte FaceFeatures;
-	[FieldOffset((int)CustomizeIndex.FaceFeaturesColor)] public byte FaceFeaturesColor;
-	[FieldOffset((int)CustomizeIndex.Facepaint)] public FacialFeature Facepaint;
-	[FieldOffset((int)CustomizeIndex.FacepaintColor)] public byte FacepaintColor;
-	[FieldOffset((int)CustomizeIndex.FaceType)] public byte FaceType;
-	[FieldOffset((int)CustomizeIndex.Gender)] public Gender Gender;
-	[FieldOffset((int)CustomizeIndex.HairColor)] public byte HairColor;
-	[FieldOffset((int)CustomizeIndex.HairColor2)] public byte HairColor2;
-	[FieldOffset((int)CustomizeIndex.HairStyle)] public byte HairStyle;
-	[FieldOffset((int)CustomizeIndex.HasHighlights)] public byte HasHighlights;
-	[FieldOffset((int)CustomizeIndex.Height)] public byte Height;
-	[FieldOffset((int)CustomizeIndex.JawShape)] public byte JawShape;
-	[FieldOffset((int)CustomizeIndex.LipColor)] public byte LipColor;
-	[FieldOffset((int)CustomizeIndex.LipStyle)] public byte LipStyle;
-	[FieldOffset((int)CustomizeIndex.ModelType)] public byte ModelType;
-	[FieldOffset((int)CustomizeIndex.NoseShape)] public byte NoseShape;
-	[FieldOffset((int)CustomizeIndex.Race)] public Race Race;
-	[FieldOffset((int)CustomizeIndex.RaceFeatureSize)] public byte RaceFeatureSize;
-	[FieldOffset((int)CustomizeIndex.RaceFeatureType)] public byte RaceFeatureType;
-	[FieldOffset((int)CustomizeIndex.SkinColor)] public byte SkinColor;
-	[FieldOffset((int)CustomizeIndex.Tribe)] public Tribe Tribe;
+	public const int Size = 26;
+	[FieldOffset(0)]
+	public unsafe fixed byte Bytes[26];
+	[FieldOffset(23)]
+	public byte BustSize;
+	[FieldOffset(14)]
+	public byte Eyebrows;
+	[FieldOffset(9)]
+	public byte EyeColor;
+	[FieldOffset(15)]
+	public byte EyeColor2;
+	[FieldOffset(16 /*0x10*/)]
+	public byte EyeShape;
+	[FieldOffset(12)]
+	public byte FaceFeatures;
+	[FieldOffset(13)]
+	public byte FaceFeaturesColor;
+	[FieldOffset(24)]
+	public FacialFeature Facepaint;
+	[FieldOffset(25)]
+	public byte FacepaintColor;
+	[FieldOffset(5)]
+	public byte FaceType;
+	[FieldOffset(1)]
+	public Gender Gender;
+	[FieldOffset(10)]
+	public byte HairColor;
+	[FieldOffset(11)]
+	public byte HairColor2;
+	[FieldOffset(6)]
+	public byte HairStyle;
+	[FieldOffset(7)]
+	public byte HasHighlights;
+	[FieldOffset(3)]
+	public byte Height;
+	[FieldOffset(18)]
+	public byte JawShape;
+	[FieldOffset(20)]
+	public byte LipColor;
+	[FieldOffset(19)]
+	public byte LipStyle;
+	[FieldOffset(2)]
+	public byte ModelType;
+	[FieldOffset(17)]
+	public byte NoseShape;
+	[FieldOffset(0)]
+	public Race Race;
+	[FieldOffset(21)]
+	public byte RaceFeatureSize;
+	[FieldOffset(22)]
+	public byte RaceFeatureType;
+	[FieldOffset(8)]
+	public byte SkinColor;
+	[FieldOffset(4)]
+	public Tribe Tribe;
 
 	public byte this[uint index] {
 		get => this.Get(index);
@@ -44,59 +73,6 @@ public struct CustomizeContainer {
 	}
 
 	private unsafe byte Get(uint index) => this.Bytes[index];
+
 	private unsafe void Set(uint index, byte value) => this.Bytes[index] = value;
-}
-
-[Flags]
-public enum FacialFeature : byte {
-	None    = 0x00,
-	First   = 0x01,
-	Second  = 0x02,
-	Third   = 0x04,
-	Fourth  = 0x08,
-	Fifth   = 0x10,
-	Sixth   = 0x20,
-	Seventh = 0x40,
-	Legacy  = 0x80
-}
-
-public enum Gender : byte {
-	Masculine,
-	Feminine
-}
-
-public enum Race : byte {
-	Hyur = 1,
-	Elezen = 2,
-	Lalafell = 3,
-	Miqote = 4,
-	Roegadyn = 5,
-	AuRa = 6,
-	Hrothgar = 7,
-	Viera = 8
-}
-
-public enum Tribe : byte {
-	Midlander = 1,
-	Highlander = 2,
-	Wildwood = 3,
-	Duskwight = 4,
-	Plainsfolk = 5,
-	Dunesfolk = 6,
-	SunSeeker = 7,
-	MoonKeeper = 8,
-	SeaWolf = 9,
-	Hellsguard = 10,
-	Raen = 11,
-	Xaela = 12,
-	Helion = 13,
-	Lost = 14,
-	Rava = 15,
-	Veena = 16
-}
-
-public enum Age : byte {
-	Normal = 1,
-	Old = 3,
-	Young = 4
 }

@@ -1,69 +1,68 @@
-﻿using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Actions.ActionService
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
 
 using Ktisis.Actions.Attributes;
-using Ktisis.Core;
-using Ktisis.Core.Types;
-using Ktisis.Core.Attributes;
 using Ktisis.Actions.Types;
+using Ktisis.Core;
+using Ktisis.Core.Attributes;
+using Ktisis.Core.Types;
 
 namespace Ktisis.Actions;
 
 [Singleton]
 public class ActionService {
 	private readonly DIBuilder _di;
+	private readonly Dictionary<Type, ActionBase> Actions = new Dictionary<Type, ActionBase>();
 
-	public ActionService(
-		DIBuilder di
-	) {
+	public ActionService(DIBuilder di) {
 		this._di = di;
 	}
 
-	// Initialization
-	
-	private readonly Dictionary<Type, ActionBase> Actions = new();
-
 	public void RegisterActions(IPluginContext context) {
 		this.Actions.Clear();
-		foreach (var (type, attr) in ResolveActions()) {
+		foreach (var resolveAction in ResolveActions()) {
+			Type type1;
+			ActionAttribute actionAttribute1;
+			resolveAction.Deconstruct(ref type1, ref actionAttribute1);
+			var type2 = type1;
+			var actionAttribute2 = actionAttribute1;
 			try {
-				var inst = (ActionBase)this._di.Create(type, context);
-				this.Actions.Add(type, inst);
-			} catch (Exception err) {
-				Ktisis.Log.Error($"Failed to create action '{attr.Name}'\n{err}");
+				var actionBase = (ActionBase)this._di.Create(type2, context);
+				this.Actions.Add(type2, actionBase);
+			} catch (Exception ex) {
+				Ktisis.Ktisis.Log.Error($"Failed to create action '{actionAttribute2.Name}'\n{ex}", Array.Empty<object>());
 			}
 		}
 	}
 
-	// Action access
-
 	public T Get<T>() where T : ActionBase => (T)this.Actions[typeof(T)];
 
 	public bool TryGet<T>(out T action) where T : ActionBase {
-		T? result = null;
-		if (this.Actions.TryGetValue(typeof(T), out var actionBase))
-			result = (T)actionBase;
-		action = result!;
-		return result != null;
+		var obj = default(T);
+		ActionBase actionBase;
+		if (this.Actions.TryGetValue(typeof(T), out actionBase))
+			obj = (T)actionBase;
+		action = obj;
+		return obj != null;
 	}
-	
-	// Enumerators
 
 	public IEnumerable<ActionBase> GetAll() => this.Actions.Values;
 
-	public IEnumerable<KeyAction> GetBindable() => this.GetAll()
-		.Where(action => action is KeyAction)
-		.Cast<KeyAction>();
-	
-	// Type resolver
-	
+	public IEnumerable<KeyAction> GetBindable() {
+		return this.GetAll().Where(action => action is KeyAction).Cast<KeyAction>();
+	}
+
 	private static Dictionary<Type, ActionAttribute> ResolveActions() {
-		return Assembly.GetExecutingAssembly()
-			.GetTypes()
-			.Select(type => (type, attr: type.GetCustomAttribute<ActionAttribute>()))
-			.Where(pair => pair.attr != null)
-			.ToDictionary(k => k.type, v => v.attr!);
+		return Assembly.GetExecutingAssembly().GetTypes().Select((Func<Type, (Type, ActionAttribute)>)(type => (type, type.GetCustomAttribute<ActionAttribute>()))).Where(pair => pair.attr != null)
+			.ToDictionary((Func<(Type, ActionAttribute), Type>)(k => k.type), (Func<(Type, ActionAttribute), ActionAttribute>)(v => v.attr));
 	}
 }

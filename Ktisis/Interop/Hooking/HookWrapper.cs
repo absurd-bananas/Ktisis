@@ -1,39 +1,18 @@
-using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interop.Hooking.IHookWrapper
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Hooking;
+#nullable enable
+using System;
 
 namespace Ktisis.Interop.Hooking;
 
 public interface IHookWrapper : IDalamudHook, IDisposable {
-	public string Name { get; }
-	
-	public void Enable();
-	public void Disable();
-}
+	string Name { get; }
 
-public class HookWrapper<T> : IHookWrapper where T : Delegate {
-	private readonly Hook<T> _hook;
-	
-	public string Name { get; }
-	
-	public HookWrapper(Hook<T> hook) {
-		this._hook = hook;
-		this.Name = this.GetType().GetGenericArguments()[0].Name;
-	}
+	void Enable();
 
-	public nint Address => this._hook.Address;
-	public bool IsEnabled => this._hook.IsEnabled;
-	public bool IsDisposed => this._hook.IsDisposed;
-	public string BackendName => this._hook.BackendName;
-
-	public void Enable() => this._hook.Enable();
-	public void Disable() => this._hook.Disable();
-
-	public void Dispose() {
-		Ktisis.Log.Debug($"Disposing hook: '{this.Name}'");
-		if (this._hook.IsEnabled)
-			this._hook.Disable();
-		this._hook.Dispose();
-		GC.SuppressFinalize(this);
-	}
+	void Disable();
 }

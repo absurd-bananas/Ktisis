@@ -1,3 +1,10 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Entities.World.LightEntity
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 
 using Ktisis.Common.Utility;
@@ -8,37 +15,38 @@ using Ktisis.Structs.Lights;
 
 namespace Ktisis.Scene.Entities.World;
 
-[Flags]
-public enum LightEntityFlags {
-	None = 0,
-	Update = 1
-}
-
 public class LightEntity : WorldEntity, IDeletable {
-	public LightEntityFlags Flags { get; set; } = LightEntityFlags.None;
 
-	public unsafe new SceneLight* GetObject() => (SceneLight*)base.GetObject();
-	
-	public LightEntity(
-		ISceneManager scene
-	) : base(scene) {
+	public LightEntity(ISceneManager scene)
+		: base(scene) {
 		this.Type = EntityType.Light;
 	}
-	
+	private GetObject()->
+	public LightEntityFlags Flags { get; set; }
+
+	public bool IsObjectVisible => ((DrawObject)
+
+	public bool Delete() {
+		this.GetModule().Delete(this);
+		return this.Address == IntPtr.Zero;
+	}
+
+	public unsafe SceneLight* GetObject() => (SceneLight*)base.GetObject();
+
 	private LightModule GetModule() => this.Scene.GetModule<LightModule>();
 
 	public unsafe void SetType(LightType type) {
-		var ptr = this.GetObject();
-		if (ptr == null || ptr->RenderLight == null) return;
-		ptr->RenderLight->LightType = type;
+		var sceneLightPtr = this.GetObject();
+		if ((IntPtr)sceneLightPtr == IntPtr.Zero || (IntPtr)sceneLightPtr->RenderLight == IntPtr.Zero)
+			return;
+		sceneLightPtr->RenderLight->LightType = type;
 	}
 
 	public override void Update() {
-		if (!this.IsValid) return;
-		
+		if (!this.IsValid)
+			return;
 		if (this.Flags.HasFlag(LightEntityFlags.Update))
 			this.GetModule().UpdateLightObject(this);
-		
 		base.Update();
 	}
 
@@ -46,9 +54,9 @@ public class LightEntity : WorldEntity, IDeletable {
 		base.SetTransform(trans);
 		this.Flags |= LightEntityFlags.Update;
 	}
+	ref this.DrawObject).IsVisible;
 
-	public bool Delete() {
-		this.GetModule().Delete(this);
-		return this.Address == nint.Zero;
+	public unsafe void ToggleObjectVisibility() {
+		((DrawObject) ref this.GetObject()->DrawObject).IsVisible = !this.IsObjectVisible;
 	}
 }

@@ -1,8 +1,11 @@
-using System;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Windows.Editors.ActorWindow
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+#nullable enable
+using System;
 
 using Ktisis.Editor.Animation.Types;
 using Ktisis.Editor.Characters.Types;
@@ -17,125 +20,119 @@ namespace Ktisis.Interface.Windows.Editors;
 
 public class ActorWindow : EntityEditWindow<ActorEntity> {
 	private const string WindowId = "KtisisActorEditor";
-	
+	private readonly AnimationEditorTab _anim;
 	private readonly CustomizeEditorTab _custom;
 	private readonly EquipmentEditorTab _equip;
-	private readonly AnimationEditorTab _anim;
+	private ICustomizeEditor _editCustom;
 
-	private IAnimationManager Animation => this.Context.Animation;
-	private ICharacterManager Manager => this.Context.Characters;
-	
 	public ActorWindow(
 		IEditorContext ctx,
 		CustomizeEditorTab custom,
 		EquipmentEditorTab equip,
 		AnimationEditorTab anim
-	) : base($"Actor Editor###{WindowId}", ctx) {
+	)
+		: base("Actor Editor###KtisisActorEditor", ctx) {
 		this._custom = custom;
 		this._equip = equip;
 		this._anim = anim;
 	}
-	
-	// Target
 
-	private ICustomizeEditor _editCustom = null!;
+	private IAnimationManager Animation => this.Context.Animation;
+
+	private ICharacterManager Manager => this.Context.Characters;
 
 	public override void SetTarget(ActorEntity target) {
-		this.WindowName = $"{target.Name}###{WindowId}";
-		
+		this.WindowName = target.Name + "###KtisisActorEditor";
 		base.SetTarget(target);
-		
 		this._editCustom = this._custom.Editor = this.Manager.GetCustomizeEditor(target);
 		this._equip.Editor = this.Manager.GetEquipmentEditor(target);
 		this._anim.Editor = this.Animation.GetAnimationEditor(target);
 	}
 
-	// Draw tabs
-
-	public override void OnOpen() {
+	public virtual void OnOpen() {
 		this._custom.Setup();
 		this._anim.Setup();
 	}
 
 	public override void PreDraw() {
 		base.PreDraw();
-		this.SizeConstraints = new WindowSizeConstraints {
-			MinimumSize = new Vector2(560, 380),
-			MaximumSize = ImGui.GetIO().DisplaySize * 0.90f
-		};
+		Window.WindowSizeConstraints windowSizeConstraints;
+		// ISSUE: explicit constructor call
+		((Window.WindowSizeConstraints) ref windowSizeConstraints).\u002Ector();
+		((Window.WindowSizeConstraints) ref windowSizeConstraints).MinimumSize = new Vector2(560f, 380f);
+		ref Window.WindowSizeConstraints local = ref windowSizeConstraints;
+		ImGuiIOPtr io = Dalamud.Bindings.ImGui.ImGui.GetIO();
+		Vector2 vector2 = ((ImGuiIOPtr) ref io ).DisplaySize * 0.9f;
+		((Window.WindowSizeConstraints) ref local).MaximumSize = vector2;
+		this.SizeConstraints = new Window.WindowSizeConstraints?(windowSizeConstraints);
 	}
-	
-	public override void Draw() {
+
+	public virtual void Draw() {
 		this.UpdateTarget();
-		
-		using var _ = ImRaii.TabBar("##ActorEditTabs");
-		DrawTab("Appearance", this._custom.Draw);
-		DrawTab("Equipment", this._equip.Draw);
-		DrawTab("Animation", this._anim.Draw);
-		DrawTab("Misc", this.DrawMisc);
+		using (ImRaii.TabBar(ImU8String.op_Implicit("##ActorEditTabs"))) {
+			DrawTab("Appearance", this._custom.Draw);
+			DrawTab("Equipment", this._equip.Draw);
+			DrawTab("Animation", this._anim.Draw);
+			DrawTab("Misc", this.DrawMisc);
+		}
 	}
 
 	private static void DrawTab(string name, Action draw) {
-		using var tab = ImRaii.TabItem(name);
-		if (tab.Success) draw.Invoke();
+		using (ImRaii.IEndObject iendObject = ImRaii.TabItem(ImU8String.op_Implicit(name))) {
+			if (!iendObject.Success)
+				return;
+			draw();
+		}
 	}
-	
-	// Advanced tab
 
 	private unsafe void DrawMisc() {
-		ImGui.Spacing();
-		
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
 		var modelId = (int)this._editCustom.GetModelId();
-		if (ImGui.InputInt("Model ID", ref modelId))
+		if (Dalamud.Bindings.ImGui.ImGui.InputInt(ImU8String.op_Implicit("Model ID"), ref modelId, 0, 0, new ImU8String(), (ImGuiInputTextFlags)0))
 			this._editCustom.SetModelId((uint)modelId);
-
-		var chara = (CharacterEx*)this.Target.Character;
-		if (chara != null) {
-			ImGui.Spacing();
-			ImGui.SliderFloat("Opacity", ref chara->Opacity, 0.0f, 1.0f);
+		var character = (CharacterEx*)this.Target.Character;
+		if ((IntPtr)character != IntPtr.Zero) {
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Opacity"), ref character->Opacity, 0.0f, 1f, new ImU8String(), (ImGuiSliderFlags)0);
 		}
-		
-		ImGui.Spacing();
-		ImGui.Spacing();
-
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
 		this.DrawWetness();
 	}
-	
-	// Wetness
 
 	private void DrawWetness() {
-		var isWetActive = this.Target.Appearance.Wetness != null;
-		if (ImGui.Checkbox("Wetness Override", ref isWetActive))
+		var hasValue = this.Target.Appearance.Wetness.HasValue;
+		if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Wetness Override"), ref hasValue))
 			this.ToggleWetness();
-
 		var wetness = this.GetWetness();
-		if (wetness == null) return;
-		
-		using var _ = ImRaii.Disabled(!isWetActive);
-		ImGui.Spacing();
-
-		var changed = false;
-		var values = (WetnessState)wetness;
-		changed |= ImGui.SliderFloat("Weather Wetness", ref values.WeatherWetness, 0.0f, 1.0f);
-		changed |= ImGui.SliderFloat("Swimming Wetness", ref values.SwimmingWetness, 0.0f, 1.0f);
-		changed |= ImGui.SliderFloat("Wetness Depth", ref values.WetnessDepth, 0.0f, 3.0f);
-		if (changed) this.Target.Appearance.Wetness = values;
+		if (!wetness.HasValue)
+			return;
+		using (ImRaii.Disabled(!hasValue)) {
+			Dalamud.Bindings.ImGui.ImGui.Spacing();
+			var wetnessState = wetness.Value;
+			if ((0 | (Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Weather Wetness"), ref wetnessState.WeatherWetness, 0.0f, 1f, new ImU8String(), (ImGuiSliderFlags)0) ? 1 : 0) |
+				(Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Swimming Wetness"), ref wetnessState.SwimmingWetness, 0.0f, 1f, new ImU8String(), (ImGuiSliderFlags)0) ? 1 : 0) |
+				(Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Wetness Depth"), ref wetnessState.WetnessDepth, 0.0f, 3f, new ImU8String(), (ImGuiSliderFlags)0) ? 1 : 0)) == 0)
+				return;
+			this.Target.Appearance.Wetness = wetnessState;
+		}
 	}
 
 	private unsafe WetnessState? GetWetness() {
-		if (this.Target.Appearance.Wetness is {} value)
-			return value;
-		var chara = this.Target.CharacterBaseEx;
-		return chara != null ? chara->Wetness : null;
+		var wetness = this.Target.Appearance.Wetness;
+		if (wetness.HasValue)
+			return wetness.GetValueOrDefault();
+		CharacterBaseEx* characterBaseEx = this.Target.CharacterBaseEx;
+		return (IntPtr)characterBaseEx == IntPtr.Zero ? new WetnessState?() : characterBaseEx->Wetness;
 	}
 
 	private unsafe void ToggleWetness() {
-		var state = this.Target.Appearance;
-		if (state.Wetness != null) {
-			state.Wetness = null;
+		var appearance = this.Target.Appearance;
+		if (appearance.Wetness.HasValue) {
+			appearance.Wetness = new WetnessState?();
 		} else {
-			var chara = this.Target.CharacterBaseEx;
-			state.Wetness = chara != null ? chara->Wetness : null;
+			CharacterBaseEx* characterBaseEx = this.Target.CharacterBaseEx;
+			appearance.Wetness = (IntPtr)characterBaseEx != IntPtr.Zero ? characterBaseEx->Wetness : new WetnessState?();
 		}
 	}
 }

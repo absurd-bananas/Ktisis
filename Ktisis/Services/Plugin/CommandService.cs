@@ -1,9 +1,12 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Services.Plugin.CommandService
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 using System.Collections.Generic;
-
-using Dalamud.Game.Command;
-using Dalamud.Plugin.Services;
-using HandlerDelegate = Dalamud.Game.Command.IReadOnlyCommandInfo.HandlerDelegate;
 
 using Ktisis.Core.Attributes;
 using Ktisis.Editor.Context;
@@ -13,87 +16,67 @@ namespace Ktisis.Services.Plugin;
 
 [Singleton]
 public class CommandService : IDisposable {
-	private readonly ICommandManager _cmd;
 	private readonly IChatGui _chat;
+	private readonly ICommandManager _cmd;
 	private readonly ContextManager _ctx;
 	private readonly GuiManager _gui;
+	private readonly HashSet<string> _register = new HashSet<string>();
 
-	private readonly HashSet<string> _register = new();
-	
-	public CommandService(
-		ICommandManager cmd,
-		IChatGui chat,
-		ContextManager ctx,
-		GuiManager gui
-	) {
+	public CommandService(ICommandManager cmd, IChatGui chat, ContextManager ctx, GuiManager gui) {
 		this._cmd = cmd;
 		this._chat = chat;
 		this._ctx = ctx;
 		this._gui = gui;
 	}
-	
-	// Handler registration
+
+	public void Dispose() {
+		foreach (var str in this._register)
+			this._cmd.RemoveHandler(str);
+	}
 
 	public void RegisterHandlers() {
-		this.BuildCommand("/ktisis", this.OnMainCommand)
-			.SetMessage("Toggle the main Ktisis window.")
-			.Create();
+		// ISSUE: method pointer
+		this.BuildCommand("/ktisispyon", new IReadOnlyCommandInfo.HandlerDelegate((object)this, __methodptr(OnMainCommand))).AddAlias("/ktisis").SetMessage("Toggle the main KtisisPyon window.").Create();
 	}
 
 	private void Add(string name, CommandInfo info) {
-		if (this._register.Add(name))
-			this._cmd.AddHandler(name, info);
+		if (!this._register.Add(name))
+			return;
+		this._cmd.AddHandler(name, info);
 	}
 
-	private CommandFactory BuildCommand(string name, HandlerDelegate handler)
-		=> new(this, name, handler);
-	
-	// Command handlers
+	private CommandFactory BuildCommand(
+		string name,
+		IReadOnlyCommandInfo.HandlerDelegate handler
+	) => new CommandFactory(this, name, handler);
 
 	private void OnMainCommand(string command, string arguments) {
-		Ktisis.Log.Info("Main command used");
-
-		var ctx = this._ctx.Current;
-		if (ctx == null) {
-			this._chat.PrintError("Cannot open Ktisis workspace outside of GPose.");
-			return;
-		}
-
-		ctx.Interface.ToggleWorkspaceWindow();
+		Ktisis.Ktisis.Log.Info("Main command used", Array.Empty<object>());
+		var current = this._ctx.Current;
+		if (current == null)
+			this._chat.PrintError("Cannot open KtisisPyon workspace outside of GPose.", (string)null, new ushort?());
+		else
+			current.Interface.ToggleWorkspaceWindow();
 	}
-	
-	// Disposal
-
-	public void Dispose() {
-		foreach (var cmdName in this._register)
-			this._cmd.RemoveHandler(cmdName);
-	}
-	
-	// Factory
 
 	private class CommandFactory {
 		private readonly CommandService _cmd;
-
+		private readonly List<string> Alias = new List<string>();
+		private readonly IReadOnlyCommandInfo.HandlerDelegate Handler;
 		private readonly string Name;
-		private readonly List<string> Alias = new();
-
-		private readonly HandlerDelegate Handler;
-
-		private bool ShowInHelp;
 		private string HelpMessage = string.Empty;
-		
+		private bool ShowInHelp;
+
 		public CommandFactory(
 			CommandService cmd,
 			string name,
-			HandlerDelegate handler
+			IReadOnlyCommandInfo.HandlerDelegate handler
 		) {
 			this._cmd = cmd;
 			this.Name = name;
 			this.Handler = handler;
 		}
-		
-		// Factory methods
-		
+
 		public CommandFactory SetMessage(string message) {
 			this.ShowInHelp = true;
 			this.HelpMessage = message;
@@ -121,18 +104,15 @@ public class CommandService : IDisposable {
 			});
 		}
 
-		// CommandInfo
-
 		private CommandInfo BuildCommandInfo() {
-			var message = this.HelpMessage;
+			var helpMessage = this.HelpMessage;
 			if (this.HelpMessage != string.Empty && this.Alias.Count > 0) {
-				var padding = new string(' ', this.Name.Length * 2);
-				message += $"\n{padding} (Aliases: {string.Join(", ", this.Alias)})";
+				var str = new string(' ', this.Name.Length * 2);
+				helpMessage += $"\n{str} (Aliases: {string.Join(", ", this.Alias)})";
 			}
-
 			return new CommandInfo(this.Handler) {
 				ShowInHelp = this.ShowInHelp,
-				HelpMessage = message
+				HelpMessage = helpMessage
 			};
 		}
 	}

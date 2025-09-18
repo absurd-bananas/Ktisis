@@ -1,4 +1,12 @@
-﻿using System.IO;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Editor.Context.SceneCreateMenuBuilder
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
+using System.IO;
 
 using GLib.Popups.Context;
 
@@ -12,66 +20,43 @@ namespace Ktisis.Interface.Editor.Context;
 public class SceneCreateMenuBuilder {
 	private readonly IEditorContext _ctx;
 
-	private IEntityFactory Factory => this._ctx.Scene.Factory;
-
-	public SceneCreateMenuBuilder(
-		IEditorContext ctx
-	) {
+	public SceneCreateMenuBuilder(IEditorContext ctx) {
 		this._ctx = ctx;
 	}
 
-	public ContextMenu Create() {
-		return new ContextMenuBuilder()
-			.Group(this.BuildActorGroup)
-			.Separator()
-			.Group(this.BuildLightGroup)
-			.Separator()
-			.Group(this.BuildUtilityGroup)
-			.Build($"##SceneCreateMenu_{this.GetHashCode():X}");
-	}
+	private IEntityFactory Factory => this._ctx.Scene.Factory;
+
+	public ContextMenu Create() => new ContextMenuBuilder().Group(this.BuildActorGroup).Separator().Group(this.BuildLightGroup).Separator().Group(this.BuildUtilityGroup).Build($"##SceneCreateMenu_{this.GetHashCode():X}");
 
 	private void BuildActorGroup(ContextMenuBuilder sub) {
-		sub.Action("Create new actor", () => this.Factory.CreateActor().Spawn())
-			.Action("Import actor from file", this.ImportCharaFromFile)
-			.Action("Add overworld actor", this._ctx.Interface.OpenOverworldActorList);
+		sub.Action("Create new actor", (Action)(() => this.Factory.CreateActor().Spawn())).Action("Import actor from file", this.ImportCharaFromFile).Action("Add overworld actor", this._ctx.Interface.OpenOverworldActorList);
 	}
-	
-	private void BuildLightGroup(ContextMenuBuilder sub)
-		=> sub.SubMenu("Create new light", this.BuildLightMenu);
-	
+
+	private void BuildLightGroup(ContextMenuBuilder sub) {
+		sub.SubMenu("Create new light", this.BuildLightMenu);
+	}
+
 	private void BuildLightMenu(ContextMenuBuilder sub) {
-		sub.Action("Point", () => SpawnLight(LightType.PointLight))
-			.Action("Spot", () => SpawnLight(LightType.SpotLight))
-			.Action("Area", () => SpawnLight(LightType.AreaLight))
-			.Action("Sun", () => SpawnLight(LightType.Directional));
-		
-		void SpawnLight(LightType type) => this.Factory.CreateLight(type).Spawn();
+		sub.Action("Point", (Action)(() => SpawnLight(LightType.PointLight))).Action("Spot", (Action)(() => SpawnLight(LightType.SpotLight))).Action("Area", (Action)(() => SpawnLight(LightType.AreaLight)))
+			.Action("Sun", (Action)(() => SpawnLight(LightType.Directional)));
+
+		void SpawnLight(LightType type) {
+			this.Factory.CreateLight(type).Spawn();
+		}
 	}
 
 	private void BuildUtilityGroup(ContextMenuBuilder sub) {
 		sub.Action("Add reference image", this.OpenReferenceImage);
 	}
-	
-	// Actor handling
 
 	private void ImportCharaFromFile() {
 		this._ctx.Interface.OpenCharaFile((path, file) => {
-			var name = Path.GetFileNameWithoutExtension(path).Truncate(32);
-			this.Factory.CreateActor()
-				.WithAppearance(file)
-				.SetName(name)
-				.Spawn();
+			var name = Path.GetFileNameWithoutExtension(path).Truncate(32 /*0x20*/);
+			this.Factory.CreateActor().WithAppearance(file).SetName(name).Spawn();
 		});
 	}
-	
-	// Reference image loading
 
 	private void OpenReferenceImage() {
-		this._ctx.Interface.OpenReferenceImages(path => {
-			this.Factory.BuildRefImage()
-				.SetPath(path)
-				.Add()
-				.Save();
-		});
+		this._ctx.Interface.OpenReferenceImages(path => this.Factory.BuildRefImage().SetPath(path).Add().Save());
 	}
 }

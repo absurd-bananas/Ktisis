@@ -1,5 +1,10 @@
-using Dalamud.Plugin.Services;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Context.ContextBuilder
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Core.Attributes;
 using Ktisis.Core.Types;
 using Ktisis.Data.Mcdf;
@@ -25,16 +30,18 @@ namespace Ktisis.Editor.Context;
 
 [Singleton]
 public class ContextBuilder {
+	private readonly IDataManager _data;
+	private readonly IDalamudPluginInterface _dpi;
+	private readonly FormatService _format;
+	private readonly IFramework _framework;
 	private readonly GPoseService _gpose;
 	private readonly InteropService _interop;
-	private readonly IFramework _framework;
-	private readonly IDataManager _data;
 	private readonly IKeyState _keyState;
-	private readonly NamingService _naming;
-	private readonly FormatService _format;
 	private readonly McdfManager _mcdf;
+	private readonly NamingService _naming;
 
 	public ContextBuilder(
+		IDalamudPluginInterface dpi,
 		GPoseService gpose,
 		InteropService interop,
 		IFramework framework,
@@ -44,6 +51,7 @@ public class ContextBuilder {
 		FormatService format,
 		McdfManager mcdf
 	) {
+		this._dpi = dpi;
 		this._gpose = gpose;
 		this._interop = interop;
 		this._framework = framework;
@@ -54,33 +62,27 @@ public class ContextBuilder {
 		this._mcdf = mcdf;
 	}
 
-	public IEditorContext Create(
-		IPluginContext state
-	) {
-		var context = new EditorContext(this._gpose, state);
-		
+	public IEditorContext Create(IPluginContext state) {
+		var editorContext = new EditorContext(this._gpose, state);
 		var scope = this._interop.CreateScope();
-
-		var input = new InputManager(context, scope, this._keyState);
-		var actions = new ActionManager(context, input);
-		var factory = new EntityFactory(context, this._naming);
-		var select = new SelectManager(context);
+		var input = new InputManager(editorContext, scope, this._keyState);
+		var action = new ActionManager(editorContext, input);
+		var factory = new EntityFactory(editorContext, this._naming);
+		var select = new SelectManager(editorContext);
 		var attach = new AttachManager();
-		var autoSave = new PoseAutoSave(context, this._framework, this._format);
-
-		var editor = new EditorState(context, scope) {
-			Actions = actions,
-			Animation = new AnimationManager(context, scope, this._data, this._framework),
-			Cameras = new CameraManager(context, scope),
-			Characters = new CharacterManager(context, scope, this._framework, this._mcdf),
-			Interface = new EditorInterface(context, state.Gui),
-			Posing = new PosingManager(context, scope, this._framework, attach, autoSave),
-			Scene = new SceneManager(context, scope, factory),
+		var autoSave = new PoseAutoSave(editorContext, this._framework, this._format);
+		var state1 = new EditorState(editorContext, scope) {
+			Actions = action,
+			Animation = new AnimationManager(editorContext, scope, this._data, this._framework),
+			Cameras = new CameraManager(editorContext, scope),
+			Characters = new CharacterManager(editorContext, scope, this._framework, this._mcdf),
+			Interface = new EditorInterface(this._dpi, editorContext, state.Gui),
+			Posing = new PosingManager(editorContext, scope, this._framework, attach, autoSave),
+			Scene = new SceneManager(editorContext, scope, factory, this._framework),
 			Selection = select,
-			Transform = new TransformHandler(context, actions, select)
+			Transform = new TransformHandler(editorContext, action, select)
 		};
-		
-		context.Setup(editor);
-		return context;
+		editorContext.Setup(state1);
+		return editorContext;
 	}
 }

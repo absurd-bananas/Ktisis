@@ -1,15 +1,16 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Overlay.SelectableGui
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-
-using Dalamud.Interface;
 
 using GLib.Widgets;
 
-using Dalamud.Bindings.ImGui;
-
-using Ktisis.Common.Extensions;
 using Ktisis.Core.Attributes;
 using Ktisis.Data.Config;
 using Ktisis.Data.Config.Entity;
@@ -18,74 +19,73 @@ using Ktisis.Services.Game;
 
 namespace Ktisis.Interface.Overlay;
 
-public interface ISelectableFrame {
-	public IEnumerable<IItemSelect> GetItems();
-	
-	public void AddItem(SceneEntity entity, Vector3 worldPos);
-}
-
-public interface IItemSelect {
-	public string Name { get; }
-    
-	public SceneEntity Entity { get; }
-	public Vector2 ScreenPos { get; }
-	
-	public float Distance { get; }
-	
-	public bool IsHovered { get; set; }
-}
-
 [Transient]
 public class SelectableGui {
+	private const int HoverPadding = 6;
 	private readonly ConfigManager _cfg;
-
-	private Configuration Config => this._cfg.File;
-	
-	public SelectableGui(
-		ConfigManager cfg
-	) {
-		this._cfg = cfg;
-	}
-    
-	public ISelectableFrame BeginFrame() {
-		return new SelectableFrame();
-	}
-	
-	// Draw frame
-
 	private int ScrollIndex;
 
-	public bool Draw(
-		ISelectableFrame frame,
-		out SceneEntity? clicked,
-		bool gizmo
-	) {
+	public SelectableGui(ConfigManager cfg) {
+		this._cfg = cfg;
+	}
+
+	private Configuration Config => this._cfg.File;
+
+	public ISelectableFrame BeginFrame() => new SelectableFrame();
+
+	public bool Draw(ISelectableFrame frame, out SceneEntity? clicked, bool gizmo) {
 		clicked = null;
-
-		if (!this.Config.Overlay.DrawDotsGizmo && ImGuizmo.Gizmo.IsUsing)
+		if (!this.Config.Overlay.DrawDotsGizmo && Ktisis.ImGuizmo.Gizmo.IsUsing)
 			return false;
-		
-		var drawList = ImGui.GetWindowDrawList();
-
-		var items = frame.GetItems().ToList();
-
-		var isHovering = false;
-		foreach (var item in items) {
-			var display = this.Config.GetEntityDisplay(item.Entity);
-
-			var isSelect = item.Entity.IsSelected;
-			item.IsHovered = display.Mode switch {
-				DisplayMode.Dot => this.DrawPrimDot(drawList, item.ScreenPos, display, isSelect),
-				DisplayMode.Icon => this.DrawIconDot(drawList, item.ScreenPos, display, isSelect),
-				_ => false
-			};
-
-			isHovering |= item.IsHovered;
+		ImDrawListPtr windowDrawList = Dalamud.Bindings.ImGui.ImGui.GetWindowDrawList();
+		var list = frame.GetItems().ToList();
+		var flag1 = false;
+		foreach (var itemSelect1 in list) {
+			if (!itemSelect1.Entity.IsSelected && itemSelect1.OpacityMultiplier != 0.0) {
+				EntityDisplay entityDisplay = this.Config.GetEntityDisplay(itemSelect1.Entity);
+				var isSelected = itemSelect1.Entity.IsSelected;
+				var itemSelect2 = itemSelect1;
+				bool flag2;
+				switch (entityDisplay.Mode) {
+					case DisplayMode.Dot:
+						flag2 = this.DrawPrimDot(windowDrawList, itemSelect1.ScreenPos, entityDisplay, isSelected, itemSelect1.OpacityMultiplier);
+						break;
+					case DisplayMode.Icon:
+						flag2 = this.DrawIconDot(windowDrawList, itemSelect1.ScreenPos, entityDisplay, isSelected);
+						break;
+					default:
+						flag2 = false;
+						break;
+				}
+				itemSelect2.IsHovered = flag2;
+				flag1 |= itemSelect1.IsHovered;
+			}
 		}
-
-		if (!isHovering) return false;
-		items.RemoveAll(item => !item.IsHovered);
-		return this.DrawSelectWindow(items, out clicked, gizmo);
+		foreach (var itemSelect3 in list) {
+			if (itemSelect3.Entity.IsSelected && itemSelect3.OpacityMultiplier != 0.0) {
+				EntityDisplay entityDisplay = this.Config.GetEntityDisplay(itemSelect3.Entity);
+				var isSelected = itemSelect3.Entity.IsSelected;
+				var itemSelect4 = itemSelect3;
+				bool flag3;
+				switch (entityDisplay.Mode) {
+					case DisplayMode.Dot:
+						flag3 = this.DrawPrimDot(windowDrawList, itemSelect3.ScreenPos, entityDisplay, isSelected, itemSelect3.OpacityMultiplier);
+						break;
+					case DisplayMode.Icon:
+						flag3 = this.DrawIconDot(windowDrawList, itemSelect3.ScreenPos, entityDisplay, isSelected);
+						break;
+					default:
+						flag3 = false;
+						break;
+				}
+				itemSelect4.IsHovered = flag3;
+				flag1 |= itemSelect3.IsHovered;
+			}
+		}
+		if (!flag1)
+			return false;
+		list.RemoveAll((Predicate<IItemSelect>)(item => !item.IsHovered));
+		return this.DrawSelectWindow(list, out clicked, gizmo);
 	}
 
 	private bool DrawSelectWindow(
@@ -94,150 +94,121 @@ public class SelectableGui {
 		bool gizmo
 	) {
 		clicked = null;
-		if (items.Count == 0 || (gizmo && (ImGuizmo.Gizmo.IsUsing || ImGuizmo.Gizmo.IsOver)))
+		if (items.Count == 0 || gizmo && (Ktisis.ImGuizmo.Gizmo.IsUsing || Ktisis.ImGuizmo.Gizmo.IsOver))
 			return false;
-
-		var begin = false;
+		var flag = false;
 		try {
-			ImGui.SetNextWindowPos(ImGui.GetMousePos().AddX(20.0f));
-			ImGui.SetNextWindowSize(-Vector2.One, ImGuiCond.Always);
-			begin = ImGui.Begin("##Hover", ImGuiWindowFlags.NoDecoration | ImGuiWindowFlags.NoFocusOnAppearing);
-			if (begin) return this.DrawSelectList(items, out clicked);
-		} catch (Exception err) {
-			Ktisis.Log.Error($"Error drawing select list:\n{err}");
+			Dalamud.Bindings.ImGui.ImGui.SetNextWindowPos(Dalamud.Bindings.ImGui.ImGui.GetMousePos().AddX(20f));
+			Dalamud.Bindings.ImGui.ImGui.SetNextWindowSize(-Vector2.One, (ImGuiCond)1);
+			flag = Dalamud.Bindings.ImGui.ImGui.Begin(ImU8String.op_Implicit("##Hover"), (ImGuiWindowFlags)4139);
+			if (flag)
+				return this.DrawSelectList(items, out clicked);
+		} catch (Exception ex) {
+			Ktisis.Ktisis.Log.Error($"Error drawing select list:\n{ex}", Array.Empty<object>());
 		} finally {
-			if (begin) ImGui.End();
+			if (flag)
+				Dalamud.Bindings.ImGui.ImGui.End();
 		}
-
 		return false;
 	}
 
 	private bool DrawSelectList(IReadOnlyList<IItemSelect> list, out SceneEntity? clicked) {
 		clicked = null;
-		
-		// Sort objects by proximity to camera.
-		// TODO: Configuration.OrderBoneListByDistance
-		/*list.Sort((a, b) => {
-			if (Math.Abs(a.Distance - b.Distance) > 0.01f)
-				return a.Distance < b.Distance ? -1 : 1;
-			return 0;
-		});*/
-		
-		// Handle mouse wheel input and clamp scroll index
-		this.ScrollIndex -= (int)ImGui.GetIO().MouseWheel;
+		var scrollIndex = this.ScrollIndex;
+		ImGuiIOPtr io = Dalamud.Bindings.ImGui.ImGui.GetIO();
+		var num = (int)((ImGuiIOPtr) ref io ).MouseWheel;
+		this.ScrollIndex = scrollIndex - num;
 		if (this.ScrollIndex >= list.Count)
 			this.ScrollIndex = 0;
 		else if (this.ScrollIndex < 0)
 			this.ScrollIndex = list.Count - 1;
-		
-		// Capture mouse input.
-		ImGui.SetNextFrameWantCaptureMouse(true);
-		
-		// Check for mouse click
-		var isClick = ImGui.IsMouseReleased(ImGuiMouseButton.Left);
-
-		for (var i = 0; i < list.Count; i++) {
-			var item = list[i];
-			var isSelect = i == this.ScrollIndex;
-			ImGui.Selectable(item.Name, isSelect);
-			if (isSelect && isClick)
-				clicked = item.Entity;
+		Dalamud.Bindings.ImGui.ImGui.SetNextFrameWantCaptureMouse(true);
+		bool flag1 = Dalamud.Bindings.ImGui.ImGui.IsMouseReleased((ImGuiMouseButton)0);
+		for (var index = 0; index < list.Count; ++index) {
+			var itemSelect = list[index];
+			var flag2 = index == this.ScrollIndex;
+			Dalamud.Bindings.ImGui.ImGui.Selectable(ImU8String.op_Implicit(itemSelect.Name), flag2, (ImGuiSelectableFlags)0, new Vector2());
+			if (flag2 & flag1)
+				clicked = itemSelect.Entity;
 		}
-
 		return clicked != null;
 	}
-	
-	// Draw UI dots
 
-	private bool DrawPrimDot(ImDrawListPtr drawList, Vector2 pos2d, EntityDisplay display, bool isSelect = false) {
-		var radius = this.Config.Overlay.DotRadius;
-		if (isSelect) radius += 1.0f;
-		
-		drawList.AddCircleFilled(
-			pos2d,
-			radius,
-			display.Color,
-			16
-		);
-
-		drawList.AddCircle(
-			pos2d,
-			radius,
-			0xFF000000,
-			16,
-			isSelect ? 2.5f : 1.0f
-		);
-
+	private bool DrawPrimDot(
+		ImDrawListPtr drawList,
+		Vector2 pos2d,
+		EntityDisplay display,
+		bool isSelect = false,
+		float opacityMultiplier = 1f
+	) {
+		var radius = isSelect ? this.Config.Overlay.DotRadiusSelected : this.Config.Overlay.DotRadius;
+		((ImDrawListPtr) ref drawList).AddCircleFilled(pos2d, radius, this.AdjustDotAlpha(isSelect ? this.Config.Overlay.DotColorSelected : this.Config.Overlay.DotColor, opacityMultiplier), 16 /*0x10*/);
+		((ImDrawListPtr) ref drawList).AddCircle(pos2d, radius, this.AdjustDotAlpha(isSelect ? this.Config.Overlay.DotOutlineColorSelected : this.Config.Overlay.DotOutlineColor, opacityMultiplier), 16 /*0x10*/,
+			isSelect ? this.Config.Overlay.DotOutlineSelected : this.Config.Overlay.DotOutline);
 		return IsHovering(pos2d, radius);
 	}
 
-	private bool DrawIconDot(ImDrawListPtr drawList, Vector2 pos2d, EntityDisplay display, bool isSelect = false) {
-		var size = Icons.CalcIconSize(display.Icon);
-		var radius = UiBuilder.IconFont.FontSize;
+	private uint AdjustDotAlpha(uint color, float opacityMultiplier) {
+		var num = Ktisis.ImGuizmo.Gizmo.IsUsing ? this.Config.Overlay.DotOpacityUsing : this.Config.Overlay.DotOpacity;
+		return color.SetAlpha(Math.Clamp(num * opacityMultiplier, 0.0f, 1f));
+	}
 
-		var isHover = IsHovering(pos2d, radius);
-
-		drawList.AddCircleFilled(
-			pos2d,
-			radius,
-			isSelect ? 0xAF000000u : (isHover ? 0xCA000000u : 0x70000000u),
-			16
-		);
-
+	private bool DrawIconDot(
+		ImDrawListPtr drawList,
+		Vector2 pos2d,
+		EntityDisplay display,
+		bool isSelect = false
+	) {
+		Vector2 vector2 = Icons.CalcIconSize(display.Icon);
+		ImFontPtr iconFont = UiBuilder.IconFont;
+		float radius = ((ImFontPtr) ref iconFont ).FontSize;
+		var flag = IsHovering(pos2d, radius);
+		((ImDrawListPtr) ref drawList).AddCircleFilled(pos2d, radius, isSelect ? 2936012800U /*0xAF000000*/ : flag ? 3388997632U /*0xCA000000*/ : 1879048192U /*0x70000000*/, 16 /*0x10*/);
 		if (isSelect)
-			drawList.AddCircle(pos2d, radius, 0xFFEFEFEF, 16, 1.5f);
-		
-		ImGui.SetCursorPos((pos2d - size / 2));
+			((ImDrawListPtr) ref
+		drawList).AddCircle(pos2d, radius, 4293914607U, 16 /*0x10*/, 1.5f);
+		Dalamud.Bindings.ImGui.ImGui.SetCursorPos(pos2d - vector2 / 2f);
 		Icons.DrawIcon(display.Icon, display.Color);
-		
-		return isHover;
+		return flag;
 	}
 
-	private const int HoverPadding = 6;
+	private static bool IsHovering(Vector2 pos2d, float radius) => Dalamud.Bindings.ImGui.ImGui.IsMouseHoveringRect(pos2d.Add((float)(-(double)radius - 6.0)), pos2d.Add(radius + 6f));
 
-	private static bool IsHovering(Vector2 pos2d, float radius) {
-		return ImGui.IsMouseHoveringRect(
-			pos2d.Add(-radius - HoverPadding),
-			pos2d.Add(radius + HoverPadding)
-		);
-	}
-	
-	// Frame context
-	
 	private class SelectableFrame : ISelectableFrame {
-		private readonly List<ItemSelect> Items = new();
+		private readonly List<ItemSelect> Items = new List<ItemSelect>();
 
 		public IEnumerable<IItemSelect> GetItems() => this.Items.AsReadOnly();
-		
-		public unsafe void AddItem(SceneEntity entity, Vector3 worldPos) {
-			var camera = CameraService.GetSceneCamera();
-			if (camera == null) return;
 
-			if (!CameraService.WorldToScreen(camera, worldPos, out var pos2d)) return;
-
-			var dist = Vector3.Distance(camera->Object.Position, worldPos);
-			var select = new ItemSelect(entity, pos2d, dist);
-			this.Items.Add(select);
+		public unsafe void AddItem(SceneEntity entity, Vector3 worldPos, float opacityMultiplier) {
+			Camera* sceneCamera = CameraService.GetSceneCamera();
+			Vector2 screenPos;
+			if ((IntPtr)sceneCamera == IntPtr.Zero || !CameraService.WorldToScreen(sceneCamera, worldPos, out screenPos))
+				return;
+			float dist = Vector3.Distance(Vector3.op_Implicit(sceneCamera->Object.Position), worldPos);
+			this.Items.Add(new ItemSelect(entity, screenPos, dist, opacityMultiplier));
 		}
 	}
-	
-	// Item selection info
 
 	private class ItemSelect : IItemSelect {
-		public string Name => this.Entity.Name;
-		
-		public SceneEntity Entity { get; }
-		public Vector2 ScreenPos { get; }
-
-		public float Distance { get; }
 		public readonly int SortPriority;
 
-		public bool IsHovered { get; set; }
-
-		public ItemSelect(SceneEntity entity, Vector2 screenPos, float dist) {
+		public ItemSelect(SceneEntity entity, Vector2 screenPos, float dist, float opacityMultiplier) {
 			this.Entity = entity;
 			this.ScreenPos = screenPos;
 			this.Distance = dist;
+			this.OpacityMultiplier = opacityMultiplier;
 		}
+
+		public string Name => this.Entity.Name;
+
+		public SceneEntity Entity { get; }
+
+		public Vector2 ScreenPos { get; }
+
+		public float Distance { get; }
+
+		public bool IsHovered { get; set; }
+
+		public float OpacityMultiplier { get; set; }
 	}
 }
