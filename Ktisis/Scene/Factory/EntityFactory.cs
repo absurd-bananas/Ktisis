@@ -1,5 +1,10 @@
-using Dalamud.Game.ClientState.Objects.Types;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Factory.EntityFactory
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Editor.Context.Types;
 using Ktisis.Scene.Factory.Builders;
 using Ktisis.Scene.Factory.Creators;
@@ -14,17 +19,12 @@ public class EntityFactory : IEntityFactory {
 	private readonly IEditorContext _ctx;
 	private readonly INameResolver _naming;
 
-	private ISceneManager Scene => this._ctx.Scene;
-	
-	public EntityFactory(
-		IEditorContext ctx,
-		INameResolver naming
-	) {
+	public EntityFactory(IEditorContext ctx, INameResolver naming) {
 		this._ctx = ctx;
 		this._naming = naming;
 	}
-	
-	// Builders
+
+	private ISceneManager Scene => this._ctx.Scene;
 
 	public IActorBuilder BuildActor(IGameObject actor) => new ActorBuilder(this.Scene, this.BuildPose(), actor);
 
@@ -33,10 +33,8 @@ public class EntityFactory : IEntityFactory {
 	public IObjectBuilder BuildObject() => new ObjectBuilder(this.Scene, this.BuildPose(), this._naming);
 
 	public IPoseBuilder BuildPose() => new PoseBuilder(this.Scene);
-	
+
 	public IRefImageBuilder BuildRefImage() => new RefImageBuilder(this.Scene);
-	
-	// Creators
 
 	public IActorCreator CreateActor() => new ActorCreator(this.Scene);
 

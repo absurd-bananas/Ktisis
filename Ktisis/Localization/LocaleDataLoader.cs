@@ -1,133 +1,128 @@
-#nullable  enable
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Localization.LocaleDataLoader
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text.Json;
 
 using Ktisis.Data.Json;
 
 namespace Ktisis.Localization;
 
 public class LocaleDataLoader {
+	private readonly static JsonReaderOptions readerOptions;
 
-	/* Being lenient for backwards compatibility, but you will get an annoyed look if you put in C/C++-style comments in your JSON. */
-	private readonly static JsonReaderOptions readerOptions = new() {
-		AllowTrailingCommas = true,
-		CommentHandling = JsonCommentHandling.Skip
-	};
-
-	private Stream GetResourceStream(string technicalName) {
-		/* TODO: Type-scope once we get the namespaces sorted out */
-		Stream? stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(
-			typeof(LocaleDataLoader),
-			"Data." + technicalName + ".json"
-		);
-		if (stream == null)
-			throw new Exception($"Cannot find data file '{technicalName}'");
-		return stream;
+	static LocaleDataLoader() {
+		JsonReaderOptions jsonReaderOptions = new JsonReaderOptions();
+		((JsonReaderOptions) ref jsonReaderOptions).AllowTrailingCommas = true;
+		((JsonReaderOptions) ref jsonReaderOptions).CommentHandling = (JsonCommentHandling)1;
+		readerOptions = jsonReaderOptions;
 	}
+
+	private Stream GetResourceStream(string technicalName) => Assembly.GetExecutingAssembly().GetManifestResourceStream("KtisisPyon.Localization.Data.en_US.json") ?? throw new Exception($"Cannot find data file '{technicalName}'");
 
 	public LocaleMetaData LoadMeta(string technicalName) {
-		using Stream stream = this.GetResourceStream(technicalName);
-		var reader = new BlockBufferJsonReader(stream, stackalloc byte[4096], readerOptions);
-
-		reader.Read();
-		if (reader.Reader.TokenType != JsonTokenType.StartObject)
+		using (var resourceStream = this.GetResourceStream(technicalName)) {
+			var reader = new BlockBufferJsonReader(resourceStream, stackalloc byte[4096 /*0x1000*/], readerOptions);
+			reader.Read();
+			if (((Utf8JsonReader) ref reader.Reader ).TokenType != 1)
 			throw new Exception($"Locale Data file '{technicalName}.json' does not contain a top-level object.");
-
-		while (reader.Read()) {
-			switch (reader.Reader.TokenType) {
-				case JsonTokenType.PropertyName:
-					if (reader.Reader.GetString() == "$meta") {
-						return this.ReadMetaObject(technicalName, ref reader);
-					}
-					reader.SkipIt();
-					break;
-				case JsonTokenType.EndObject:
+			while (reader.Read()) {
+				JsonTokenType tokenType = ((Utf8JsonReader) ref reader.Reader ).TokenType;
+				if (tokenType == 2)
 					throw new Exception($"Locale Data file '{technicalName}' is is missing the top-level '$meta' object.");
-				default:
-					Debug.Assert(false, "Should not reach this point.");
+				if (tokenType != 5)
 					throw new Exception("Should not reach this point.");
+				if (((Utf8JsonReader) ref reader.Reader ).GetString() == "$meta")
+				return this.ReadMetaObject(technicalName, ref reader);
+				reader.SkipIt();
 			}
+			throw new Exception($"Locale Data file '{technicalName}.json' is missing its meta data (top-level '$meta' key not found)");
 		}
-		throw new Exception($"Locale Data file '{technicalName}.json' is missing its meta data (top-level '$meta' key not found)");
 	}
+
 	private LocaleMetaData ReadMetaObject(string technicalName, ref BlockBufferJsonReader reader) {
 		reader.Read();
-		if(reader.Reader.TokenType != JsonTokenType.StartObject)
-			throw new Exception($"Locale Data file '{technicalName}.json' has a non-object at the top-level '$meta' key.");
-
-		string? displayName = null;
-		string? selfName = null;
-		string?[]? maintainers = null;
-
-		while(true) {
-			reader.Reader.Read();
-			switch(reader.Reader.TokenType) {
-				case JsonTokenType.PropertyName:
-					string propertyName = reader.Reader.GetString()!;
-					reader.Read();
-					switch(propertyName) {
-						case "__comment":
-							break;
-						case "displayName":
-							if(reader.Reader.TokenType != JsonTokenType.String)
-								throw new Exception($"Locale data file '{technicalName}.json' has an invalid '%.$meta.displayName' value (not a string).");
-							displayName = reader.Reader.GetString();
-							break;
-						case "selfName":
-							if(reader.Reader.TokenType != JsonTokenType.String)
-								throw new Exception($"Locale data file '{technicalName}.json' has an invalid '%.$meta.selfName' value (not a string).");
-							selfName = reader.Reader.GetString();
-							break;
-						case "maintainers":
-							if(reader.Reader.TokenType != JsonTokenType.StartArray)
-								throw new Exception($"Locale data file '{technicalName}.json' has an invalid '%.$meta.maintainers' value (not an array).");
-							List<string?> collectMaintainers = new List<string?>();
-							int i = 0;
-							while(reader.Read()) {
-								switch(reader.Reader.TokenType) {
-									case JsonTokenType.Null:
-										collectMaintainers.Add(null);
-										break;
-									case JsonTokenType.String:
-										collectMaintainers.Add(reader.Reader.GetString());
-										break;
-									case JsonTokenType.EndArray:
-										goto endArray;
-									default:
-										throw new Exception(
-											$"Locale data file '{technicalName}' has an invalid value at '%.$meta.maintainers.{i}' (not a string or null).");
-								}
-
-								i++;
-							}
-
-							endArray:
-							maintainers = collectMaintainers.ToArray();
-							break;
-						default:
-							Ktisis.Log.Warning($"Locale data file '{technicalName}.json' has unknown meta key at '%.$meta.{reader.Reader.GetString()}'");
-							reader.SkipIt();
+		if (((Utf8JsonReader) ref reader.Reader ).TokenType != 1)
+		throw new Exception($"Locale Data file '{technicalName}.json' has a non-object at the top-level '$meta' key.");
+		var displayName = (string)null;
+		var selfName = (string)null;
+		var maintainers = (string[])null;
+		while (true) {
+			JsonTokenType tokenType1;
+			do {
+				((Utf8JsonReader) ref reader.Reader).Read();
+				tokenType1 = ((Utf8JsonReader) ref reader.Reader).TokenType;
+				if (tokenType1 == 2)
+					goto label_25;
+			} while (tokenType1 != 5);
+			string str = ((Utf8JsonReader) ref reader.Reader ).GetString();
+			reader.Read();
+			switch (str) {
+				case "__comment":
+					continue;
+				case "displayName":
+					if (((Utf8JsonReader) ref reader.Reader ).TokenType == 7)
+				{
+					displayName = ((Utf8JsonReader) ref reader.Reader).GetString();
+					continue;
+				}
+					goto label_7;
+				case "selfName":
+					if (((Utf8JsonReader) ref reader.Reader ).TokenType == 7)
+				{
+					selfName = ((Utf8JsonReader) ref reader.Reader).GetString();
+					continue;
+				}
+					goto label_10;
+				case "maintainers":
+					if (((Utf8JsonReader) ref reader.Reader ).TokenType == 3)
+				{
+					var stringList = new List<string>();
+					var num = 0;
+					while (reader.Read()) {
+						JsonTokenType tokenType2 = ((Utf8JsonReader) ref reader.Reader ).TokenType;
+						if (tokenType2 != 4) {
+							if (tokenType2 != 7) {
+								if (tokenType2 == 11)
+									stringList.Add(null);
+								else
+									throw new Exception($"Locale data file '{technicalName}' has an invalid value at '%.$meta.maintainers.{num}' (not a string or null).");
+							} else
+								stringList.Add(((Utf8JsonReader) ref reader.Reader).GetString())
+							;
+							++num;
+						} else
 							break;
 					}
-
-					break;
-				case JsonTokenType.EndObject:
-					goto done;
+					maintainers = stringList.ToArray();
+					continue;
+				}
+					goto label_13;
+				default:
+					Ktisis.Ktisis.Log.Warning($"Locale data file '{technicalName}.json' has unknown meta key at '%.$meta.{((Utf8JsonReader) ref reader.Reader).GetString()}'", Array.Empty<object>());
+					reader.SkipIt();
+					continue;
 			}
 		}
-
-		done:
-		if(displayName == null)
+		label_7:
+		throw new Exception($"Locale data file '{technicalName}.json' has an invalid '%.$meta.displayName' value (not a string).");
+		label_10:
+		throw new Exception($"Locale data file '{technicalName}.json' has an invalid '%.$meta.selfName' value (not a string).");
+		label_13:
+		throw new Exception($"Locale data file '{technicalName}.json' has an invalid '%.$meta.maintainers' value (not an array).");
+		label_25:
+		if (displayName == null)
 			throw new Exception($"Locale data file '{technicalName}.json' is missing the '%.$meta.displayName' value.");
-		if(selfName == null)
+		if (selfName == null)
 			throw new Exception($"Locale data file '{technicalName}.json' is missing the '%.$meta.selfName' value.");
-		maintainers ??= new string?[] { null };
-
+		if (maintainers == null)
+			maintainers = new string[1];
 		return new LocaleMetaData(technicalName, displayName, selfName, maintainers);
 	}
 
@@ -136,83 +131,86 @@ public class LocaleDataLoader {
 	public LocaleData LoadData(LocaleMetaData metaData) => this._LoadData(metaData.TechnicalName, metaData);
 
 	private LocaleData _LoadData(string technicalName, LocaleMetaData? meta) {
-		using Stream stream = this.GetResourceStream(technicalName);
-		var reader = new BlockBufferJsonReader(stream, stackalloc byte[4096], readerOptions);
-
-		reader.Read();
-		if (reader.Reader.TokenType != JsonTokenType.StartObject)
+		using (var resourceStream = this.GetResourceStream(technicalName)) {
+			var reader = new BlockBufferJsonReader(resourceStream, stackalloc byte[4096 /*0x1000*/], readerOptions);
+			reader.Read();
+			if (((Utf8JsonReader) ref reader.Reader ).TokenType != 1)
 			throw new Exception($"Locale Data file '{technicalName}' does not contain a top-level object.");
-
-		Dictionary<string, string> translationData = new();
-
-		Stack<string> keyStack = new();
-		string? currentKey = null;
-
-		int metaCount = 0;
-
-		while (reader.Read()) {
-			switch (reader.Reader.TokenType) {
-				case JsonTokenType.PropertyName:
-					if (keyStack.Count == 0 && reader.Reader.GetString() == "$meta") {
-						metaCount++;
-						if (meta == null)
-							meta = this.ReadMetaObject(technicalName, ref reader);
-						else
-							reader.SkipIt();
-					} else if(reader.Reader.GetString() == "__comment") {
-						reader.SkipIt();
-					} else {
-						keyStack.TryPeek(out string? prevKey);
-						if (prevKey != null) {
-							currentKey = prevKey + "." + reader.Reader.GetString();
-						} else {
-							currentKey = reader.Reader.GetString();
-						}
-					}
-					break;
-				case JsonTokenType.String:
-					translationData.Add(currentKey!, reader.Reader.GetString()!);
-					break;
-				case JsonTokenType.StartObject:
-					keyStack.Push(currentKey!);
-					break;
-				case JsonTokenType.EndObject:
-					if (keyStack.TryPop(out string? _)) /* non-top-level object */
-						break;
-					goto done;
-				case JsonTokenType.StartArray:
-					this.WarnUnsupported(technicalName, "array", currentKey!);
+			var translationData = new Dictionary<string, string>();
+			Stack<string> stringStack = new Stack<string>();
+			var str1 = (string)null;
+			var num = 0;
+			while (reader.Read()) {
+				switch (((Utf8JsonReader)
+				ref reader.Reader ).TokenType - 1)
+				{
+					case 0:
+					stringStack.Push(str1);
+					continue;
+					case 1:
+					string str2;
+					if (!stringStack.TryPop(ref str2))
+						goto label_20;
+					continue;
+					case 2:
+					this.WarnUnsupported(technicalName, "array", str1);
 					reader.SkipIt();
-					break;
-				case JsonTokenType.True:
-				case JsonTokenType.False:
-					this.WarnUnsupported(technicalName, "boolean", currentKey!);
-					break;
-				case JsonTokenType.Number:
-					this.WarnUnsupported(technicalName, "number", currentKey!);
-					break;
-				case JsonTokenType.Null:
-					this.WarnUnsupported(technicalName, "null", currentKey!);
-					break;
+					continue;
+					case 4:
+					if (stringStack.Count == 0 && ((Utf8JsonReader) ref reader.Reader ).GetString() == "$meta")
+					{
+						++num;
+						if (meta == null) {
+							meta = this.ReadMetaObject(technicalName, ref reader);
+							continue;
+						}
+						reader.SkipIt();
+						continue;
+					}
+					if (((Utf8JsonReader) ref reader.Reader ).GetString() == "__comment")
+					{
+						reader.SkipIt();
+						continue;
+					}
+					string str3;
+					stringStack.TryPeek(ref str3);
+					str1 = str3 == null ? ((Utf8JsonReader) ref reader.Reader).GetString() : $"{str3}.{((Utf8JsonReader) ref reader.Reader).GetString()}";
+					continue;
+					case 6:
+					translationData.Add(str1, ((Utf8JsonReader) ref reader.Reader).GetString());
+					continue;
+					case 7:
+					this.WarnUnsupported(technicalName, "number", str1);
+					continue;
+					case 8:
+					case 9:
+					this.WarnUnsupported(technicalName, "boolean", str1);
+					continue;
+					case 10:
+					this.WarnUnsupported(technicalName, "null", str1);
+					continue;
+					default:
+					continue;
+				}
 			}
+			label_20:
+			if (num <= 1) {
+				if (num == 0)
+					throw new Exception($"Locale Data file '{technicalName}.json' is is missing the top-level '$meta' object.");
+			} else
+				Ktisis.Ktisis.Log.Warning($"Locale Data file '{technicalName}.json' has {{0}} top-level '$meta' objects?!", new object[1] {
+					num
+				});
+			translationData.TrimExcess();
+			return new LocaleData(meta, translationData);
 		}
-
-		done:
-		switch(metaCount) {
-			case 0:
-				throw new Exception($"Locale Data file '{technicalName}.json' is is missing the top-level '$meta' object.");
-			case > 1:
-				Ktisis.Log.Warning($"Locale Data file '{technicalName}.json' has {{0}} top-level '$meta' objects?!", metaCount);
-				break;
-		}
-
-		translationData.TrimExcess();
-
-		return new LocaleData(meta!, translationData);
 	}
 
 	private void WarnUnsupported(string technicalName, string elementType, string currentKey) {
-		Ktisis.Log.Warning("Locale Data File '{0}.json' has an unsupported {1} at '%.{2}'.", technicalName, elementType, currentKey);
+		Ktisis.Ktisis.Log.Warning("Locale Data File '{0}.json' has an unsupported {1} at '%.{2}'.", new object[3] {
+			technicalName,
+			elementType,
+			currentKey
+		});
 	}
-
 }

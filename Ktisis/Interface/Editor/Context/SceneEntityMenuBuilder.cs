@@ -1,4 +1,14 @@
-﻿using GLib.Popups.Context;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Editor.Context.SceneEntityMenuBuilder
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
+using System.Linq;
+
+using GLib.Popups.Context;
 
 using Ktisis.Common.Extensions;
 using Ktisis.Editor.Context.Types;
@@ -16,45 +26,54 @@ public class SceneEntityMenuBuilder {
 	private readonly IEditorContext _ctx;
 	private readonly SceneEntity _entity;
 
-	private IEditorInterface Ui => this._ctx.Interface;
-
-	public SceneEntityMenuBuilder(
-		IEditorContext ctx,
-		SceneEntity entity
-	) {
+	public SceneEntityMenuBuilder(IEditorContext ctx, SceneEntity entity) {
 		this._ctx = ctx;
 		this._entity = entity;
 	}
 
-	public ContextMenu Create() {
-		return new ContextMenuBuilder()
-			.Group(this.BuildEntityBaseTop)
-			.Group(this.BuildEntityType)
-			.Group(this.BuildEntityBaseBottom)
-			.Build($"EntityContextMenu_{this.GetHashCode():X}");
-	}
+	private IEditorInterface Ui => this._ctx.Interface;
+
+	public ContextMenu Create() => new ContextMenuBuilder().Group(this.BuildEntityBaseTop).Group(this.BuildEntityType).Group(this.BuildEntityBaseBottom).Build($"EntityContextMenu_{this.GetHashCode():X}");
 
 	private void BuildEntityBaseTop(ContextMenuBuilder menu) {
 		if (!this._entity.IsSelected)
-			menu.Action("Select", () => this._entity.Select(SelectMode.Multiple));
+			menu.Action("Select", (Action)(() => this._entity.Select(SelectMode.Multiple)));
 		else
 			menu.Action("Unselect", this._entity.Unselect);
-		
-		if (this._entity is IVisibility vis)
+		var vis = this._entity as IVisibility;
+		if (vis != null)
 			menu.Action("Toggle display", () => vis.Toggle());
+		if (this._entity is ActorEntity entity1)
+			menu.Action("Toggle visibility", entity1.ToggleObjectVisibility);
+		if (this._entity is LightEntity entity2)
+			menu.Action("Toggle visibility", entity2.ToggleObjectVisibility);
+		if (this._entity is BoneNodeGroup entity3 && entity3 != null) {
+			var category = entity3.Category;
+			if (category != null)
+				menu.Action((category.HideOnPoseEntity ? "Show" : "Hide") + " group with 'Pose' entity", () => category.HideOnPoseEntity = !category.HideOnPoseEntity);
+		}
+		var boneNode = this._entity as BoneNode;
+		if (boneNode == null || !(boneNode.Parent is BoneNodeGroup parent))
+			return;
+		var category1 = parent.Category;
+		if (category1 == null)
+			return;
+		var catBone = category1.Bones.FirstOrDefault(x => x.Name == boneNode.Info.Name);
+		if (catBone == null)
+			return;
+		menu.Action((catBone.HideOnPoseEntity ? "Show" : "Hide") + " bone with 'Pose' entity", (Action)(() => catBone.HideOnPoseEntity = !catBone.HideOnPoseEntity));
 	}
 
 	private void BuildEntityBaseBottom(ContextMenuBuilder menu) {
-		if (this._entity is IAttachable attach && attach.IsAttached())
+		var attach = this._entity as IAttachable;
+		if (attach != null && attach.IsAttached())
 			menu.Separator().Action("Detach", () => this._ctx.Posing.Attachments.Detach(attach));
-
-		menu.Separator().Action("Rename", () => this.Ui.OpenRenameEntity(this._entity));
-
-		if (this._entity is IDeletable deletable)
-			menu.Separator().Action("Delete", () => deletable.Delete());
+		menu.Separator().Action("Rename", (Action)(() => this.Ui.OpenRenameEntity(this._entity)));
+		var deletable = this._entity as IDeletable;
+		if (deletable == null)
+			return;
+		menu.Separator().Action("Delete", () => deletable.Delete());
 	}
-	
-	// Entity types
 
 	private void BuildEntityType(ContextMenuBuilder menu) {
 		switch (this._entity) {
@@ -71,72 +90,65 @@ public class SceneEntityMenuBuilder {
 	}
 
 	private void OpenEditor() => this.Ui.OpenEditorFor(this._entity);
-	
-	// Actors
 
-	private unsafe void BuildActorMenu(ContextMenuBuilder menu, ActorEntity actor) {
-		menu.Separator()
-			.Action("Target", actor.Actor.SetGPoseTarget)
-			.Separator()
-			.Action("Edit appearance", this.OpenEditor)
-			.Group(sub => this.BuildActorIpcMenu(sub, actor))
-			.Separator()
-			.SubMenu("Import...", sub => {
-				var builder = sub.Action("Character (.chara)", () => this.Ui.OpenCharaImport(actor))
-					.Action("Pose file (.pose)", () => this.Ui.OpenPoseImport(actor));
-				
-				if (this._ctx.Plugin.Ipc.IsAnyMcdfActive && actor.GetHuman() != null) {
-					builder.Action("Mare data (.mcdf)", () => {
-						this.Ui.OpenMcdfFile(path => this.ImportMcdf(actor, path));
-					});
-				}
-			})
-			.SubMenu("Export...", sub => {
-				sub.Action("Character (.chara)", () => this.Ui.OpenCharaExport(actor))
-					.Action("Pose file (.pose)", () => this.ExportPose(actor.Pose));
-			});
+	private void BuildActorMenu(ContextMenuBuilder menu, ActorEntity actor) {
+		menu.Separator().Action("Target", new Action(((GameObjectEx)actor.Actor).SetGPoseTarget)).Separator().Group((Action<ContextMenuBuilder>)(sub => this.BuildActorIpcMenu(sub, actor))).Action("Edit appearance", this.OpenEditor).Separator()
+			.SubMenu("Import...", (Action<ContextMenuBuilder>)(sub => {
+				var contextMenuBuilder = sub.Action("Character (.chara)", () => this.Ui.OpenCharaImport(actor)).Action("Pose file (.pose)", (Action)(() => this.Ui.OpenPoseImport(actor)));
+				if (!this._ctx.Plugin.Ipc.IsAnyMcdfActive)
+					return;
+				contextMenuBuilder.Action("Mare Appearance (.mcdf)", (Action)(() => this.Ui.OpenMcdfFile(path => this.ImportMcdf(actor, path))));
+			})).SubMenu("Export...", (Action<ContextMenuBuilder>)(sub => sub.Action("Character (.chara)", (Action)(() => this.Ui.OpenCharaExport(actor))).Action("Pose file (.pose)", (Action)(() => this.ExportPose(actor.Pose)))));
 	}
 
-	private unsafe void BuildActorIpcMenu(ContextMenuBuilder menu, ActorEntity actor) {
+	private void BuildActorIpcMenu(ContextMenuBuilder menu, ActorEntity actor) {
 		if (this._ctx.Plugin.Ipc.IsPenumbraActive)
-			menu.Action("Assign collection", () => this.Ui.OpenAssignCollection(actor));
-		if (this._ctx.Plugin.Ipc.IsCustomizeActive)
-			menu.Action("Assign C+ profile", () => this.Ui.OpenAssignCProfile(actor));
-		if (this._ctx.Plugin.Ipc.IsAnyMcdfActive && actor.GetHuman() != null)
-			menu.Action("Revert IPC data", () => this._ctx.Characters.Mcdf.Revert(actor.Actor));
+			menu.Action("Assign collection", (Action)(() => this.Ui.OpenAssignCollection(actor)));
+		if (!this._ctx.Plugin.Ipc.IsCustomizeActive)
+			return;
+		menu.Action("Assign C+ profile", (Action)(() => this.Ui.OpenAssignCProfile(actor)));
 	}
 
 	private void ImportMcdf(ActorEntity actor, string path) {
 		this._ctx.Characters.Mcdf.LoadAndApplyTo(path, actor.Actor);
 	}
-	
-	// Poses
 
 	private void BuildPoseMenu(ContextMenuBuilder menu, EntityPose pose) {
-		menu.Separator()
-			.Action("Import pose", () => this.ImportPose(pose))
-			.Action("Export pose", () => this.ExportPose(pose))
-			.Separator()
-			.Action("Set to reference pose", () => this._ctx.Posing.ApplyReferencePose(pose));
+		menu.Separator().Action("Import pose", (Action)(() => this.ImportPose(pose))).Action("Export pose", (Action)(() => this.ExportPose(pose))).Separator().Action("Set to reference pose", (Action)(() => this._ctx.Posing.ApplyReferencePose(pose)));
 	}
 
 	private void ImportPose(EntityPose pose) {
-		if (pose.Parent is ActorEntity actor)
-			this.Ui.OpenPoseImport(actor);
+		if (!(pose.Parent is ActorEntity parent))
+			return;
+		this.Ui.OpenPoseImport(parent);
 	}
-	
+
 	private async void ExportPose(EntityPose? pose) {
-		if (pose == null) return;
+		if (pose == null)
+			return;
 		await this.Ui.OpenPoseExport(pose);
 	}
-	
-	// Lights
 
 	private void BuildLightMenu(ContextMenuBuilder menu, LightEntity light) {
-		menu.Separator()
-			.Action("Edit lighting", this.OpenEditor)
-			.Separator()
-			.Action("Import preset (TODO)", () => { })
-			.Action("Export preset (TODO)", () => { });
+		menu.Separator().Action("Edit lighting", this.OpenEditor).Separator().Action("Import light preset", (Action)(() => this.ImportLight(light))).Action("Export light preset", (Action)(() => {
+			var flag = false;
+			if (!this._ctx.Config.File.ExportLightIgnoreNoActorSelectedWarning) {
+				var source = this._ctx.Scene.Children.Where(entity => entity is ActorEntity).Cast<ActorEntity>();
+				if (source.Count() > 0 && source.FirstOrDefault(x => x.IsSelected) == null && source.Count() > 1)
+					flag = true;
+			}
+			if (flag)
+				this.Ui.OpenLightExportNoActorSelected(() => this.ExportLight(light), this._ctx.Config);
+			else
+				this.ExportLight(light);
+		}));
+	}
+
+	private void ImportLight(LightEntity light) => this.Ui.OpenLightImport(light);
+
+	private async void ExportLight(LightEntity? light) {
+		if (light == null)
+			return;
+		await this.Ui.OpenLightExport(light);
 	}
 }

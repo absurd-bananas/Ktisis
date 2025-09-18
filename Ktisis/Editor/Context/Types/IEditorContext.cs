@@ -1,3 +1,10 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Context.Types.IEditorContext
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 
 using Ktisis.Core.Types;
@@ -16,25 +23,35 @@ using Ktisis.Scene.Types;
 namespace Ktisis.Editor.Context.Types;
 
 public interface IEditorContext : IDisposable {
-	public bool IsValid { get; }
-	
-	public IPluginContext Plugin { get; }
-	
-	public bool IsGPosing { get; }
-	
-	public Configuration Config { get; }
-	public LocaleManager Locale { get; }
-	
-	public IActionManager Actions { get; }
-	public IAnimationManager Animation { get; }
-	public ICharacterManager Characters { get; }
-	public ICameraManager Cameras { get; }
-	public IEditorInterface Interface { get; }
-	public IPosingManager Posing { get; }
-	public ISceneManager Scene { get; }
-	public ISelectManager Selection { get; }
-	public ITransformHandler Transform { get; }
+	bool IsValid { get; }
 
-	public void Initialize();
-	public void Update();
+	IPluginContext Plugin { get; }
+
+	bool IsGPosing { get; }
+
+	Configuration Config { get; }
+
+	LocaleManager Locale { get; }
+
+	IActionManager Actions { get; }
+
+	IAnimationManager Animation { get; }
+
+	ICharacterManager Characters { get; }
+
+	ICameraManager Cameras { get; }
+
+	IEditorInterface Interface { get; }
+
+	IPosingManager Posing { get; }
+
+	ISceneManager Scene { get; }
+
+	ISelectManager Selection { get; }
+
+	ITransformHandler Transform { get; }
+
+	void Initialize();
+
+	void Update();
 }

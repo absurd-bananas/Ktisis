@@ -1,9 +1,15 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Legacy.LegacyMigrator
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 
 using Ktisis.Core.Attributes;
 using Ktisis.Interface;
 using Ktisis.Legacy.Interface;
-using Ktisis.Services;
 using Ktisis.Services.Game;
 
 namespace Ktisis.Legacy;
@@ -12,40 +18,36 @@ namespace Ktisis.Legacy;
 public class LegacyMigrator {
 	private readonly GPoseService _gpose;
 	private readonly GuiManager _gui;
+	private bool _confirmed;
 
-	public event Action? OnConfirmed;
-	
-	public LegacyMigrator(
-		GPoseService gpose,
-		GuiManager gui
-	) {
+	public LegacyMigrator(GPoseService gpose, GuiManager gui) {
 		this._gpose = gpose;
 		this._gui = gui;
 	}
-	
-	// Setup
+
+	public event Action? OnConfirmed;
 
 	public void Setup() {
-		Ktisis.Log.Warning("User is migrating from Ktisis v0.2, activating legacy mode.");
+		Ktisis.Ktisis.Log.Warning("User is migrating from Ktisis v0.2, activating legacy mode.", Array.Empty<object>());
 		this._gpose.StateChanged += this.OnGPoseStateChanged;
 		this._gpose.Subscribe();
 	}
 
 	private void OnGPoseStateChanged(object sender, bool state) {
-		if (!state || this._confirmed) return;
-		var window = this._gui.GetOrCreate<MigratorWindow>(this);
-		window.Open();
+		if (!state || this._confirmed)
+			return;
+		this._gui.GetOrCreate<MigratorWindow>(this).Open();
 	}
-	
-	// Begin from UI
 
-	private bool _confirmed;
-	
 	public void Begin() {
-		if (this._confirmed) return;
+		if (this._confirmed)
+			return;
 		this._confirmed = true;
 		this._gpose.StateChanged -= this.OnGPoseStateChanged;
 		this._gpose.Reset();
-		this.OnConfirmed?.Invoke();
+		var onConfirmed = this.OnConfirmed;
+		if (onConfirmed == null)
+			return;
+		onConfirmed();
 	}
 }

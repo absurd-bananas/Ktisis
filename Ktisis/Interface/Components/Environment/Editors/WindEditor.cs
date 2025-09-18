@@ -1,5 +1,10 @@
-using Dalamud.Bindings.ImGui;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Environment.Editors.WindEditor
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Common.Utility;
 using Ktisis.Core.Attributes;
 using Ktisis.Scene.Modules;
@@ -11,21 +16,21 @@ namespace Ktisis.Interface.Components.Environment.Editors;
 public class WindEditor : EditorBase {
 	public override string Name { get; } = "Wind";
 
-	public override bool IsActivated(EnvOverride flags)
-		=> flags.HasFlag(EnvOverride.Wind);
-	
+	public override bool IsActivated(EnvOverride flags) => flags.HasFlag(EnvOverride.Wind);
+
 	public override void Draw(IEnvModule module, ref EnvState state) {
 		this.DrawToggleCheckbox("Enable", EnvOverride.Wind, module);
-		using var _ = this.Disable(module);
-		
-		this.DrawAngle("Direction", ref state.Wind.Direction, 0.0f, 360.0f);
-		this.DrawAngle("Angle", ref state.Wind.Angle, 0.0f, 180.0f);
-		ImGui.SliderFloat("Speed", ref state.Wind.Speed, 0.0f, 1.5f);
+		using (this.Disable(module)) {
+			this.DrawAngle("Direction", ref state.Wind.Direction, 0.0f, 360f);
+			this.DrawAngle("Angle", ref state.Wind.Angle, 0.0f, 180f);
+			Dalamud.Bindings.ImGui.ImGui.SliderFloat(ImU8String.op_Implicit("Speed"), ref state.Wind.Speed, 0.0f, 1.5f, new ImU8String(), (ImGuiSliderFlags)0);
+		}
 	}
 
 	private void DrawAngle(string label, ref float angle, float min, float max) {
-		var rad = angle * MathHelpers.Deg2Rad;
-		var changed = ImGui.SliderAngle(label, ref rad, min, max);
-		if (changed) angle = rad * MathHelpers.Rad2Deg;
+		var num = angle * MathHelpers.Deg2Rad;
+		if (!Dalamud.Bindings.ImGui.ImGui.SliderAngle(ImU8String.op_Implicit(label), ref num, min, max, new ImU8String(), (ImGuiSliderFlags)0))
+			return;
+		angle = num * MathHelpers.Rad2Deg;
 	}
 }

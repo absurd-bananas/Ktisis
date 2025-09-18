@@ -1,10 +1,12 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Posing.Types.BoneEnumerator
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
 using System.Collections.Generic;
-
-using Dalamud.Utility;
-
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
-using FFXIVClientStructs.Havok.Animation.Rig;
-using FFXIVClientStructs.Havok.Common.Base.Container.Array;
 
 namespace Ktisis.Editor.Posing.Types;
 
@@ -12,43 +14,34 @@ public class BoneEnumerator {
 	protected readonly int Index;
 	protected PartialSkeleton Partial;
 
-	public BoneEnumerator(
-		int index,
-		PartialSkeleton partial
-	) {
+	public BoneEnumerator(int index, PartialSkeleton partial) {
 		this.Index = index;
 		this.Partial = partial;
 	}
 
 	protected unsafe hkaSkeleton* GetSkeleton() {
-		var pose = this.Partial.GetHavokPose(0);
-		return pose != null ? pose->Skeleton : null;
+		hkaPose* havokPose = ((PartialSkeleton) ref this.Partial).GetHavokPose(0);
+		return (IntPtr)havokPose == IntPtr.Zero ? (hkaSkeleton*)null : havokPose->Skeleton;
 	}
 
 	public unsafe IEnumerable<PartialBoneInfo> EnumerateBones() {
-		var skeleton = this.GetSkeleton();
-		var bones = skeleton->Bones;
-		var parents = skeleton->ParentIndices;
-		return this.EnumerateBones(bones, parents);
+		hkaSkeleton* skeleton = this.GetSkeleton();
+		return this.EnumerateBones(skeleton->Bones, skeleton->ParentIndices);
 	}
 
-	private IEnumerable<PartialBoneInfo> EnumerateBones(hkArray<hkaBone> bones, hkArray<short> parents) {
-		for (var i = 1; i < bones.Length; i++) {
-			var hkaBone = bones[i];
-
-			var name = hkaBone.Name.String;
-			if (name.IsNullOrEmpty()) continue;
-
-			if (this.Index == 0 && name == "j_ago") continue; // :)
-
-			if (parents[i] == -1) continue; // handle multi-root partials; should we instead filter out any bones from bones with -1?
-
-			yield return new PartialBoneInfo {
-				Name = name,
-				BoneIndex = i,
-				ParentIndex = parents[i],
-				PartialIndex = this.Index
-			};
+	private IEnumerable<PartialBoneInfo> EnumerateBones(
+		hkArray<hkaBone> bones,
+		hkArray<short> parents
+	) {
+		for (var i = 1; i < bones.Length; ++i) {
+			string str = ((hkStringPtr) ref bones [i].Name).string;
+			if (!StringExtensions.IsNullOrEmpty(str) && (this.Index != 0 || !(str == "j_ago")) && parents[i] != -1)
+				yield return new PartialBoneInfo {
+					Name = str,
+					BoneIndex = i,
+					ParentIndex = (int)parents[i],
+					PartialIndex = this.Index
+				};
 		}
 	}
 }

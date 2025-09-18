@@ -1,6 +1,12 @@
-﻿using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Entities.Skeleton.Constraints.TwoJointEndNode
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Common.Extensions;
+#nullable enable
+using System;
+
 using Ktisis.Common.Utility;
 using Ktisis.Editor.Posing.Ik.TwoJoints;
 using Ktisis.Editor.Posing.Types;
@@ -9,8 +15,7 @@ using Ktisis.Scene.Types;
 
 namespace Ktisis.Scene.Entities.Skeleton.Constraints;
 
-public class TwoJointEndNode : IkEndNode, ITwoJointsNode {
-	public TwoJointsGroup Group { get; }
+public class TwoJointEndNode : IkEndNode, ITwoJointsNode, IIkNode {
 
 	public TwoJointEndNode(
 		ISceneManager scene,
@@ -18,13 +23,13 @@ public class TwoJointEndNode : IkEndNode, ITwoJointsNode {
 		PartialBoneInfo bone,
 		uint partialId,
 		TwoJointsGroup group
-	) : base(scene, pose, bone, partialId) {
+	)
+		: base(scene, pose, bone, partialId) {
 		this.Group = group;
 	}
-	
-	// ITransform
-	
+
 	protected override bool IsOverride => this.IsEnabled && this.Group.Mode == TwoJointsMode.Fixed;
+	public TwoJointsGroup Group { get; }
 
 	public override Transform GetTransformTarget(Transform offset, Transform world) {
 		offset.Position += this.Group.TargetPosition.ModelToWorldPos(offset);
@@ -33,31 +38,32 @@ public class TwoJointEndNode : IkEndNode, ITwoJointsNode {
 		return offset;
 	}
 
-	public unsafe override void SetTransformTarget(Transform transform, Transform offset, Transform world) {
-		var skeleton = this.Pose.GetSkeleton();
-		if (skeleton == null) return;
-		
-		var setWorld = false;
-
+	public unsafe override void SetTransformTarget(
+		Transform transform,
+		Transform offset,
+		Transform world
+	) {
+		if ((IntPtr)this.Pose.GetSkeleton() == IntPtr.Zero)
+			return;
+		var flag = false;
 		if (this.Group.EnforcePosition) {
 			this.Group.TargetPosition = transform.Position.WorldToModelPos(offset);
 		} else {
 			world.Position = transform.Position;
-			setWorld = true;
+			flag = true;
 		}
-
 		if (this.Group.EnforceRotation) {
 			this.Group.TargetRotation = Quaternion.Inverse(offset.Rotation) * transform.Rotation;
 		} else {
 			world.Rotation = transform.Rotation;
-			setWorld = true;
+			flag = true;
 		}
-		
 		if (!world.Scale.Equals(transform.Scale)) {
 			world.Scale = transform.Scale;
-			setWorld = true;
+			flag = true;
 		}
-		
-		if (setWorld) this.SetTransformWorld(world);
+		if (!flag)
+			return;
+		this.SetTransformWorld(world);
 	}
 }

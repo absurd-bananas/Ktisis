@@ -1,68 +1,57 @@
-using System.Linq;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Actions.Input.InputModule
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Hooking;
-using Dalamud.Utility.Signatures;
-using Dalamud.Game.ClientState.Keys;
+#nullable enable
+using System;
+using System.Linq;
 
 using Ktisis.Interop.Hooking;
 
 namespace Ktisis.Editor.Actions.Input;
 
-public enum VirtualKeyState {
-	Down,
-	Held,
-	Released
-}
-
-public delegate bool KeyEventHandler(VirtualKey key, VirtualKeyState state);
-
-public class InputModule : HookModule {
-	public InputModule(
-		IHookMediator hook
-	) : base(hook) { }
-	
-	// Events
+public class InputModule(IHookMediator hook) : HookModule(hook) {
+	[Signature("48 89 5C 24 ?? 55 56 57 41 56 41 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 40 4D 8B F9", DetourName = "InputNotificationDetour")]
+	private Hook<InputNotificationDelegate> InputNotificationHook;
 
 	public event KeyEventHandler? OnKeyEvent;
 
 	private bool InvokeKeyEvent(VirtualKey key, VirtualKeyState state) {
-		if (this.OnKeyEvent == null) return false;
-		return this.OnKeyEvent.GetInvocationList()
-			.Cast<KeyEventHandler>()
-			.Aggregate(false, (result, handler) => result | handler.Invoke(key, state));
+		return this.OnKeyEvent != null && this.OnKeyEvent.GetInvocationList().Cast<KeyEventHandler>().Aggregate(false, (Func<bool, KeyEventHandler, bool>)((result, handler) => result | handler(key, state)));
 	}
-	
-	// Data
-	
-	private enum WinMsg : uint {
-		WM_KEYDOWN = 0x100,
-		WM_KEYUP = 0x101,
-		WM_MOUSEMOVE = 0x200
-	}
-	
-	// Hooks
 
-	[Signature("48 89 5C 24 ?? 55 56 57 41 56 41 57 48 8D 6C 24 ?? 48 81 EC ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 40 4D 8B F9", DetourName = nameof(InputNotificationDetour))]
-	private Hook<InputNotificationDelegate> InputNotificationHook = null!;
-	private delegate nint InputNotificationDelegate(nint a1, WinMsg a2, nint a3, uint a4);
-
-	private nint InputNotificationDetour(nint hWnd, WinMsg uMsg, nint wParam, uint lParam) {
-		var key = (VirtualKey)wParam;
+	private IntPtr InputNotificationDetour(
+		IntPtr hWnd,
+		WinMsg uMsg,
+		IntPtr wParam,
+		uint lParam
+	) {
+		VirtualKey key = (VirtualKey)(int)(ushort)wParam;
 		switch (uMsg) {
-			// https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-keydown
 			case WinMsg.WM_KEYDOWN:
-				if (this.InvokeKeyEvent(key, (lParam >> 30) != 0 ? VirtualKeyState.Held : VirtualKeyState.Down))
-					return 0;
+				if (this.InvokeKeyEvent(key, lParam >> 30 != 0U ? VirtualKeyState.Held : VirtualKeyState.Down))
+					return IntPtr.Zero;
 				break;
 			case WinMsg.WM_KEYUP:
 				if (this.InvokeKeyEvent(key, VirtualKeyState.Released))
-					return 0;
-				break;
-			case WinMsg.WM_MOUSEMOVE:
-			default:
+					return IntPtr.Zero;
 				break;
 		}
-		
 		return this.InputNotificationHook.Original(hWnd, uMsg, wParam, lParam);
 	}
+
+	private enum WinMsg : uint {
+		WM_KEYDOWN = 256, // 0x00000100
+		WM_KEYUP = 257, // 0x00000101
+		WM_MOUSEMOVE = 512 // 0x00000200
+	}
+
+	private delegate IntPtr InputNotificationDelegate(
+		IntPtr a1,
+		WinMsg a2,
+		IntPtr a3,
+		uint a4
+	);
 }

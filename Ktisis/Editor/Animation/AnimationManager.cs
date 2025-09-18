@@ -1,6 +1,11 @@
-﻿using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Animation.AnimationManager
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Plugin.Services;
+#nullable enable
+using System;
 
 using Ktisis.Editor.Animation.Handlers;
 using Ktisis.Editor.Animation.Types;
@@ -9,21 +14,14 @@ using Ktisis.Interop.Hooking;
 using Ktisis.Scene.Entities.Game;
 using Ktisis.Structs.Actors;
 
-using Lumina.Excel;
-using Lumina.Excel.Sheets;
-
 namespace Ktisis.Editor.Animation;
 
 public class AnimationManager : IAnimationManager {
 	private readonly IEditorContext _ctx;
-	private readonly HookScope _scope;
 	private readonly IDataManager _data;
 	private readonly IFramework _framework;
-	
-	private AnimationModule? Module { get; set; }
-	
-	private ExcelSheet<ActionTimeline>? Timelines { get; set; }
-	
+	private readonly HookScope _scope;
+
 	public AnimationManager(
 		IEditorContext ctx,
 		HookScope scope,
@@ -35,87 +33,85 @@ public class AnimationManager : IAnimationManager {
 		this._data = data;
 		this._framework = framework;
 	}
-	
-	// Initialization
-	
-	public void Initialize() {
-		Ktisis.Log.Verbose("Initializing character manager...");
 
+	private AnimationModule? Module { get; set; }
+
+	private ExcelSheet<ActionTimeline>? Timelines { get; set; }
+
+	public void Initialize() {
+		Ktisis.Ktisis.Log.Verbose("Initializing character manager...", Array.Empty<object>());
 		try {
 			this.Module = this._scope.Create<AnimationModule>();
 			this.Module.Initialize();
 			this.Module.EnableAll();
-		} catch (Exception err) {
-			Ktisis.Log.Error($"Failed to initialize animation module:\n{err}");
+		} catch (Exception ex) {
+			Ktisis.Ktisis.Log.Error($"Failed to initialize animation module:\n{ex}", Array.Empty<object>());
 		}
-		
-		this.Timelines = this._data.GetExcelSheet<ActionTimeline>();
+		this.Timelines = this._data.GetExcelSheet<ActionTimeline>(new ClientLanguage?(), (string)null);
 	}
-	
-	// Controls
-	
+
 	public bool SpeedControlEnabled {
-		get => this.Module?.SpeedControlEnabled ?? false;
+		get {
+			var module = this.Module;
+			return module != null && module.SpeedControlEnabled;
+		}
 		set {
-			if (this.Module != null)
-				this.Module.SpeedControlEnabled = value;
+			if (this.Module == null)
+				return;
+			this.Module.SpeedControlEnabled = value;
 		}
 	}
 
 	public bool PositionLockEnabled {
-		get => this.Module?.PositionLockEnabled ?? false;
+		get {
+			var module = this.Module;
+			return module != null && module.PositionLockEnabled;
+		}
 		set {
-			if (this.Module != null)
-				this.Module.PositionLockEnabled = value;
+			if (this.Module == null)
+				return;
+			this.Module.PositionLockEnabled = value;
 		}
 	}
-	
-	// Editors
 
 	public IAnimationEditor GetAnimationEditor(ActorEntity actor) => new AnimationEditor(this, actor);
-	
-	// Pose control
 
-	public void SetPose(ActorEntity actor, PoseModeEnum poseMode, byte pose = byte.MaxValue) {
-		this._framework.RunOnFrameworkThread(() => {
-			this.Module?.SetPose(actor, poseMode, pose);
-		});
+	public void SetPose(ActorEntity actor, PoseModeEnum poseMode, byte pose = 255 /*0xFF*/) {
+		this._framework.RunOnFrameworkThread((Action)(() => this.Module?.SetPose(actor, poseMode, pose)));
 	}
-	
-	// Animation & timeline wrappers
 
 	public unsafe bool PlayEmote(ActorEntity actor, uint id) {
-		var chara = (CharacterEx*)actor.Character;
-		if (chara == null) return false;
-		chara->Animation.Timeline.ActionTimelineId = 0;
-		chara->EmoteController.IsForceDefaultPose = false;
-		return this.Module!.PlayEmote(&chara->EmoteController, (nint)id, 0, 0);
+		var character = (CharacterEx*)actor.Character;
+		if ((IntPtr)character == IntPtr.Zero)
+			return false;
+		character->Animation.Timeline.ActionTimelineId = 0;
+		character->EmoteController.IsForceDefaultPose = false;
+		return this.Module.PlayEmote(&character->EmoteController, (IntPtr)id, IntPtr.Zero, IntPtr.Zero);
 	}
 
 	public unsafe bool PlayTimeline(ActorEntity actor, uint id) {
-		var timeline = this.Timelines?.GetRow(id);
-		if (timeline == null) return false;
-
-		var chara = actor.IsValid ? (CharacterEx*)actor.Character : null;
-		if (chara == null) return false;
-		
-		chara->Animation.Timeline.ActionTimelineId = 0;
-
-		if (timeline.Value.Pause) {
-			chara->Mode = 3;
-			chara->EmoteMode = 0;
-		} else if (chara->Mode == 3 && chara->EmoteMode == 0) {
-			chara->Mode = 1;
+		ActionTimeline? row = this.Timelines?.GetRow(id);
+		if (!row.HasValue)
+			return false;
+		var character = actor.IsValid ? (CharacterEx*)actor.Character : null;
+		if ((IntPtr)character == IntPtr.Zero)
+			return false;
+		character->Animation.Timeline.ActionTimelineId = 0;
+		ActionTimeline actionTimeline = row.Value;
+		if (((ActionTimeline) ref actionTimeline ).Pause)
+		{
+			character->Mode = 3;
+			character->EmoteMode = EmoteModeEnum.Normal;
 		}
-
-		return this.Module != null
-			&& this.Module.SetTimelineId(&chara->Animation.Timeline, (ushort)id, nint.Zero);
+		else if (character->Mode == 3 && character->EmoteMode == EmoteModeEnum.Normal)
+			character->Mode = 1;
+		return this.Module != null && this.Module.SetTimelineId(&character->Animation.Timeline, (ushort)id, IntPtr.Zero);
 	}
-	
-	public unsafe void SetTimelineSpeed(ActorEntity actor, uint slot, float speed) {
-		var chara = actor.IsValid ? (CharacterEx*)actor.Character : null;
-		if (chara == null) return;
 
-		this.Module?.SetTimelineSpeed(&chara->Animation.Timeline, slot, speed);
+	public unsafe void SetTimelineSpeed(ActorEntity actor, uint slot, float speed) {
+		var character = actor.IsValid ? (CharacterEx*)actor.Character : null;
+		if ((IntPtr)character == IntPtr.Zero)
+			return;
+		this.Module?.SetTimelineSpeed(&character->Animation.Timeline, slot, speed);
 	}
 }

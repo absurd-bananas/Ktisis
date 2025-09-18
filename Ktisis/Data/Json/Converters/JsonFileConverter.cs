@@ -1,41 +1,50 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Data.Json.Converters.JsonFileConverter
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 using Ktisis.Data.Files;
 
 namespace Ktisis.Data.Json.Converters;
 
-public class DeserializerDefaultAttribute(object value) : Attribute {
-	public readonly object Default = value;
-}
-
 public class JsonFileConverter : JsonConverter<JsonFile> {
-	public override bool CanConvert(Type t) => t.BaseType == typeof(JsonFile);
+	public virtual bool CanConvert(Type t) => t.BaseType == typeof(JsonFile);
 
-	public override JsonFile? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-		var result = (JsonFile)Activator.CreateInstance(typeToConvert)!;
-		using var jsonDoc = JsonDocument.ParseValue(ref reader);
-
-		foreach (var prop in typeToConvert.GetProperties()) {
-			var isPresent = jsonDoc.RootElement.TryGetProperty(prop.Name, out var jsonValue);
-			if (!isPresent) {
-				var defVal = prop.GetCustomAttribute<DeserializerDefaultAttribute>();
-				if (defVal != null) prop.SetValue(result, defVal.Default);
-				continue;
+	public virtual JsonFile? Read(
+		ref Utf8JsonReader reader,
+		Type typeToConvert,
+		JsonSerializerOptions options
+	) {
+		var instance = (JsonFile)Activator.CreateInstance(typeToConvert);
+		using (JsonDocument jsonDocument = JsonDocument.ParseValue(ref reader)) {
+			foreach (var property in typeToConvert.GetProperties()) {
+				JsonElement rootElement = jsonDocument.RootElement;
+				JsonElement jsonElement;
+				if (!((JsonElement) ref rootElement ).TryGetProperty(property.Name, ref jsonElement))
+				{
+					var customAttribute = property.GetCustomAttribute<DeserializerDefaultAttribute>();
+					if (customAttribute != null)
+						property.SetValue(instance, customAttribute.Default);
+				}
+				else
+				{
+					try {
+						object obj = JsonSerializer.Deserialize(jsonElement, property.PropertyType, options);
+						if (obj != null)
+							property.SetValue(instance, obj);
+					} catch {
+						Ktisis.Ktisis.Log.Warning($"Failed to parse {property.PropertyType.Name} value '{property.Name}' (received {((JsonElement) ref jsonElement).ValueKind} instead)", Array.Empty<object>());
+					}
+				}
 			}
-
-			try {
-				var value = jsonValue.Deserialize(prop.PropertyType, options);
-				if (value != null) prop.SetValue(result, value);
-			} catch {
-				Ktisis.Log.Warning($"Failed to parse {prop.PropertyType.Name} value '{prop.Name}' (received {jsonValue.ValueKind} instead)");
-			}
+			return instance;
 		}
-
-		return result;
 	}
-		
-	public override void Write(Utf8JsonWriter writer, JsonFile value, JsonSerializerOptions options) { }
+
+	public virtual void Write(Utf8JsonWriter writer, JsonFile value, JsonSerializerOptions options) { }
 }

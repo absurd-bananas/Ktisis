@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Config.ActionKeybindEditor
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Keys;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 using Ktisis.Actions;
 using Ktisis.Actions.Binds;
@@ -16,103 +19,96 @@ using Ktisis.Localization;
 
 namespace Ktisis.Interface.Components.Config;
 
-// Uses Caraxi's item hotkeys as reference - thank you
-// https://github.com/Caraxi/SimpleTweaksPlugin/blob/257ca7cf4105784abf0af720654dac4345f4a619/Tweaks/Tooltips/ItemHotkeys.cs#L116
-
 [Transient]
 public class ActionKeybindEditor {
+	private readonly static Vector2 CellPadding = new Vector2(8f, 8f);
 	private readonly ActionService _actions;
 	private readonly LocaleManager _locale;
-	
-	public ActionKeybindEditor(
-		ActionService actions,
-		LocaleManager locale
-	) {
+	private readonly List<KeyAction> Actions = new List<KeyAction>();
+	private readonly List<VirtualKey> KeysHandled = new List<VirtualKey>();
+	private ActionKeybind? Editing;
+	private KeyCombo? KeyCombo;
+
+	public ActionKeybindEditor(ActionService actions, LocaleManager locale) {
 		this._actions = actions;
 		this._locale = locale;
 	}
-	
-	// State
 
-	private readonly List<KeyAction> Actions = new();
-	
 	public void Setup() {
-		var actions = this._actions.GetBindable();
+		var bindable = this._actions.GetBindable();
 		this.Actions.Clear();
-		this.Actions.AddRange(actions);
+		this.Actions.AddRange(bindable);
 		this.SetEditing(null);
 	}
-	
-	// Draw
-
-	private readonly static Vector2 CellPadding = new(8, 8);
 
 	public void Draw() {
-		// TODO: allow sorting that isnt alphabetical
-		using var pad = ImRaii.PushStyle(ImGuiStyleVar.WindowPadding, Vector2.Zero);
-		using var frame = ImRaii.Child("##CfgStyleFrame", ImGui.GetContentRegionAvail(), false);
-		if (!frame.Success) return;
-		
-		using var tablePad = ImRaii.PushStyle(ImGuiStyleVar.CellPadding, Vector2.Zero);
-		using var table = ImRaii.Table("##KeyActionTable", 2, ImGuiTableFlags.Resizable | ImGuiTableFlags.Borders);
-		if (!table.Success) return;
-
-		if (!ImGui.IsWindowFocused())
-			this.SetEditing(null);
-
-		ImGui.TableSetupColumn("Keys");
-		ImGui.TableSetupColumn("Action");
-		
-		foreach (var action in this.Actions)
-			this.DrawAction(action);
+		using (ImRaii.PushStyle((ImGuiStyleVar)1, Vector2.Zero, true)) {
+			using (ImRaii.IEndObject iendObject1 = ImRaii.Child(ImU8String.op_Implicit("##CfgStyleFrame"), Dalamud.Bindings.ImGui.ImGui.GetContentRegionAvail(), false)) {
+				if (!iendObject1.Success)
+					return;
+				using (ImRaii.PushStyle((ImGuiStyleVar)16 /*0x10*/, Vector2.Zero, true)) {
+					using (ImRaii.IEndObject iendObject2 = ImRaii.Table(ImU8String.op_Implicit("##KeyActionTable"), 2, (ImGuiTableFlags)1921)) {
+						if (!iendObject2.Success)
+							return;
+						if (!Dalamud.Bindings.ImGui.ImGui.IsWindowFocused())
+							this.SetEditing(null);
+						Dalamud.Bindings.ImGui.ImGui.TableSetupColumn(ImU8String.op_Implicit("Keys"), (ImGuiTableColumnFlags)0, 0.0f, 0U);
+						Dalamud.Bindings.ImGui.ImGui.TableSetupColumn(ImU8String.op_Implicit("Action"), (ImGuiTableColumnFlags)0, 0.0f, 0U);
+						foreach (var action in this.Actions)
+							this.DrawAction(action);
+					}
+				}
+			}
+		}
 	}
 
 	private void DrawAction(KeyAction action) {
-		ImGui.TableNextRow();
-		ImGui.TableNextColumn();
+		Dalamud.Bindings.ImGui.ImGui.TableNextRow();
+		Dalamud.Bindings.ImGui.ImGui.TableNextColumn();
 		this.DrawKeybind(action.GetKeybind());
-		ImGui.TableNextColumn();
-		
-		var name = this._locale.Translate($"actions.{action.GetName()}");
-		var cursor = ImGui.GetCursorPos() + CellPadding;
-		ImGui.SetCursorPos(cursor);
-		ImGui.Text(name);
+		Dalamud.Bindings.ImGui.ImGui.TableNextColumn();
+		var str = this._locale.Translate("actions." + action.GetName());
+		Dalamud.Bindings.ImGui.ImGui.SetCursorPos(Dalamud.Bindings.ImGui.ImGui.GetCursorPos() + CellPadding);
+		Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(str));
 	}
 
 	private void DrawKeybind(ActionKeybind keybind) {
-		using var _ = ImRaii.PushId($"Keybind_{keybind.GetHashCode():X}");
-		
-		using var round = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0.0f);
-
-		var isActive = this.Editing == keybind;
-		var activeColor = ImGui.GetColorU32(ImGuiCol.FrameBgActive);
-		using var color = ImRaii.PushColor(ImGuiCol.Button, isActive ? activeColor : 0);
-		using var colorActive = ImRaii.PushColor(ImGuiCol.ButtonActive, activeColor);
-		using var colorHover = ImRaii.PushColor(ImGuiCol.ButtonHovered, isActive ? activeColor: ImGui.GetColorU32(ImGuiCol.FrameBgHovered));
-
-		var width = ImGui.GetColumnWidth();
-		var size = new Vector2(width, ImGui.GetFrameHeightWithSpacing()) + CellPadding;
-		if (isActive) {
-			var spacing = ImGui.GetStyle().ItemSpacing;
-			ImGui.SetCursorPos(ImGui.GetCursorPos() + CellPadding);
-			ImGui.SetNextItemWidth(width - CellPadding.X - spacing.X);
-			this.EditKeybind(keybind);
-			ImGui.Dummy(CellPadding - spacing);
-		} else if (ImGui.Button(keybind.Combo.GetShortcutString(), size)) {
-			this.SetEditing(keybind);
+		ImU8String imU8String;
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(8, 1);
+		((ImU8String) ref imU8String).AppendLiteral("Keybind_");
+		((ImU8String) ref imU8String).AppendFormatted<int>(keybind.GetHashCode(), "X");
+		using (ImRaii.PushId(imU8String, true)) {
+			using (ImRaii.PushStyle((ImGuiStyleVar)11, 0.0f, true)) {
+				var flag = this.Editing == keybind;
+				uint colorU32 = Dalamud.Bindings.ImGui.ImGui.GetColorU32((ImGuiCol)9);
+				using (ImRaii.PushColor((ImGuiCol)21, flag ? colorU32 : 0U, true)) {
+					using (ImRaii.PushColor((ImGuiCol)23, colorU32, true)) {
+						using (ImRaii.PushColor((ImGuiCol)22, flag ? colorU32 : Dalamud.Bindings.ImGui.ImGui.GetColorU32((ImGuiCol)8), true)) {
+							float columnWidth = Dalamud.Bindings.ImGui.ImGui.GetColumnWidth();
+							Vector2 vector2_1 = new Vector2(columnWidth, Dalamud.Bindings.ImGui.ImGui.GetFrameHeightWithSpacing()) + CellPadding;
+							if (flag) {
+								ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+								Vector2 vector2_2 = ((ImGuiStylePtr) ref style ).ItemSpacing;
+								Dalamud.Bindings.ImGui.ImGui.SetCursorPos(Dalamud.Bindings.ImGui.ImGui.GetCursorPos() + CellPadding);
+								Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth(columnWidth - CellPadding.X - vector2_2.X);
+								this.EditKeybind(keybind);
+								Dalamud.Bindings.ImGui.ImGui.Dummy(CellPadding - vector2_2);
+							} else if (Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit(keybind.Combo.GetShortcutString()), vector2_1))
+								this.SetEditing(keybind);
+							if (Dalamud.Bindings.ImGui.ImGui.IsItemClicked((ImGuiMouseButton)1)) {
+								keybind.Combo = new KeyCombo((VirtualKey)0);
+							} else {
+								if (this.Editing == null || this.Editing == keybind || !Dalamud.Bindings.ImGui.ImGui.IsItemFocused())
+									return;
+								this.SetEditing(null);
+							}
+						}
+					}
+				}
+			}
 		}
-
-		if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
-			keybind.Combo = new KeyCombo();
-		else if (this.Editing != null && this.Editing != keybind && ImGui.IsItemFocused())
-			this.SetEditing(null);
 	}
-	
-	// Editing
-
-	private ActionKeybind? Editing;
-	private KeyCombo? KeyCombo;
-	private readonly List<VirtualKey> KeysHandled = new();
 
 	private void SetEditing(ActionKeybind? keybind) {
 		this.FinishEdit();
@@ -122,57 +118,49 @@ public class ActionKeybindEditor {
 	}
 
 	private void FinishEdit() {
-		if (this.Editing == null || this.KeyCombo == null) return;
-		if (this.KeyCombo.Key != VirtualKey.NO_KEY)
+		if (this.Editing == null || this.KeyCombo == null)
+			return;
+		if (this.KeyCombo.Key != null)
 			this.Editing.Combo = this.KeyCombo;
-		Ktisis.Log.Info($"Applying edit ({this.KeyCombo.GetShortcutString()})");
+		Ktisis.Ktisis.Log.Info($"Applying edit ({this.KeyCombo.GetShortcutString()})", Array.Empty<object>());
 	}
 
 	private void EditKeybind(ActionKeybind keybind) {
-		using var _ = ImRaii.PushId(keybind.GetHashCode());
-		using var bg = ImRaii.PushColor(ImGuiCol.TextSelectedBg, 0);
-
-		this.KeyCombo ??= new KeyCombo();
-
-		var keys = KeyHelpers.GetKeysDown().ToList();
-		var pressed = keys.Except(this.KeysHandled).ToList();
-
-		// Finish editing when the primary key is released
-
-		if (this.KeyCombo.Key != VirtualKey.NO_KEY && !keys.Contains(this.KeyCombo.Key)) {
-			this.SetEditing(null);
-			return;
-		}
-
-		// Handle newly pressed keys
-
-		this.KeysHandled.AddRange(pressed);
-		foreach (var key in pressed) {
-			if (key == VirtualKey.RETURN) {
-				this.SetEditing(null);
-				return;
-			}
-
-			if (key == VirtualKey.BACK) {
-				this.KeyCombo = null;
-				this.SetEditing(null);
-				return;
-			}
-			
-			if (this.KeyCombo.Key == VirtualKey.NO_KEY) {
-				this.KeyCombo.Key = key;
-			} else if (KeyHelpers.IsModifierKey(key) && !KeyHelpers.IsModifierKey(this.KeyCombo.Key)) {
-				this.KeyCombo.AddModifier(key);
-			} else {
-				var prev = this.KeyCombo.Key;
-				this.KeyCombo.Key = key;
-				this.KeyCombo.AddModifier(prev);
+		using (ImRaii.PushId(keybind.GetHashCode(), true)) {
+			using (ImRaii.PushColor((ImGuiCol)49, 0U, true)) {
+				if (this.KeyCombo == null)
+					this.KeyCombo = new KeyCombo((VirtualKey)0);
+				List<VirtualKey> list1 = KeyHelpers.GetKeysDown().ToList();
+				List<VirtualKey> list2 = list1.Except((IEnumerable<VirtualKey>)this.KeysHandled).ToList();
+				if (this.KeyCombo.Key != null && !list1.Contains(this.KeyCombo.Key)) {
+					this.SetEditing(null);
+				} else {
+					this.KeysHandled.AddRange((IEnumerable<VirtualKey>)list2);
+					foreach (VirtualKey key1 in list2) {
+						if (key1 == 13) {
+							this.SetEditing(null);
+							return;
+						}
+						if (key1 == 8) {
+							this.KeyCombo = null;
+							this.SetEditing(null);
+							return;
+						}
+						if (this.KeyCombo.Key == null)
+							this.KeyCombo.Key = key1;
+						else if (KeyHelpers.IsModifierKey(key1) && !KeyHelpers.IsModifierKey(this.KeyCombo.Key)) {
+							this.KeyCombo.AddModifier(key1);
+						} else {
+							VirtualKey key2 = this.KeyCombo.Key;
+							this.KeyCombo.Key = key1;
+							this.KeyCombo.AddModifier(key2);
+						}
+					}
+					var shortcutString = (this.KeysHandled.Count > 0 ? this.KeyCombo : keybind.Combo).GetShortcutString();
+					Dalamud.Bindings.ImGui.ImGui.InputText(ImU8String.op_Implicit("##EditKeybind"), ref shortcutString, 256 /*0x0100*/, (ImGuiInputTextFlags)16384 /*0x4000*/, (Dalamud.Bindings.ImGui.ImGui.ImGuiInputTextCallbackDelegate)null);
+					Dalamud.Bindings.ImGui.ImGui.SetKeyboardFocusHere(-1);
+				}
 			}
 		}
-
-		var textCombo = this.KeysHandled.Count > 0 ? this.KeyCombo : keybind.Combo;
-		var text = textCombo.GetShortcutString();
-		ImGui.InputText("##EditKeybind", ref text, 256, ImGuiInputTextFlags.ReadOnly & ~ImGuiInputTextFlags.AutoSelectAll);
-		ImGui.SetKeyboardFocusHere(-1);
 	}
 }

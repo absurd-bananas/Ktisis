@@ -1,13 +1,11 @@
-using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Game.ClientState.Objects.Types;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Entities.Game.ActorEntity
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-
-using Ktisis.Common.Extensions;
-
-using CSGameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
-using CSCharacter = FFXIVClientStructs.FFXIV.Client.Game.Character.Character;
+#nullable enable
+using System;
 
 using Ktisis.Editor.Characters.State;
 using Ktisis.Scene.Decor;
@@ -18,112 +16,118 @@ using Ktisis.Scene.Types;
 
 namespace Ktisis.Scene.Entities.Game;
 
-public class ActorEntity : CharaEntity, IDeletable {
+public class ActorEntity : CharaEntity, IDeletable
+{
 	public readonly IGameObject Actor;
-	
+	public bool IsObjectVisible = true;
+
+	public ActorEntity(ISceneManager scene, IPoseBuilder pose, IGameObject actor)
+    : base(scene, pose)
+  {
+    this.Type = EntityType.Actor;
+    this.Actor = actor;
+  }
+
 	public bool IsManaged { get; set; }
 
 	public override bool IsValid => base.IsValid && this.Actor.IsValid();
 
-	public ActorEntity(
-		ISceneManager scene,
-		IPoseBuilder pose,
-		IGameObject actor
-	) : base(scene, pose) {
-		this.Type = EntityType.Actor;
-		this.Actor = actor;
-	}
-	
-	// Update handler
+	public AppearanceState Appearance { get; } = new AppearanceState();
 
-	public override void Update() {
-		if (!this.IsObjectValid) return;
-		this.UpdateChara();
-		base.Update();
-	}
+	public unsafe GameObject* CsGameObject => (GameObject*) this.Actor.Address;
 
-	private unsafe void UpdateChara() {
-		var chara = this.CharacterBaseEx;
-		
-		var address = (nint)chara;
-		if (this.Address != address)
-			this.Address = address;
+	public unsafe FFXIVClientStructs.FFXIV.Client.Game.Character.Character* Character => (IntPtr) this.CsGameObject == IntPtr.Zero || !((GameObject) (IntPtr) this.CsGameObject).IsCharacter() ? (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*) null : (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*) this.CsGameObject;
 
-		if (chara != null && this.Appearance.Wetness is { } wetness)
-			chara->Wetness = wetness;
-	}
-	
-	// Appearance
-	
-	public AppearanceState Appearance { get; } = new();
+	public bool Delete()
+  {
+    this.Scene.GetModule<ActorModule>().Delete(this);
+    return false;
+  }
 
-	private unsafe CustomizeData* GetCustomize() {
-		var human = this.GetHuman();
-		if (human != null) return &human->Customize;
-		var chara = this.Character;
-		if (chara != null) return &chara->DrawData.CustomizeData;
-		return null;
-	}
+	public override void Update()
+  {
+    if (!this.IsObjectValid)
+      return;
+    this.UpdateChara();
+    base.Update();
+  }
 
-	public unsafe byte GetCustomizeValue(CustomizeIndex index) {
-		if (this.Appearance.Customize.IsSet(index))
-			return this.Appearance.Customize[index];
+	private unsafe void UpdateChara()
+  {
+    Ktisis.Structs.Characters.CharacterBaseEx* characterBaseEx = this.CharacterBaseEx;
+    Ktisis.Structs.Characters.CharacterBaseEx* characterBaseExPtr = characterBaseEx;
+    if (this.Address != (IntPtr) characterBaseExPtr)
+      this.Address = (IntPtr) characterBaseExPtr;
+    if ((IntPtr) characterBaseEx == IntPtr.Zero)
+      return;
+    var wetness = this.Appearance.Wetness;
+    if (!wetness.HasValue)
+      return;
+    var valueOrDefault = wetness.GetValueOrDefault();
+    characterBaseEx->Wetness = valueOrDefault;
+  }
 
-		var chara = this.GetHuman();
-		return chara != null ? chara->Customize[(byte)index] : (byte)0;
-	}
-	
-	// Viera ear handling
+	private unsafe CustomizeData* GetCustomize()
+  {
+    Human* human = this.GetHuman();
+    if ((IntPtr) human != IntPtr.Zero)
+      return &human->Customize;
+    FFXIVClientStructs.FFXIV.Client.Game.Character.Character* character = this.Character;
+    return (IntPtr) character != IntPtr.Zero ? &character->DrawData.CustomizeData : (CustomizeData*) null;
+  }
 
-	public bool IsViera() => this.GetCustomizeValue(CustomizeIndex.Race) == 8;
+	public unsafe byte GetCustomizeValue(CustomizeIndex index)
+  {
+    if (this.Appearance.Customize.IsSet(index))
+      return this.Appearance.Customize[index];
+    Human* human = this.GetHuman();
+    return (IntPtr) human == IntPtr.Zero ? (byte) 0 : ((CustomizeData) ref human->Customize)[(int) (byte) index];
+  }
 
-	public bool TryGetEarId(out byte id) {
-		if (!this.IsViera()) {
-			id = 0;
-			return false;
-		}
-		id = this.GetCustomizeValue(CustomizeIndex.RaceFeatureType);
-		return true;
-	}
-	
-	public bool TryGetEarIdAsChar(out char id) {
-		var result = this.TryGetEarId(out var num);
-		id = ((char)(96 + num));
-		return result;
-	}
-	
-	// GameObject
-	
-	public unsafe CSGameObject* CsGameObject => (CSGameObject*)this.Actor.Address;
+	public bool IsViera() => this.GetCustomizeValue((CustomizeIndex) 0) == 8;
 
-	public unsafe CSCharacter* Character => this.CsGameObject != null && this.CsGameObject->IsCharacter() ? (CSCharacter*)this.CsGameObject : null;
-	
-	// CharacterBase
+	public bool TryGetEarId(out byte id)
+  {
+    if (!this.IsViera())
+    {
+      id = 0;
+      return false;
+    }
+    id = this.GetCustomizeValue((CustomizeIndex) 22);
+    return true;
+  }
 
-	public unsafe override Object* GetObject()
-		=> this.CsGameObject != null ? (Object*)this.CsGameObject->DrawObject : null;
+	public bool TryGetEarIdAsChar(out char id)
+  {
+    byte id1;
+    var num = this.TryGetEarId(out id1) ? 1 : 0;
+    id = (char) (96U /*0x60*/ + id1);
+    return num != 0;
+  }
 
-	public unsafe override CharacterBase* GetCharacter() {
-		if (!this.IsObjectValid) return null;
-		var ptr = this.CsGameObject != null ? this.CsGameObject->DrawObject : null;
-		if (ptr == null || ptr->Object.GetObjectType() != ObjectType.CharacterBase)
-			return null;
-		return (CharacterBase*)ptr;
-	}
+	public unsafe override FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object* GetObject() => (IntPtr) this.CsGameObject == IntPtr.Zero ? (FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object*) null : (FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object*) this.CsGameObject->DrawObject;
 
-	public unsafe Human* GetHuman() {
-		var chara = this.GetCharacter();
-		if (chara != null && chara->GetModelType() == CharacterBase.ModelType.Human)
-			return (Human*)chara;
-		return null;
-	}
+	public unsafe override CharacterBase* GetCharacter()
+  {
+    if (!this.IsObjectValid)
+      return (CharacterBase*) null;
+    DrawObject* drawObject = (IntPtr) this.CsGameObject != IntPtr.Zero ? this.CsGameObject->DrawObject : (DrawObject*) null;
+    return (IntPtr) drawObject == IntPtr.Zero || ((FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object) ref drawObject->object).GetObjectType() != 3 ? (CharacterBase*) null : (CharacterBase*) drawObject;
+  }
+
+	public unsafe Human* GetHuman()
+  {
+    CharacterBase* character = this.GetCharacter();
+    return (IntPtr) character != IntPtr.Zero && ((CharacterBase) (IntPtr) character).GetModelType() == 1 ? (Human*) character : (Human*) null;
+  }
 
 	public void Redraw() => this.Actor.Redraw();
-	 
-	// Deletable
 
-	public bool Delete() {
-		this.Scene.GetModule<ActorModule>().Delete(this);
-		return false;
-	}
+	public unsafe void ToggleObjectVisibility()
+  {
+    if ((IntPtr) this.GetObject() == IntPtr.Zero)
+      return;
+    ((DrawObject) (IntPtr) this.CsGameObject->DrawObject).IsVisible = !this.IsObjectVisible;
+    this.IsObjectVisible = !this.IsObjectVisible;
+  }
 }

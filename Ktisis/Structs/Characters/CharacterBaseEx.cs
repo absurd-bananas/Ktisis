@@ -1,27 +1,28 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Structs.Characters.CharacterBaseEx
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable disable
 using System.Runtime.InteropServices;
 
-using FFXIVClientStructs.FFXIV.Client.Graphics;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-
-using Attach = Ktisis.Structs.Attachment.Attach;
+using Ktisis.Structs.Attachment;
 
 namespace Ktisis.Structs.Characters;
 
-// Client::Graphics::Scene::CharacterBase
-
-[StructLayout(LayoutKind.Explicit, Size = 0xA10)]
+[StructLayout(LayoutKind.Explicit, Size = 2576)]
 public struct CharacterBaseEx {
-	[FieldOffset(0x000)] public CharacterBase Base;
-
-	[FieldOffset(0x050)] public Transform Transform;
-
-	[FieldOffset(0x0D8)] public Attach Attach;
-
-	[FieldOffset(0x2E0)] public WetnessState Wetness;
-
-	[FieldOffset(0xA20)] public CustomizeContainer Customize;
-
-	//[FieldOffset(0x8F4)] public unsafe fixed uint DemiEquip[5];
-	//[FieldOffset(0x910)] public unsafe fixed uint HumanEquip[10];
-	[FieldOffset(0xA40)] public EquipmentContainer Equipment;
+	[FieldOffset(0)]
+	public CharacterBase Base;
+	[FieldOffset(80 /*0x50*/)]
+	public Transform Transform;
+	[FieldOffset(216)]
+	public Attach Attach;
+	[FieldOffset(736)]
+	public WetnessState Wetness;
+	[FieldOffset(2592)]
+	public CustomizeContainer Customize;
+	[FieldOffset(2624)]
+	public EquipmentContainer Equipment;
 }

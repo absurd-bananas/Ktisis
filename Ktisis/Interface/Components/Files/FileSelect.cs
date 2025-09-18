@@ -1,8 +1,11 @@
-using System.IO;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Files.FileSelect`1
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Interface;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+#nullable enable
+using System.IO;
 
 using GLib.Widgets;
 
@@ -12,15 +15,15 @@ namespace Ktisis.Interface.Components.Files;
 
 [Transient]
 public class FileSelect<T> where T : notnull {
-	// Events
+	public OpenDialogHandler
+		#nullable enable
+		? OnOpenDialog;
 
-	public OpenDialogHandler? OnOpenDialog;
-	public delegate void OpenDialogHandler(FileSelect<T> sender);
-	
-	// State
-	
 	public bool IsFileOpened => this.Selected != null;
-	public FileSelectState? Selected { get; private set; }
+
+	public FileSelectState
+		#nullable enable
+		? Selected { get; private set; }
 
 	public void SetFile(string path, T file) {
 		this.Selected = new FileSelectState {
@@ -31,30 +34,29 @@ public class FileSelect<T> where T : notnull {
 	}
 
 	public void Clear() => this.Selected = null;
-	
-	// Draw UI
 
 	public void Draw() {
-		const string DefaultText = "Select a file to open..."; // TODO: Localize
-		
-		var path = this.Selected?.Name ?? DefaultText;
-		ImGui.InputText("##FileSelectPath", ref path, 256, ImGuiInputTextFlags.ReadOnly);
-		
-		ImGui.SameLine();
-
-		if (Buttons.IconButton(FontAwesomeIcon.FileImport))
-			this.OnOpenDialog?.Invoke(this);
-
-		using (var _ = ImRaii.Disabled(!this.IsFileOpened)) {
-			ImGui.SameLine();
-			if (Buttons.IconButton(FontAwesomeIcon.UndoAlt))
-				this.Selected = null;
+		var str = this.Selected?.Name ?? "Select a file to open...";
+		Dalamud.Bindings.ImGui.ImGui.InputText(ImU8String.op_Implicit("##FileSelectPath"), ref str, 256 /*0x0100*/, (ImGuiInputTextFlags)16384 /*0x4000*/, (Dalamud.Bindings.ImGui.ImGui.ImGuiInputTextCallbackDelegate)null);
+		Dalamud.Bindings.ImGui.ImGui.SameLine();
+		if (Buttons.IconButton((FontAwesomeIcon)62831)) {
+			var onOpenDialog = this.OnOpenDialog;
+			if (onOpenDialog != null)
+				onOpenDialog(this);
+		}
+		using (ImRaii.Disabled(!this.IsFileOpened)) {
+			Dalamud.Bindings.ImGui.ImGui.SameLine();
+			if (!Buttons.IconButton((FontAwesomeIcon)62186))
+				return;
+			this.Selected = null;
 		}
 	}
 
+	public delegate void OpenDialogHandler(FileSelect<T> sender);
+
 	public class FileSelectState {
+		public T File;
 		public string Name;
 		public string Path;
-		public T File;
 	}
 }

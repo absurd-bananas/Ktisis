@@ -1,5 +1,11 @@
-﻿using Dalamud.Interface;
-using Dalamud.Bindings.ImGui;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Editor.Properties.ActorPropertyList
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
 
 using GLib.Widgets;
 
@@ -13,65 +19,53 @@ using Ktisis.Scene.Entities.Skeleton;
 namespace Ktisis.Interface.Editor.Properties;
 
 public class ActorPropertyList : ObjectPropertyList {
+	private const string ImportOptsPopupId = "##KtisisCharaImportOptions";
 	private readonly IEditorContext _ctx;
 	private readonly LocaleManager _locale;
-	
-	public ActorPropertyList(
-		IEditorContext ctx,
-		LocaleManager locale
-	) {
+
+	public ActorPropertyList(IEditorContext ctx, LocaleManager locale) {
 		this._ctx = ctx;
 		this._locale = locale;
 	}
-	
+
 	public override void Invoke(IPropertyListBuilder builder, SceneEntity entity) {
-		if (
-			entity switch {
-				BoneNode node => node.Pose.Parent,
-				EntityPose pose => pose.Parent,
-				_ => entity
-			} is not ActorEntity actor
-		) return;
-
-		builder.AddHeader("Actor", () => this.DrawActorTab(actor), priority: 0);
+		SceneEntity sceneEntity;
+		switch (entity) {
+			case BoneNode boneNode:
+				sceneEntity = boneNode.Pose.Parent;
+				break;
+			case EntityPose entityPose:
+				sceneEntity = entityPose.Parent;
+				break;
+			default:
+				sceneEntity = entity;
+				break;
+		}
+		var actor = sceneEntity as ActorEntity;
+		if (actor == null)
+			return;
+		builder.AddHeader("Actor", (Action)(() => this.DrawActorTab(actor)), 0);
 	}
-	
-	// Actor tab
-
-	private const string ImportOptsPopupId = "##KtisisCharaImportOptions";
 
 	private void DrawActorTab(ActorEntity actor) {
-		var spacing = ImGui.GetStyle().ItemInnerSpacing.X;
-		
-		// Position lock
-		
-		var posLock = this._ctx.Animation.PositionLockEnabled;
-		if (ImGui.Checkbox(this._locale.Translate("actors.pos_lock"), ref posLock))
-			this._ctx.Animation.PositionLockEnabled = posLock;
-		
-		ImGui.Spacing();
-		
-		// Open appearance editor
-
-		if (Buttons.IconButton(FontAwesomeIcon.Edit))
+		ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+		float x = ((ImGuiStylePtr) ref style ).ItemInnerSpacing.X;
+		var positionLockEnabled = this._ctx.Animation.PositionLockEnabled;
+		if (Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit(this._locale.Translate("actors.pos_lock")), ref positionLockEnabled))
+			this._ctx.Animation.PositionLockEnabled = positionLockEnabled;
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		if (Buttons.IconButton((FontAwesomeIcon)61508))
 			this._ctx.Interface.OpenActorEditor(actor);
-		ImGui.SameLine(0, spacing);
-		ImGui.Text("Edit actor appearance");
-		
-		ImGui.Spacing();
-		
-		// Import/export
-
-		if (ImGui.Button("Import"))
+		Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+		Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit("Edit actor appearance"));
+		Dalamud.Bindings.ImGui.ImGui.Spacing();
+		if (Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Import"), new Vector2()))
 			this._ctx.Interface.OpenCharaImport(actor);
-		ImGui.SameLine(0, spacing);
-		if (ImGui.Button("Export"))
-			this._ctx.Interface.OpenCharaExport(actor);
+		Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, x);
+		if (!Dalamud.Bindings.ImGui.ImGui.Button(ImU8String.op_Implicit("Export"), new Vector2()))
+			return;
+		this._ctx.Interface.OpenCharaExport(actor);
 	}
-	
-	// Gaze tab
 
-	private void DrawGazeTab() {
-		
-	}
+	private void DrawGazeTab() { }
 }

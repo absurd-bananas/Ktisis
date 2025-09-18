@@ -1,119 +1,99 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Common.Extensions.GameObjectEx
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
 using System.Linq;
 using System.Text;
-
-using Dalamud.Game.ClientState.Objects.Types;
-using Dalamud.Utility;
-
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
-using FFXIVClientStructs.FFXIV.Client.Game.Control;
-using FFXIVClientStructs.FFXIV.Client.Game.Object;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-using CSGameObject = FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject;
-
-using Ktisis.Editor.Context.Types;
-using Ktisis.Actions.Attributes;
-using Ktisis.Core;
-using Ktisis.Core.Types;
-using Ktisis.Core.Attributes;
-using Ktisis.Actions.Types;
 
 namespace Ktisis.Common.Extensions;
 
 public static class GameObjectEx {
-	public unsafe static bool IsPcCharacter(this IGameObject gameObject) {
-		var csPtr = (CSGameObject*)gameObject.Address;
-		return csPtr != null && csPtr->GetObjectKind() == ObjectKind.Pc;
-	}
-
-	public unsafe static string GetNameOrFallback(this IGameObject gameObject, IEditorContext ctx, bool? forceIncognito = null) {
-		// forceIncognito: if null, use Config.Editor.IncognitoPlayerNames
-		// 	if true, return censored Actor #
-		// 	if false, return realname or fallback
-
-		bool incognito = forceIncognito ?? ctx.Config.Editor.IncognitoPlayerNames;
-		bool isPc = IsPcCharacter(gameObject);
-
-		// force the fallback text if we're incognito and looking at a PC
-		if (incognito && isPc) {
-			return $"Actor #{gameObject.ObjectIndex}";
-		}
-
-		var name = gameObject.Name.TextValue;
-		return !name.IsNullOrEmpty() ? name : $"Actor #{gameObject.ObjectIndex}";
+	public static string GetNameOrFallback(this IGameObject gameObject) {
+		string textValue = gameObject.Name.TextValue;
+		if (!StringExtensions.IsNullOrEmpty(textValue))
+			return textValue;
+		return $"Actor #{gameObject.ObjectIndex}";
 	}
 
 	public unsafe static DrawObject* GetDrawObject(this IGameObject gameObject) {
-		var csPtr = (CSGameObject*)gameObject.Address;
-		return csPtr != null ? csPtr->DrawObject : null;
+		GameObject* address = (GameObject*)gameObject.Address;
+		return (IntPtr)address == IntPtr.Zero ? (DrawObject*)null : address->DrawObject;
 	}
 
 	public unsafe static Skeleton* GetSkeleton(this IGameObject gameObject) {
-		if (!gameObject.IsValid()) return null;
-
-		var csPtr = (CSGameObject*)gameObject.Address;
-		if (csPtr == null || csPtr->DrawObject == null)
-			return null;
-
-		var drawObject = csPtr->DrawObject;
-		if (drawObject->Object.GetObjectType() != ObjectType.CharacterBase)
-			return null;
-		
-		return ((CharacterBase*)drawObject)->Skeleton;
+		GameObject* address = (GameObject*)gameObject.Address;
+		if ((IntPtr)address == IntPtr.Zero || (IntPtr)address->DrawObject == IntPtr.Zero)
+			return (Skeleton*)null;
+		DrawObject* drawObject = address->DrawObject;
+		return ((FFXIVClientStructs.FFXIV.Client.Graphics.Scene.Object) ref drawObject ->object).GetObjectType() != 3 ? (Skeleton*)null : ((CharacterBase*)drawObject)->Skeleton;
 	}
 
 	public unsafe static bool IsDrawing(this IGameObject gameObject) {
-		var csActor = (CSGameObject*)gameObject.Address;
-		if (csActor == null) return false;
-		// Ktisis.Log.Info($"RenderFlags: {csActor->RenderFlags:X}");
-		return csActor->RenderFlags == 0x00;
+		GameObject* address = (GameObject*)gameObject.Address;
+		return (IntPtr)address != IntPtr.Zero && address->RenderFlags == 0;
 	}
 
 	public unsafe static bool IsEnabled(this IGameObject gameObject) {
-		var csActor = (CSGameObject*)gameObject.Address;
-		if (csActor == null) return false;
-		return (csActor->RenderFlags & 2) == 0;
+		GameObject* address = (GameObject*)gameObject.Address;
+		return (IntPtr)address != IntPtr.Zero && (address->RenderFlags & 2) == 0;
 	}
-	
-	public unsafe static void SetWorld(this IGameObject gameObject, ushort world) {
-		var charaPtr = (Character*)gameObject.Address;
-		if (charaPtr == null || !charaPtr->GameObject.IsCharacter()) return;
-		charaPtr->CurrentWorld = world;
-		charaPtr->HomeWorld = world;
-	}
-	
-	public unsafe static void SetName(this IGameObject gameObject, string name) {
-		var gameObjectPtr = (CSGameObject*)gameObject.Address;
-		if (gameObjectPtr == null) return;
 
-		var bytes = Encoding.UTF8.GetBytes(name).Append((byte)0).ToArray();
-		for (var i = 0; i < bytes.Length; i++)
-			gameObjectPtr->Name[i] = bytes[i];
+	public unsafe static void SetWorld(this IGameObject gameObject, ushort world) {
+		FFXIVClientStructs.FFXIV.Client.Game.Character.Character* address = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)gameObject.Address;
+		if ((IntPtr)address == IntPtr.Zero || !((GameObject) ref address ->GameObject).IsCharacter())
+		return;
+		address->CurrentWorld = world;
+		address->HomeWorld = world;
 	}
-	
+
+	public unsafe static void SetName(this IGameObject gameObject, string name) {
+		GameObject* address = (GameObject*)gameObject.Address;
+		if ((IntPtr)address == IntPtr.Zero)
+			return;
+		var array = Encoding.UTF8.GetBytes(name).Append((byte)0).ToArray();
+		for (var index = 0; index < array.Length; ++index)
+			((GameObject)(IntPtr)address).Name[index] = array[index];
+	}
+
 	public unsafe static void SetTargetable(this IGameObject gameObject, bool targetable) {
-		var charaPtr = (CSGameObject*)gameObject.Address;
-		if (charaPtr == null) return;
-		
-		if (targetable)
-			charaPtr->TargetableStatus |= ObjectTargetableFlags.IsTargetable;
-		else
-			charaPtr->TargetableStatus &= ~ObjectTargetableFlags.IsTargetable;
+		GameObject* address = (GameObject*)gameObject.Address;
+		if ((IntPtr)address == IntPtr.Zero)
+			return;
+		if (targetable) {
+			ref ObjectTargetableFlags local = ref address->TargetableStatus;
+			// ISSUE: cast to a reference type
+			// ISSUE: explicit reference operation
+			// ISSUE: cast to a reference type
+			// ISSUE: explicit reference operation
+			^(sbyte &) ref local = (sbyte)((int)^(byte &) ref local | 2);
+		} else {
+			ref ObjectTargetableFlags local = ref address->TargetableStatus;
+			// ISSUE: cast to a reference type
+			// ISSUE: explicit reference operation
+			// ISSUE: cast to a reference type
+			// ISSUE: explicit reference operation
+			^(sbyte &) ref local = (sbyte)((int)^(byte &) ref local & 253);
+		}
 	}
 
 	public unsafe static void SetGPoseTarget(this IGameObject gameObject) {
-		if (!gameObject.IsValid()) return;
-
-		var target = TargetSystem.Instance();
-		if (target == null || target->GPoseTarget == null) return;
-
-		target->GPoseTarget = (CSGameObject*)gameObject.Address;
+		if (!gameObject.IsValid())
+			return;
+		TargetSystem* targetSystemPtr = TargetSystem.Instance();
+		if ((IntPtr)targetSystemPtr == IntPtr.Zero || (IntPtr)targetSystemPtr->GPoseTarget == IntPtr.Zero)
+			return;
+		targetSystemPtr->GPoseTarget = (GameObject*)gameObject.Address;
 	}
 
 	public unsafe static void Redraw(this IGameObject gameObject) {
-		var csPtr = (CSGameObject*)gameObject.Address;
-		if (csPtr == null) return;
-		csPtr->DisableDraw();
-		csPtr->EnableDraw();
+		GameObject* address = (GameObject*)gameObject.Address;
+		if ((IntPtr)address == IntPtr.Zero)
+			return;
+		((GameObject)(IntPtr)address).DisableDraw();
+		((GameObject)(IntPtr)address).EnableDraw();
 	}
 }

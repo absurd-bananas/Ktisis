@@ -1,39 +1,28 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interop.Hooking.HookModule
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-using Dalamud.Hooking;
-
 namespace Ktisis.Interop.Hooking;
 
-public interface IHookModule : IDisposable {
-	public bool IsInit { get; }
-
-	public void EnableAll();
-	public void DisableAll();
-	public void SetEnabled(bool enabled);
-
-	public bool TryGetHook<T>(out HookWrapper<T>? result) where T : Delegate;
-
-	public bool Initialize();
-}
-
-public abstract class HookModule : IHookModule {
+public abstract class HookModule : IHookModule, IDisposable {
 	private readonly IHookMediator _hook;
-
-	private readonly List<IHookWrapper> Hooks = new();
-
+	private readonly List<IHookWrapper> Hooks = new List<IHookWrapper>();
 	private bool _init;
-	public bool IsInit => this._init && !this.IsDisposed;
-	
-	protected HookModule(
-		IHookMediator hook
-	) {
+	private bool IsDisposed;
+
+	protected HookModule(IHookMediator hook) {
 		this._hook = hook;
 	}
-	
-	// Hook access
+
+	public bool IsInit => this._init && !this.IsDisposed;
 
 	public virtual void EnableAll() {
 		this.Hooks.ForEach(hook => hook.Enable());
@@ -42,7 +31,7 @@ public abstract class HookModule : IHookModule {
 	public virtual void DisableAll() {
 		this.Hooks.ForEach(hook => hook.Disable());
 	}
-	
+
 	public void SetEnabled(bool enabled) {
 		if (enabled)
 			this.EnableAll();
@@ -53,74 +42,31 @@ public abstract class HookModule : IHookModule {
 	public bool TryGetHook<T>(out HookWrapper<T>? result) where T : Delegate {
 		result = null;
 		foreach (var hook in this.Hooks) {
-			if (hook is not HookWrapper<T> wrapper)
-				continue;
-			result = wrapper;
-			return true;
+			if (hook is HookWrapper<T> hookWrapper) {
+				result = hookWrapper;
+				return true;
+			}
 		}
 		return false;
 	}
-	
-	// Hooking
 
 	public virtual bool Initialize() {
 		if (this.IsDisposed)
 			throw new Exception("Attempted to initialize disposed module.");
-
-		var init = this._hook.Init(this);
-
-		var hooks = this.GetHookWrappers().ToList();
-		if (init) {
-			this.Hooks.AddRange(hooks);
-			init &= this.OnInitialize();
+		var flag = this._hook.Init(this);
+		var list = this.GetHookWrappers().ToList();
+		if (flag) {
+			this.Hooks.AddRange(list);
+			flag &= this.OnInitialize();
 		}
-
-		if (!init) this.Dispose();
-		return this._init = init;
+		if (!flag)
+			this.Dispose();
+		return this._init = flag;
 	}
-
-	protected virtual bool OnInitialize() => true;
-
-	private IEnumerable<IHookWrapper> GetHookWrappers() {
-		var fields = this.GetType()
-			.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-		foreach (var field in fields) {
-			IHookWrapper? wrapper;
-			
-			try {
-				wrapper = this.GetHookFromField(field);
-			} catch (Exception err) {
-				Ktisis.Log.Error($"Failed to resolve hook for field '{field.Name}':\n{err}");
-				continue;
-			}
-			
-			if (wrapper != null)
-				yield return wrapper;
-		}
-	}
-
-	private IHookWrapper? GetHookFromField(FieldInfo field) {
-		var type = field.FieldType;
-		if (!type.IsGenericType || type.GetGenericTypeDefinition() != typeof(Hook<>))
-			return null;
-
-		var value = field.GetValue(this);
-		if (value == null) return null;
-
-		var typeGen = typeof(HookWrapper<>)
-			.GetGenericTypeDefinition()
-			.MakeGenericType(type.GenericTypeArguments);
-
-		return (IHookWrapper?)Activator.CreateInstance(typeGen, value);
-	}
-	
-	// IDisposable
-
-	private bool IsDisposed;
 
 	public virtual void Dispose() {
-		if (this.IsDisposed) return;
+		if (this.IsDisposed)
+			return;
 		try {
 			this.Hooks.ForEach(hook => hook.Dispose());
 			this.Hooks.Clear();
@@ -129,5 +75,35 @@ public abstract class HookModule : IHookModule {
 			this.IsDisposed = true;
 			GC.SuppressFinalize(this);
 		}
+	}
+
+	protected virtual bool OnInitialize() => true;
+
+	private IEnumerable<IHookWrapper> GetHookWrappers() {
+		var hookModule = this;
+		FieldInfo[] fieldInfoArray = hookModule.GetType().GetFields((BindingFlags)52);
+		for (var index = 0; index < fieldInfoArray.Length; ++index) {
+			var field = fieldInfoArray[index];
+			IHookWrapper hookFromField;
+			try {
+				hookFromField = hookModule.GetHookFromField(field);
+			} catch (Exception ex) {
+				Ktisis.Ktisis.Log.Error($"Failed to resolve hook for field '{field.Name}':\n{ex}", Array.Empty<object>());
+				continue;
+			}
+			if (hookFromField != null)
+				yield return hookFromField;
+		}
+		fieldInfoArray = null;
+	}
+
+	private IHookWrapper? GetHookFromField(FieldInfo field) {
+		var fieldType = field.FieldType;
+		if (!fieldType.IsGenericType || fieldType.GetGenericTypeDefinition() != typeof(Hook<>))
+			return null;
+		var obj = field.GetValue(this);
+		if (obj == null)
+			return null;
+		return (IHookWrapper)Activator.CreateInstance(typeof(HookWrapper<>).GetGenericTypeDefinition().MakeGenericType(fieldType.GenericTypeArguments), obj);
 	}
 }

@@ -1,99 +1,108 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Chara.Popup.ParamColorSelectPopup
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Objects.Enums;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+#nullable enable
+using System;
+using System.Linq;
 
 using Ktisis.Editor.Characters.Types;
 
 namespace Ktisis.Interface.Components.Chara.Popup;
 
 public class ParamColorSelectPopup {
+	private bool _isOpen;
+	private bool _isOpening;
+	private Vector4[] Colors = Array.Empty<Vector4>();
+	private CustomizeIndex Index;
+	private bool IsAlpha;
+
 	private string PopupId => $"##ColorSelect_{this.GetHashCode():X}";
 
-	private bool _isOpening;
-	private bool _isOpen;
-	
-	private CustomizeIndex Index = 0;
-	
-	private bool IsAlpha;
-	private Vector4[] Colors = [];
-	
 	public void Open(CustomizeIndex index, uint[] colors) {
 		this._isOpening = true;
-		
 		this.Index = index;
-
-		this.IsAlpha = colors.Length == 0x80;
-		this.Colors = colors.Take(this.IsAlpha ? 0x60 : colors.Length)
-			.Select(ImGui.ColorConvertU32ToFloat4)
-			.ToArray();
+		this.IsAlpha = colors.Length == 128 /*0x80*/;
+		// ISSUE: reference to a compiler-generated field
+		// ISSUE: reference to a compiler-generated field
+		this.Colors = colors.Take(this.IsAlpha ? 96 /*0x60*/ : colors.Length).Select<uint, Vector4>(ParamColorSelectPopup.\u003C\u003EO.\u003C0\u003E__ColorConvertU32ToFloat4 ??
+			(ParamColorSelectPopup.\u003C\u003EO.\u003C0\u003E__ColorConvertU32ToFloat4 = new Func<uint, Vector4>(Dalamud.Bindings.ImGui.ImGui.ColorConvertU32ToFloat4))).ToArray();
 	}
 
 	public void Draw(ICustomizeEditor editor) {
 		if (this._isOpening) {
 			this._isOpening = false;
-			ImGui.OpenPopup(this.PopupId);
+			Dalamud.Bindings.ImGui.ImGui.OpenPopup(ImU8String.op_Implicit(this.PopupId), (ImGuiPopupFlags)0);
 		}
-
-		if (!ImGui.IsPopupOpen(this.PopupId)) return;
-		
-		using var _popup = ImRaii.Popup(this.PopupId, ImGuiWindowFlags.AlwaysAutoResize);
-		if (!_popup.Success) {
-			if (this._isOpen)
-				this.OnClose();
+		if (!Dalamud.Bindings.ImGui.ImGui.IsPopupOpen(ImU8String.op_Implicit(this.PopupId), (ImGuiPopupFlags)0))
 			return;
+		using (ImRaii.IEndObject iendObject = ImRaii.Popup(ImU8String.op_Implicit(this.PopupId), (ImGuiWindowFlags)64 /*0x40*/)) {
+			if (!iendObject.Success) {
+				if (!this._isOpen)
+					return;
+				this.OnClose();
+			} else {
+				this._isOpen = true;
+				var customization = editor.GetCustomization(this.Index);
+				if (this.IsAlpha) {
+					this.DrawAlphaToggle(editor, customization);
+					Dalamud.Bindings.ImGui.ImGui.Spacing();
+				}
+				this.DrawColorInput(editor, customization);
+				Dalamud.Bindings.ImGui.ImGui.Spacing();
+				this.DrawColorTable(editor, customization);
+			}
 		}
-		this._isOpen = true;
-
-		var current = editor.GetCustomization(this.Index);
-		if (this.IsAlpha) {
-			this.DrawAlphaToggle(editor, current);
-			ImGui.Spacing();
-		}
-		this.DrawColorInput(editor, current);
-		ImGui.Spacing();
-		this.DrawColorTable(editor, current);
 	}
 
 	private void DrawColorInput(ICustomizeEditor editor, byte current) {
-		ImGui.SetNextItemWidth(ImGui.GetFrameHeight() * 8);
-		var intValue = current & (this.IsAlpha ? ~0x80 : 0xFF);
-		if (ImGui.InputInt($"##Input_{this.Index}", ref intValue))
-			this.SetColor(editor, current, (byte)intValue);
+		Dalamud.Bindings.ImGui.ImGui.SetNextItemWidth(Dalamud.Bindings.ImGui.ImGui.GetFrameHeight() * 8f);
+		var num = current & (this.IsAlpha ? -129 : byte.MaxValue);
+		ImU8String imU8String;
+		// ISSUE: explicit constructor call
+		((ImU8String) ref imU8String).\u002Ector(8, 1);
+		((ImU8String) ref imU8String).AppendLiteral("##Input_");
+		((ImU8String) ref imU8String).AppendFormatted<CustomizeIndex>(this.Index);
+		if (!Dalamud.Bindings.ImGui.ImGui.InputInt(imU8String, ref num, 0, 0, new ImU8String(), (ImGuiInputTextFlags)0))
+			return;
+		this.SetColor(editor, current, (byte)num);
 	}
 
 	private void DrawColorTable(ICustomizeEditor editor, byte current) {
-		using var _space = ImRaii.PushStyle(ImGuiStyleVar.ItemSpacing, Vector2.Zero);
-		using var _round = ImRaii.PushStyle(ImGuiStyleVar.FrameRounding, 0);
-		
-		for (var i = 0; i < this.Colors.Length; i++) {
-			if (i % 8 != 0) ImGui.SameLine();
-
-			var color = this.Colors[i];
-			if (ImGui.ColorButton($"{i}##{this.Index}", color, ImGuiColorEditFlags.DisplayMask | ImGuiColorEditFlags.AlphaPreview | ImGuiColorEditFlags.AlphaBar))
-				this.SetColor(editor, current, (byte)i);
+		using (ImRaii.PushStyle((ImGuiStyleVar)13, Vector2.Zero, true)) {
+			using (ImRaii.PushStyle((ImGuiStyleVar)11, 0.0f, true)) {
+				for (var index = 0; index < this.Colors.Length; ++index) {
+					if (index % 8 != 0)
+						Dalamud.Bindings.ImGui.ImGui.SameLine();
+					Vector4 color = this.Colors[index];
+					ImU8String imU8String = new ImU8String(2, 2);
+					((ImU8String) ref imU8String).AppendFormatted<int>(index);
+					((ImU8String) ref imU8String).AppendLiteral("##");
+					((ImU8String) ref imU8String).AppendFormatted<CustomizeIndex>(this.Index);
+					if (Dalamud.Bindings.ImGui.ImGui.ColorButton(imU8String, ref color, (ImGuiColorEditFlags)7536640 /*0x730000*/, new Vector2()))
+						this.SetColor(editor, current, (byte)index);
+				}
+			}
 		}
 	}
 
 	private void DrawAlphaToggle(ICustomizeEditor editor, byte current) {
-		var active = (current & 0x80) != 0;
-		if (ImGui.Checkbox("Transparency", ref active))
-			editor.SetCustomization(this.Index, (byte)(current ^ 0x80));
+		var flag = (current & 128U /*0x80*/) > 0U;
+		if (!Dalamud.Bindings.ImGui.ImGui.Checkbox(ImU8String.op_Implicit("Transparency"), ref flag))
+			return;
+		editor.SetCustomization(this.Index, (byte)(current ^ 128U /*0x80*/));
 	}
 
 	private void SetColor(ICustomizeEditor editor, byte current, byte value) {
 		if (this.IsAlpha)
-			value |= (byte)(current & 0x80);
-		if (this.Index is CustomizeIndex.EyeColor)
+			value |= (byte)(current & 128U /*0x80*/);
+		if (this.Index == 9)
 			editor.SetEyeColor(value);
 		else
 			editor.SetCustomization(this.Index, value);
 	}
 
-	private void OnClose() {
-		this.Colors = [];
-	}
+	private void OnClose() => this.Colors = Array.Empty<Vector4>();
 }

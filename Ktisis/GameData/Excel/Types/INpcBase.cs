@@ -1,17 +1,24 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Character;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.GameData.Excel.Types.INpcBase
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Structs.Characters;
 
 namespace Ktisis.GameData.Excel.Types;
 
 public interface INpcBase {
-	public string Name { get; set;  }
+	string Name { get; set; }
 
-	public ushort GetModelId() => 0;
+	ushort GetModelId() => 0;
 
-	public CustomizeContainer? GetCustomize() => null;
-	public EquipmentContainer? GetEquipment() => null;
+	CustomizeContainer? GetCustomize() => new CustomizeContainer?();
 
-	public WeaponModelId? GetMainHand() => null;
-	public WeaponModelId? GetOffHand() => null;
+	EquipmentContainer? GetEquipment() => new EquipmentContainer?();
+
+	WeaponModelId? GetMainHand() => new WeaponModelId?();
+
+	WeaponModelId? GetOffHand() => new WeaponModelId?();
 }

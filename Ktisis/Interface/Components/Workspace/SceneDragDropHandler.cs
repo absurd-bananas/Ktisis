@@ -1,8 +1,11 @@
-using System;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Components.Workspace.SceneDragDropHandler
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Interface;
-using Dalamud.Interface.Utility.Raii;
-using Dalamud.Bindings.ImGui;
+#nullable enable
+using System;
 
 using GLib.Widgets;
 
@@ -14,60 +17,57 @@ using Ktisis.Scene.Entities;
 namespace Ktisis.Interface.Components.Workspace;
 
 public class SceneDragDropHandler {
+	private const string PayloadId = "KTISIS_SCENE_NODE";
 	private readonly IEditorContext _ctx;
+	private SceneEntity? Source;
 
-	private IAttachManager Manager => this._ctx.Posing.Attachments;
-	
-	public SceneDragDropHandler(
-		IEditorContext ctx
-	) {
+	public SceneDragDropHandler(IEditorContext ctx) {
 		this._ctx = ctx;
 	}
-	
-	// Handling
 
-	private const string PayloadId = "KTISIS_SCENE_NODE";
+	private IAttachManager Manager => this._ctx.Posing.Attachments;
 
-	private SceneEntity? Source;
-	
 	public void Handle(SceneEntity entity) {
 		this.HandleSource(entity);
-		if (this.Source != null)
-			this.HandleTarget(entity);
+		if (this.Source == null)
+			return;
+		this.HandleTarget(entity);
 	}
 
 	private void HandleSource(SceneEntity entity) {
-		using var src = ImRaii.DragDropSource(ImGuiDragDropFlags.SourceNoDisableHover);
-		if (!src.Success) return;
-		
-		ImGui.SetDragDropPayload(PayloadId, ReadOnlySpan<byte>.Empty, 0);
-
-		this.Source = entity;
-		
-		var display = this._ctx.Config.GetEntityDisplay(entity);
-		using var color = ImRaii.PushColor(ImGuiCol.Text, display.Color);
-
-		var icon = display.Icon;
-		if (icon != FontAwesomeIcon.None) {
-			Icons.DrawIcon(icon);
-			ImGui.SameLine(0, ImGui.GetStyle().ItemInnerSpacing.X);
+		using (ImRaii.IEndObject iendObject = ImRaii.DragDropSource((ImGuiDragDropFlags)2)) {
+			if (!iendObject.Success)
+				return;
+			Dalamud.Bindings.ImGui.ImGui.SetDragDropPayload(ImU8String.op_Implicit("KTISIS_SCENE_NODE"), ReadOnlySpan<byte>.Empty, (ImGuiCond)0);
+			this.Source = entity;
+			EntityDisplay entityDisplay = this._ctx.Config.GetEntityDisplay(entity);
+			using (ImRaii.PushColor((ImGuiCol)0, entityDisplay.Color, true)) {
+				FontAwesomeIcon icon = entityDisplay.Icon;
+				if (icon != null) {
+					Icons.DrawIcon(icon);
+					ImGuiStylePtr style = Dalamud.Bindings.ImGui.ImGui.GetStyle();
+					Dalamud.Bindings.ImGui.ImGui.SameLine(0.0f, ((ImGuiStylePtr) ref style).ItemInnerSpacing.X);
+				}
+				Dalamud.Bindings.ImGui.ImGui.Text(ImU8String.op_Implicit(entity.Name));
+			}
 		}
-		ImGui.Text(entity.Name);
 	}
 
-	private unsafe void HandleTarget(SceneEntity entity) {
-		using var tar = ImRaii.DragDropTarget();
-		if (!tar.Success) return;
-
-		var pl = ImGui.AcceptDragDropPayload(PayloadId);		
-		if (pl.Handle != null && this.Source is SceneEntity source)
+	private void HandleTarget(SceneEntity entity) {
+		using (ImRaii.IEndObject iendObject = ImRaii.DragDropTarget()) {
+			if (!iendObject.Success || (IntPtr)Dalamud.Bindings.ImGui.ImGui.AcceptDragDropPayload(ImU8String.op_Implicit("KTISIS_SCENE_NODE"), (ImGuiDragDropFlags)0).Handle == IntPtr.Zero)
+				return;
+			var source = this.Source;
+			if (source == null)
+				return;
 			this.HandlePayload(entity, source);
+		}
 	}
 
-	private unsafe void HandlePayload(SceneEntity target, SceneEntity source) {
-		Ktisis.Log.Info($"{target.Name} accepting payload from {source.Name}");
-
-		if (target is IAttachTarget tar && source is IAttachable attach)
-			this.Manager.Attach(attach, tar);
+	private void HandlePayload(SceneEntity target, SceneEntity source) {
+		Ktisis.Ktisis.Log.Info($"{target.Name} accepting payload from {source.Name}", Array.Empty<object>());
+		if (!(target is IAttachTarget target1) || !(source is IAttachable child))
+			return;
+		this.Manager.Attach(child, target1);
 	}
 }

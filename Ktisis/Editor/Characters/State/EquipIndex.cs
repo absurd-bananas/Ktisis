@@ -1,5 +1,10 @@
-using Ktisis.GameData.Excel;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Editor.Characters.State.EquipIndex
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 namespace Ktisis.Editor.Characters.State;
 
 public enum EquipIndex : uint {
@@ -13,24 +18,4 @@ public enum EquipIndex : uint {
 	Bracelet,
 	RingRight,
 	RingLeft
-}
-
-public static class EquipIndexEx {
-	public static EquipSlot ToEquipSlot(this EquipIndex index) {
-		var value = (int)index;
-		return index switch {
-			EquipIndex.RingLeft => EquipSlot.RingLeft,
-			EquipIndex.RingRight => EquipSlot.RingRight,
-			_ => (EquipSlot)(value + (value > 2 ? 3 : 2))
-		};
-	}
-
-	public static EquipIndex ToEquipIndex(this EquipSlot slot) {
-		var value = (int)slot;
-		return slot switch {
-			EquipSlot.RingLeft => EquipIndex.RingLeft,
-			EquipSlot.RingRight => EquipIndex.RingRight,
-			_ => (EquipIndex)(value - (value >= 5 ? 3 : 2))
-		};
-	}
 }

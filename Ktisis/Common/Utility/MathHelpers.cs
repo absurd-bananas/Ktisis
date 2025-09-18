@@ -1,47 +1,41 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Common.Utility.MathHelpers
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable disable
 using System;
-using System.Numerics;
 
 namespace Ktisis.Common.Utility;
 
 public static class MathHelpers {
-	public readonly static float Deg2Rad = ((float)Math.PI * 2) / 360;
-	public readonly static float Rad2Deg = 360 / ((float)Math.PI * 2);
-	
-	// https://github.com/aers/FFXIVClientStructs/blob/ada62e7ae60de220d1f950b03ddb8d66e9e10daf/FFXIVClientStructs/FFXIV/Common/Math/Quaternion.cs
-	
+	public readonly static float Deg2Rad = (float)Math.PI / 180f;
+	public readonly static float Rad2Deg = 57.2957764f;
+
 	public static Quaternion EulerAnglesToQuaternion(this Vector3 vec) {
-		var euler = vec.NormalizeAngles() * Deg2Rad;
-		
-		var halfX = euler.X * 0.5f;
-		var cX = MathF.Cos(halfX);
-		var sX = MathF.Sin(halfX);
-
-		var halfY = euler.Y * 0.5f;
-		var cY = MathF.Cos(halfY);
-		var sY = MathF.Sin(halfY);
-
-		var halfZ = euler.Z * 0.5f;
-		var cZ = MathF.Cos(halfZ);
-		var sZ = MathF.Sin(halfZ);
-
-		var qX = new Quaternion(sX, 0.0f, 0.0f, cX);
-		var qY = new Quaternion(0.0f, sY, 0.0f, cY);
-		var qZ = new Quaternion(0.0f, 0.0f, sZ, cZ);
-
-		return qZ * qY * qX;
+		Vector3 vector3 = vec.NormalizeAngles() * Deg2Rad;
+		var num1 = (double)vector3.X * 0.5;
+		var w1 = MathF.Cos((float)num1);
+		var x = MathF.Sin((float)num1);
+		var num2 = (double)vector3.Y * 0.5;
+		var w2 = MathF.Cos((float)num2);
+		var y = MathF.Sin((float)num2);
+		var num3 = (double)vector3.Z * 0.5;
+		var w3 = MathF.Cos((float)num3);
+		var z = MathF.Sin((float)num3);
+		Quaternion quaternion1 = new Quaternion(x, 0.0f, 0.0f, w1);
+		Quaternion quaternion2 = new Quaternion(0.0f, y, 0.0f, w2);
+		return new Quaternion(0.0f, 0.0f, z, w3) * quaternion2 * quaternion1;
 	}
-	
+
 	private static float NormalizeAngle(float angle) {
-		if (angle > 360f)
-			angle = 0 + (angle % 360);
-		else if (angle < -float.Epsilon)
-			angle = 360 - ((360 - angle) % 360);
+		if (angle > 360.0)
+			angle = (float)(0.0 + angle % 360.0);
+		else if (angle < -1.4012984643248171E-45)
+			angle = (float)(360.0 - (360.0 - angle) % 360.0);
 		return angle;
 	}
 
-	public static Vector3 NormalizeAngles(this Vector3 vec) => new(
-		NormalizeAngle(vec.X),
-		NormalizeAngle(vec.Y),
-		NormalizeAngle(vec.Z)
-	);
+	public static Vector3 NormalizeAngles(this Vector3 vec) => new Vector3(NormalizeAngle(vec.X), NormalizeAngle(vec.Y), NormalizeAngle(vec.Z));
 }

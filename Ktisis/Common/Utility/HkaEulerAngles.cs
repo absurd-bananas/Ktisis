@@ -1,159 +1,251 @@
-﻿using System;
-using System.Numerics;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Common.Utility.HkaEulerAngles
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
+using System;
 
 namespace Ktisis.Common.Utility;
 
 internal static class HkaEulerAngles {
-	// Degrees <=> Radians
+	internal const float Deg2Rad = 0.0174532924f;
+	internal const float Rad2Deg = 57.2957764f;
+	private readonly static int EulFrmS = 0;
+	private readonly static int EulFrmR = 1;
+	private readonly static int EulRepNo = 0;
+	private readonly static int EulRepYes = 1;
+	private readonly static int EulParEven = 0;
+	private readonly static int EulParOdd = 1;
+	private readonly static int[] EulSafe = new int[4] { 0, 1, 2, 0 };
+	private readonly static int[] EulNext = new int[4] { 1, 2, 0, 1 };
+	private readonly static int Order = EulOrd(Axis.Z, EulParEven, EulRepNo, EulFrmS);
 
-	internal const float Deg2Rad = (MathF.PI * 2) / 360;
-	internal const float Rad2Deg = 360 / (MathF.PI * 2);
-
-	// Quaternion <=> Euler
-	
-	// https://github.com/lmcintyre/fbx2havok/blob/master/Core/EulerAngles.h
-	// Graphics Gems 4 - III.5. - Euler Angle Conversion (Ken Shoemake, 1993)
-
-	private enum Axis : int { X, Y, Z, W }
-
-	private static int EulFrmS = 0;
-	private static int EulFrmR = 1;
-
-	private static int EulRepNo = 0;
-	private static int EulRepYes = 1;
-
-	private static int EulParEven = 0;
-	private static int EulParOdd = 1;
-
-	private static int[] EulSafe = new int[4] { 0, 1, 2, 0 };
-	private static int[] EulNext = new int[4] { 1, 2, 0, 1 };
-	private static void EulGetOrd(int ord, out int i, out int j, out int k, out int h, out int n, out int s, out int f) {
-		var o = ord;
-		f = o & 1; o >>= 1; s = o & 1; o >>= 1;
-		n = o & 1; o >>= 1; i = EulSafe[o & 3]; j = EulNext[i + n]; k = EulNext[i + 1 - n]; h = s == 1 ? k : i;
+	private static void EulGetOrd(
+		int ord,
+		out int i,
+		out int j,
+		out int k,
+		out int h,
+		out int n,
+		out int s,
+		out int f
+	) {
+		var num1 = ord;
+		f = num1 & 1;
+		var num2 = num1 >> 1;
+		s = num2 & 1;
+		var num3 = num2 >> 1;
+		n = num3 & 1;
+		var num4 = num3 >> 1;
+		i = EulSafe[num4 & 3];
+		j = EulNext[i + n];
+		k = EulNext[i + 1 - n];
+		h = s == 1 ? k : i;
 	}
-	private static int EulOrd(Axis i, int p, int r, int f) => ((((((((int)i) << 1) + (p)) << 1) + (r)) << 1) + (f));
 
-	private static int Order = EulOrd(Axis.Z, EulParEven, EulRepNo, EulFrmS);
+	private static int EulOrd(Axis i, int p, int r, int f) => ((((int)i << 1) + p << 1) + r << 1) + f;
 
 	internal static Vector3 MatrixToEuler(Matrix4x4 m) {
-		Vector3 ea = default;
-
-		var M = new float[,] {
-			{ m.M11, m.M12, m.M13, m.M14 },
-			{ m.M21, m.M22, m.M23, m.M24 },
-			{ m.M31, m.M32, m.M33, m.M34 },
-			{ m.M41, m.M42, m.M43, m.M44 }
+		Vector3 vector3 = new Vector3();
+		var numArray = new float[4, 4] {
+			{
+				m.M11,
+				m.M12,
+				m.M13,
+				m.M14
+			}, {
+				m.M21,
+				m.M22,
+				m.M23,
+				m.M24
+			}, {
+				m.M31,
+				m.M32,
+				m.M33,
+				m.M34
+			}, {
+				m.M41,
+				m.M42,
+				m.M43,
+				m.M44
+			}
 		};
-
-		EulGetOrd(Order, out var i, out var j, out var k, out var h, out var n, out var s, out var f);
-
+		int i;
+		int j;
+		int k;
+		int n;
+		int s;
+		int f;
+		EulGetOrd(Order, out i, out j, out k, out var _, out n, out s, out f);
 		if (s == EulRepYes) {
-			float sy = MathF.Sqrt(M[i, j] * M[i, j] + M[i, k] * M[i, k]);
-			if (sy > 16 * float.Epsilon) {
-				ea.X = MathF.Atan2(M[i, j], M[i, k]);
-				ea.Y = MathF.Atan2(sy, M[i, i]);
-				ea.Z = MathF.Atan2(M[j, i], -M[k, i]);
+			var num = MathF.Sqrt((float)(numArray[i, j] * (double)numArray[i, j] + numArray[i, k] * (double)numArray[i, k]));
+			if (num > 2.2420775429197073E-44) {
+				vector3.X = MathF.Atan2(numArray[i, j], numArray[i, k]);
+				vector3.Y = MathF.Atan2(num, numArray[i, i]);
+				vector3.Z = MathF.Atan2(numArray[j, i], -numArray[k, i]);
 			} else {
-				ea.X = MathF.Atan2(-M[j, k], M[j, j]);
-				ea.Y = MathF.Atan2(sy, M[i, i]);
-				ea.Z = 0;
+				vector3.X = MathF.Atan2(-numArray[j, k], numArray[j, j]);
+				vector3.Y = MathF.Atan2(num, numArray[i, i]);
+				vector3.Z = 0.0f;
 			}
 		} else {
-			float cy = MathF.Sqrt(M[i, i] * M[i, i] + M[j, i] * M[j, i]);
-			if (cy > 16 * float.Epsilon) {
-				ea.X = MathF.Atan2(M[k, j], M[k, k]);
-				ea.Y = MathF.Atan2(-M[k, i], cy);
-				ea.Z = MathF.Atan2(M[j, i], M[i, i]);
+			var num = MathF.Sqrt((float)(numArray[i, i] * (double)numArray[i, i] + numArray[j, i] * (double)numArray[j, i]));
+			if (num > 2.2420775429197073E-44) {
+				vector3.X = MathF.Atan2(numArray[k, j], numArray[k, k]);
+				vector3.Y = MathF.Atan2(-numArray[k, i], num);
+				vector3.Z = MathF.Atan2(numArray[j, i], numArray[i, i]);
 			} else {
-				ea.X = MathF.Atan2(-M[j, k], M[j, j]);
-				ea.Y = MathF.Atan2(-M[k, i], cy);
-				ea.Z = 0;
+				vector3.X = MathF.Atan2(-numArray[j, k], numArray[j, j]);
+				vector3.Y = MathF.Atan2(-numArray[k, i], num);
+				vector3.Z = 0.0f;
 			}
 		}
-		if (n == EulParOdd) { ea.X = -ea.X; ea.Y = -ea.Y; ea.Z = -ea.Z; }
-		if (f == EulFrmR) { float t = ea.X; ea.X = ea.Z; ea.Z = t; }
-
-		return new Vector3(ea.Y, ea.Z, ea.X) * Rad2Deg;
+		if (n == EulParOdd) {
+			vector3.X = -vector3.X;
+			vector3.Y = -vector3.Y;
+			vector3.Z = -vector3.Z;
+		}
+		if (f == EulFrmR) {
+			float x = vector3.X;
+			vector3.X = vector3.Z;
+			vector3.Z = x;
+		}
+		return new Vector3(vector3.Y, vector3.Z, vector3.X) * 57.2957764f;
 	}
 
 	internal static Matrix4x4 EulerToMatrix(Vector3 v) {
-		var ea = new Vector3(v.Z, v.X, v.Y) * Deg2Rad;
-
-		float ti, tj, th, ci, cj, ch, si, sj, sh, cc, cs, sc, ss;
-		EulGetOrd(Order, out var i, out var j, out var k, out var h, out var n, out var s, out var f);
-
-		if (f == EulFrmR) { var t = ea.X; ea.X = ea.Z; ea.Z = t; }
-		if (n == EulParOdd) { ea.X = -ea.X; ea.Y = -ea.Y; ea.Z = -ea.Z; }
-
-		float[,] M = new float[4, 4];
-
-		ti = ea.X; tj = ea.Y; th = ea.Z;
-		ci = MathF.Cos(ti); cj = MathF.Cos(tj); ch = MathF.Cos(th);
-		si = MathF.Sin(ti); sj = MathF.Sin(tj); sh = MathF.Sin(th);
-		cc = ci * ch; cs = ci * sh; sc = si * ch; ss = si * sh;
-		if (s == EulRepYes) {
-			M[i, i] = cj; M[i, j] = sj * si; M[i, k] = sj * ci;
-			M[j, i] = sj * sh; M[j, j] = -cj * ss + cc; M[j, k] = -cj * cs - sc;
-			M[k, i] = -sj * ch; M[k, j] = cj * sc + cs; M[k, k] = cj * cc - ss;
-		} else {
-			M[i, i] = cj * ch; M[i, j] = sj * sc - cs; M[i, k] = sj * cc + ss;
-			M[j, i] = cj * sh; M[j, j] = sj * ss + cc; M[j, k] = sj * cs - sc;
-			M[k, i] = -sj; M[k, j] = cj * si; M[k, k] = cj * ci;
+		Vector3 vector3 = new Vector3(v.Z, v.X, v.Y) * ((float)Math.PI / 180f);
+		int i;
+		int j;
+		int k;
+		int n;
+		int s;
+		int f;
+		EulGetOrd(Order, out i, out j, out k, out var _, out n, out s, out f);
+		if (f == EulFrmR) {
+			float x = vector3.X;
+			vector3.X = vector3.Z;
+			vector3.Z = x;
 		}
-
-		return new Matrix4x4(
-			M[0, 0], M[0, 1], M[0, 2], M[0, 3],
-			M[1, 0], M[1, 1], M[1, 2], M[1, 3],
-			M[2, 0], M[2, 1], M[2, 2], M[2, 3],
-			M[3, 0], M[3, 1], M[3, 2], M[3, 3]
-		);
+		if (n == EulParOdd) {
+			vector3.X = -vector3.X;
+			vector3.Y = -vector3.Y;
+			vector3.Z = -vector3.Z;
+		}
+		var numArray = new float[4, 4];
+		var x1 = (double)vector3.X;
+		float y = vector3.Y;
+		float z = vector3.Z;
+		var num1 = MathF.Cos((float)x1);
+		var num2 = MathF.Cos(y);
+		var num3 = MathF.Cos(z);
+		var num4 = MathF.Sin((float)x1);
+		var num5 = MathF.Sin(y);
+		var num6 = MathF.Sin(z);
+		var num7 = num1 * num3;
+		var num8 = num1 * num6;
+		var num9 = num4 * num3;
+		var num10 = num4 * num6;
+		if (s == EulRepYes) {
+			numArray[i, i] = num2;
+			numArray[i, j] = num5 * num4;
+			numArray[i, k] = num5 * num1;
+			numArray[j, i] = num5 * num6;
+			numArray[j, j] = -num2 * num10 + num7;
+			numArray[j, k] = -num2 * num8 - num9;
+			numArray[k, i] = -num5 * num3;
+			numArray[k, j] = num2 * num9 + num8;
+			numArray[k, k] = num2 * num7 - num10;
+		} else {
+			numArray[i, i] = num2 * num3;
+			numArray[i, j] = num5 * num9 - num8;
+			numArray[i, k] = num5 * num7 + num10;
+			numArray[j, i] = num2 * num6;
+			numArray[j, j] = num5 * num10 + num7;
+			numArray[j, k] = num5 * num8 - num9;
+			numArray[k, i] = -num5;
+			numArray[k, j] = num2 * num4;
+			numArray[k, k] = num2 * num1;
+		}
+		return new Matrix4x4(numArray[0, 0], numArray[0, 1], numArray[0, 2], numArray[0, 3], numArray[1, 0], numArray[1, 1], numArray[1, 2], numArray[1, 3], numArray[2, 0], numArray[2, 1], numArray[2, 2], numArray[2, 3], numArray[3, 0],
+			numArray[3, 1], numArray[3, 2], numArray[3, 3]);
 	}
 
 	internal static Vector3 ToEuler(Quaternion q) {
-		float Nq = q.X * q.X + q.Y * q.Y + q.Z * q.Z + q.W * q.W;
-		float s = (Nq > 0.0f) ? (2.0f / Nq) : 0.0f;
-		float xs = q.X * s, ys = q.Y * s, zs = q.Z * s;
-		float wx = q.W * xs, wy = q.W * ys, wz = q.W * zs;
-		float xx = q.X * xs, xy = q.X * ys, xz = q.X * zs;
-		float yy = q.Y * ys, yz = q.Y * zs, zz = q.Z * zs;
-
-		var M = new Matrix4x4(
-			1f - (yy + zz), xy - wz, xz + wy, 0,
-			xy + wz, 1f - (xx + zz), yz - wx, 0,
-			xz - wy, yz + wx, 1f - (xx + yy), 0,
-			0f, 0f, 0f, 1f
-		);
-		
-		return MatrixToEuler(M).NormalizeAngles();
+		var num1 = (float)((double)q.X * (double)q.X + (double)q.Y * (double)q.Y + (double)q.Z * (double)q.Z + (double)q.W * (double)q.W);
+		var num2 = num1 > 0.0 ? 2f / num1 : 0.0f;
+		var num3 = q.X * num2;
+		var num4 = q.Y * num2;
+		var num5 = q.Z * num2;
+		var num6 = q.W * num3;
+		var num7 = q.W * num4;
+		var num8 = q.W * num5;
+		var num9 = q.X * num3;
+		var num10 = q.X * num4;
+		var num11 = q.X * num5;
+		var num12 = q.Y * num4;
+		var num13 = q.Y * num5;
+		var num14 = q.Z * num5;
+		return MatrixToEuler(new Matrix4x4((float)(1.0 - (num12 + (double)num14)), num10 - num8, num11 + num7, 0.0f, num10 + num8, (float)(1.0 - (num9 + (double)num14)), num13 - num6, 0.0f, num11 - num7, num13 + num6,
+			(float)(1.0 - (num9 + (double)num12)), 0.0f, 0.0f, 0.0f, 0.0f, 1f)).NormalizeAngles();
 	}
 
 	public static Quaternion ToQuaternion(Vector3 v) {
-		var ea = new Vector3(v.Z, v.X, v.Y) * Deg2Rad;
-
-		Quaternion qu = default;
-		var a = new float[3];
-		float ti, tj, th, ci, cj, ch, si, sj, sh, cc, cs, sc, ss;
-		EulGetOrd(Order, out var i, out var j, out var k, out var h, out var n, out var s, out var f);
-		if (f == EulFrmR) { float t = ea.X; ea.X = ea.Z; ea.Z = t; }
-		if (n == EulParOdd) ea.Y = -ea.Y;
-		ti = ea.X * 0.5f; tj = ea.Y * 0.5f; th = ea.Z * 0.5f;
-		ci = MathF.Cos(ti); cj = MathF.Cos(tj); ch = MathF.Cos(th);
-		si = MathF.Sin(ti); sj = MathF.Sin(tj); sh = MathF.Sin(th);
-		cc = ci * ch; cs = ci * sh; sc = si * ch; ss = si * sh;
-		if (s == EulRepYes) {
-			a[i] = cj * (cs + sc);
-			a[j] = sj * (cc + ss);
-			a[k] = sj * (cs - sc);
-			qu.W = cj * (cc - ss);
-		} else {
-			a[i] = cj * sc - sj * cs;
-			a[j] = cj * ss + sj * cc;
-			a[k] = cj * cs - sj * sc;
-			qu.W = cj * cc + sj * ss;
+		Vector3 vector3 = new Vector3(v.Z, v.X, v.Y) * ((float)Math.PI / 180f);
+		Quaternion quaternion = new Quaternion();
+		var numArray = new float[3];
+		int i;
+		int j;
+		int k;
+		int n;
+		int s;
+		int f;
+		EulGetOrd(Order, out i, out j, out k, out var _, out n, out s, out f);
+		if (f == EulFrmR) {
+			float x = vector3.X;
+			vector3.X = vector3.Z;
+			vector3.Z = x;
 		}
-		if (n == EulParOdd) a[j] = -a[j];
-		qu.X = a[0]; qu.Y = a[1]; qu.Z = a[2];
-		return qu;
+		if (n == EulParOdd)
+			vector3.Y = -vector3.Y;
+		var num1 = vector3.X * 0.5f;
+		var num2 = vector3.Y * 0.5f;
+		var num3 = (double)vector3.Z * 0.5;
+		var num4 = MathF.Cos(num1);
+		var num5 = MathF.Cos(num2);
+		var num6 = MathF.Cos((float)num3);
+		var num7 = MathF.Sin(num1);
+		var num8 = MathF.Sin(num2);
+		var num9 = MathF.Sin((float)num3);
+		var num10 = num4 * num6;
+		var num11 = num4 * num9;
+		var num12 = num7 * num6;
+		var num13 = num7 * num9;
+		if (s == EulRepYes) {
+			numArray[i] = num5 * (num11 + num12);
+			numArray[j] = num8 * (num10 + num13);
+			numArray[k] = num8 * (num11 - num12);
+			quaternion.W = num5 * (num10 - num13);
+		} else {
+			numArray[i] = (float)(num5 * (double)num12 - num8 * (double)num11);
+			numArray[j] = (float)(num5 * (double)num13 + num8 * (double)num10);
+			numArray[k] = (float)(num5 * (double)num11 - num8 * (double)num12);
+			quaternion.W = (float)(num5 * (double)num10 + num8 * (double)num13);
+		}
+		if (n == EulParOdd)
+			numArray[j] = -numArray[j];
+		quaternion.X = numArray[0];
+		quaternion.Y = numArray[1];
+		quaternion.Z = numArray[2];
+		return quaternion;
+	}
+
+	private enum Axis {
+		X,
+		Y,
+		Z,
+		W
 	}
 }

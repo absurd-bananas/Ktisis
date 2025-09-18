@@ -1,3 +1,10 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Core.PluginContext
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using Ktisis.Actions;
 using Ktisis.Core.Attributes;
 using Ktisis.Core.Types;
@@ -15,17 +22,10 @@ namespace Ktisis.Core;
 [Singleton]
 public class PluginContext : IPluginContext {
 	private readonly CommandService _cmd;
-	private readonly DllResolver _dll;
 	private readonly ContextManager _context;
+	private readonly DllResolver _dll;
 	private readonly LegacyMigrator _legacy;
-	
-	public ActionService Actions { get; }
-	public ConfigManager Config { get; }
-	public GuiManager Gui { get; }
-	public IpcManager Ipc { get; }
 
-	public IEditorContext? Editor => this._context.Current;
-	
 	public PluginContext(
 		ActionService actions,
 		ConfigManager cfg,
@@ -40,18 +40,24 @@ public class PluginContext : IPluginContext {
 		this._dll = dll;
 		this._context = context;
 		this._legacy = legacy;
-		
 		this.Actions = actions;
 		this.Config = cfg;
 		this.Gui = gui;
 		this.Ipc = ipc;
 	}
 
+	public ActionService Actions { get; }
+
+	public ConfigManager Config { get; }
+
+	public GuiManager Gui { get; }
+
+	public IpcManager Ipc { get; }
+
+	public IEditorContext? Editor => this._context.Current;
+
 	public void Initialize() {
-		if (this.Config.GetConfigFileExists())
-			this.Setup();
-		else
-			this.SetupLegacy();
+		this.Setup();
 		this.Gui.Initialize();
 	}
 

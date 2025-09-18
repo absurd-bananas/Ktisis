@@ -1,12 +1,19 @@
-using Dalamud.Bindings.ImGui;
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Interface.Widgets.InputUInt
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 namespace Ktisis.Interface.Widgets;
 
 public static class InputUInt {
 	public static bool Draw(string label, ref uint value) {
-		var intValue = (int)value;
-		var result = ImGui.InputInt(label, ref intValue, 1);
-		if (result) value = (uint)intValue;
-		return result;
+		var num1 = (int)value;
+		var num2 = Dalamud.Bindings.ImGui.ImGui.InputInt(ImU8String.op_Implicit(label), ref num1, 1, 0, new ImU8String(), (ImGuiInputTextFlags)0) ? 1 : 0;
+		if (num2 == 0)
+			return num2 != 0;
+		value = (uint)num1;
+		return num2 != 0;
 	}
 }

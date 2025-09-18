@@ -1,131 +1,112 @@
+﻿// Decompiled with JetBrains decompiler
+// Type: Ktisis.Scene.Modules.Lights.LightSpawner
+// Assembly: KtisisPyon, Version=0.3.9.5, Culture=neutral, PublicKeyToken=null
+// MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
+// Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
+
+#nullable enable
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Runtime.InteropServices;
 
-using Dalamud.Plugin.Services;
-using Dalamud.Utility.Signatures;
-
-using FFXIVClientStructs.FFXIV.Client.System.Memory;
-
-using Ktisis.Structs;
-using Ktisis.Structs.Common;
-using Ktisis.Structs.Lights;
 using Ktisis.Interop.Hooking;
 using Ktisis.Structs.Camera;
+using Ktisis.Structs.Common;
+using Ktisis.Structs.Lights;
 
 namespace Ktisis.Scene.Modules.Lights;
 
 public class LightSpawner : HookModule {
+	private readonly HashSet<IntPtr> _created = new HashSet<IntPtr>();
 	private readonly IFramework _framework;
-	
-	public LightSpawner(
-		IHookMediator hook,
-		IFramework framework
-	) : base(hook) {
+	[Signature("E8 ?? ?? ?? ?? 48 89 84 FB ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B C8")]
+	private SceneLightCtorDelegate _sceneLightCtor;
+	[Signature("E8 ?? ?? ?? ?? 48 8B 94 FB ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ??")]
+	private SceneLightInitializeDelegate _sceneLightInit;
+	[Signature("F6 41 38 01")]
+	private SceneLightSetupDelegate _sceneLightSpawn;
+
+	public LightSpawner(IHookMediator hook, IFramework framework)
+		: base(hook) {
 		this._framework = framework;
 	}
-	
-	// Initialization
-	
+
 	public void TryInitialize() {
 		try {
 			this.Initialize();
-		} catch (Exception err) {
-			Ktisis.Log.Error($"Failed to initialize light spawner:\n{err}");
+		} catch (Exception ex) {
+			Ktisis.Ktisis.Log.Error($"Failed to initialize light spawner:\n{ex}", Array.Empty<object>());
 		}
 	}
-	
-	// Created lights
-
-	private readonly HashSet<nint> _created = new();
-	
-	// Construction
-	
-	[Signature("E8 ?? ?? ?? ?? 48 89 84 FB ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B C8")]
-	private SceneLightCtorDelegate _sceneLightCtor = null!;
-	private unsafe delegate SceneLight* SceneLightCtorDelegate(SceneLight* self);
-	
-	[Signature("E8 ?? ?? ?? ?? 48 8B 94 FB ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ??")]
-	private SceneLightInitializeDelegate _sceneLightInit = null!;
-	private unsafe delegate bool SceneLightInitializeDelegate(SceneLight* self);
-	
-	[Signature("F6 41 38 01")]
-	private SceneLightSetupDelegate _sceneLightSpawn = null!;
-	private unsafe delegate nint SceneLightSetupDelegate(SceneLight* self);
 
 	public unsafe SceneLight* Create() {
-		var light = (SceneLight*)IMemorySpace.GetDefaultSpace()->Malloc<SceneLight>();
-		this._sceneLightCtor(light);
-		this._sceneLightInit(light);
-		this._sceneLightSpawn(light);
-
-		var activeCamera = GameCameraEx.GetActive();
-		if (activeCamera != null) {
-			light->Transform.Position = activeCamera->Position;
-			light->Transform.Rotation = activeCamera->CalcPointDirection();
+		var self = (SceneLight*)((IMemorySpace)(IntPtr)IMemorySpace.GetDefaultSpace()).Malloc<SceneLight>(8UL);
+		var sceneLightPtr = this._sceneLightCtor(self);
+		var num1 = this._sceneLightInit(self) ? 1 : 0;
+		var num2 = this._sceneLightSpawn(self);
+		var active = GameCameraEx.GetActive();
+		if ((IntPtr)active != IntPtr.Zero) {
+			self->Transform.Position = Vector3.op_Implicit(active->Position);
+			self->Transform.Rotation = Quaternion.op_Implicit(active->CalcPointDirection());
 		}
-
-		*(ulong*)((nint)light + 56) |= 2u;
-
-		var render = light->RenderLight;
-		if (render != null) {
-			render->Flags = LightFlags.Reflection;
-			render->LightType = LightType.PointLight;
-			render->Transform = &light->Transform;
-			render->Color = new ColorHDR();
-			render->ShadowNear = 0.1f;
-			render->ShadowFar = 15.0f;
-			render->FalloffType = FalloffType.Quadratic;
-			render->AreaAngle = Vector2.Zero;
-			render->Falloff = 1.1f;
-			render->LightAngle = 45.0f;
-			render->FalloffAngle = 0.5f;
-			render->Range = 100.0f;
-			render->CharaShadowRange = 100.0f;
+		var num3 = (IntPtr)self + new IntPtr(56);
+		*(long*)num3 = *(long*)num3 | 2L;
+		RenderLight* renderLight = self->RenderLight;
+		if ((IntPtr)renderLight != IntPtr.Zero) {
+			renderLight->Flags = LightFlags.Reflection;
+			renderLight->LightType = LightType.PointLight;
+			renderLight->Transform = &self->Transform;
+			renderLight->Color = new ColorHDR();
+			renderLight->ShadowNear = 0.1f;
+			renderLight->ShadowFar = 15f;
+			renderLight->FalloffType = FalloffType.Quadratic;
+			renderLight->AreaAngle = Vector2.Zero;
+			renderLight->Falloff = 1.1f;
+			renderLight->LightAngle = 45f;
+			renderLight->FalloffAngle = 0.5f;
+			renderLight->Range = 100f;
+			renderLight->CharaShadowRange = 100f;
 		}
-
-		this._created.Add((nint)light);
-		return light;
+		this._created.Add((IntPtr)self);
+		return self;
 	}
-	
-	// Destruction
-	
-	private unsafe delegate void CleanupRenderDelegate(SceneLight* light);
-	private unsafe delegate void DestructorDelegate(SceneLight* light, bool a2);
 
 	public unsafe void Destroy(SceneLight* light) {
-		this._created.Remove((nint)light);
-		this._framework.RunOnFrameworkThread(() => {
-			this.InvokeDtor(light);
-		});
+		this._created.Remove((IntPtr)light);
+		this._framework.RunOnFrameworkThread((Action)(() => this.InvokeDtor(light)));
 	}
 
 	private unsafe void DestroyAll() {
-		if (this._framework.IsFrameworkUnloading) return;
-		this._framework.RunOnFrameworkThread(() => {
-			foreach (var address in this._created)
-				this.InvokeDtor((SceneLight*)address);
+		if (this._framework.IsFrameworkUnloading)
+			return;
+		this._framework.RunOnFrameworkThread((Action)(() => {
+			foreach (SceneLight* light in this._created)
+				this.InvokeDtor(light);
 			this._created.Clear();
-		});
+		}));
 	}
 
 	private unsafe void InvokeDtor(SceneLight* light) {
 		GetVirtualFunc<CleanupRenderDelegate>(light, 1)(light);
 		GetVirtualFunc<DestructorDelegate>(light, 0)(light, false);
 	}
-	
-	// Marshalling
-	
-	private unsafe static T GetVirtualFunc<T>(SceneLight* light, int index)
-		=> Marshal.GetDelegateForFunctionPointer<T>(light->_vf[index]);
-	
-	// Disposal
+
+	private unsafe static T GetVirtualFunc<T>(SceneLight* light, int index) => Marshal.GetDelegateForFunctionPointer<T>(light->_vf[index]);
 
 	public override void Dispose() {
 		base.Dispose();
-		Ktisis.Log.Verbose("Disposing light spawn manager...");
+		Ktisis.Ktisis.Log.Verbose("Disposing light spawn manager...", Array.Empty<object>());
 		this.DestroyAll();
 		GC.SuppressFinalize(this);
 	}
+
+	private unsafe delegate SceneLight* SceneLightCtorDelegate(SceneLight* self);
+
+	private unsafe delegate bool SceneLightInitializeDelegate(SceneLight* self);
+
+	private unsafe delegate IntPtr SceneLightSetupDelegate(SceneLight* self);
+
+	private unsafe delegate void CleanupRenderDelegate(SceneLight* light);
+
+	private unsafe delegate void DestructorDelegate(SceneLight* light, bool a2);
 }
