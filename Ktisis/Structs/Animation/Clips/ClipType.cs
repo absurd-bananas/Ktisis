@@ -7,13 +7,12 @@
 #nullable disable
 namespace Ktisis.Structs.Animation.Clips;
 
-public enum ClipType : uint
-{
-  BaseClip = 0,
-  HavokAnimationClip = 6,
-  ChildTimelineClip = 7,
-  VfxClip = 9,
-  VoiceClip = 41, // 0x00000029
-  SoundClip = 52, // 0x00000034
-  AutoShakeClip = 73, // 0x00000049
+public enum ClipType : uint {
+	BaseClip = 0,
+	HavokAnimationClip = 6,
+	ChildTimelineClip = 7,
+	VfxClip = 9,
+	VoiceClip = 41, // 0x00000029
+	SoundClip = 52, // 0x00000034
+	AutoShakeClip = 73 // 0x00000049
 }

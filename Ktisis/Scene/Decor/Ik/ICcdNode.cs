@@ -4,12 +4,11 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Editor.Posing.Ik.Ccd;
 
-#nullable enable
 namespace Ktisis.Scene.Decor.Ik;
 
-public interface ICcdNode : IIkNode
-{
-  CcdGroup Group { get; }
+public interface ICcdNode : IIkNode {
+	CcdGroup Group { get; }
 }

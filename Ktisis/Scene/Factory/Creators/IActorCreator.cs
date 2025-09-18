@@ -4,16 +4,15 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Data.Files;
 using Ktisis.Scene.Entities.Game;
 using Ktisis.Scene.Factory.Types;
 
-#nullable enable
 namespace Ktisis.Scene.Factory.Creators;
 
-public interface IActorCreator : 
-  IEntityCreator<ActorEntity, IActorCreator>,
-  IEntityBuilderBase<ActorEntity, IActorCreator>
-{
-  IActorCreator WithAppearance(CharaFile file);
+public interface IActorCreator :
+	IEntityCreator<ActorEntity, IActorCreator>,
+	IEntityBuilderBase<ActorEntity, IActorCreator> {
+	IActorCreator WithAppearance(CharaFile file);
 }

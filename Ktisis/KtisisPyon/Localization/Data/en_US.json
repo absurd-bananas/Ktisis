@@ -8,7 +8,6 @@
 			null
 		]
 	},
-
 	"actions": {
 		"Select_None": "Cancel selection",
 		"Overlay_Toggle": "Toggle overlay visibility",
@@ -28,26 +27,21 @@
 		"Output_HiRes_Toggle": "Toggle hi-res mode",
 		"Pose_Flip": "Flip Pose"
 	},
-
 	"actors": {
 		"pos_lock": "Freeze actor positions"
 	},
-
 	"common": {
 		"options": "Options"
 	},
-
 	"context": {
 		"select": "Select",
 		"unselect": "Unselect"
 	},
-
 	"transform": {
 		"position": "Position",
 		"rotation": "Rotation",
 		"scale": "Scale"
 	},
-
 	"file": {
 		"import": "Import...",
 		"export": "Export...",
@@ -64,7 +58,6 @@
 			"ctx_export": "Export pose..."
 		}
 	},
-
 	"workspace": {
 		"title": "KtisisPyon Workspace",
 		"state": {
@@ -89,7 +82,6 @@
 		"edit_mode.hint": "Select editing mode",
 		"overlay.toggle": "Toggle screen overlay"
 	},
-
 	"transform_edit": {
 		"title": "Object Editor",
 		"actors": {
@@ -130,12 +122,10 @@
 			}
 		}
 	},
-
 	"chara_edit": {
 		"title": "Appearance Editor",
 		"hint": "Edit appearance"
 	},
-
 	"camera_edit": {
 		"title": "Camera Editor",
 		"toggles": {
@@ -164,15 +154,12 @@
 		"pan": "Camera pan",
 		"angle": "Camera orbit angle"
 	},
-
 	"env_edit": {
 		"title": "Environment Editor"
 	},
-
 	"pose_view": {
 		"title": "Pose View"
 	},
-
 	"config": {
 		"title": "KtisisPyon Settings",
 		"categories": {
@@ -280,7 +267,6 @@
 			"dir": "Folder name"
 		}
 	},
-
 	"bone": {
 		"n_root": "Root",
 		"n_hara": "Abdomen",
@@ -433,7 +419,6 @@
 		"oh_n_hara": "Off Hand",
 		"j_half_l": "Left Half",
 		"j_half_r": "Right Half",
-
 		"j_f_ago": "Jaw",
 		"j_f_dago": "Lower Jaw",
 		"j_f_bero_01": "Tongue A",
@@ -461,7 +446,6 @@
 		"j_f_dslip_l": "Lip Lower Left Corner A",
 		"j_f_uslip_r": "Lip Upper Right Corner A",
 		"j_f_dslip_r": "Lip Lower Right Corner A",
-
 		"j_f_mab_l": "Left Eye Socket",
 		"j_f_mab_r": "Right Eye Socket",
 		"j_f_eyepuru_l": "Left Iris",
@@ -478,7 +462,6 @@
 		"j_f_mabdn_02out_r": "Right Lower Eyelid Outer",
 		"j_f_mabup_03in_r": "Right Upper Eyelid Inner",
 		"j_f_mabdn_03in_r": "Right Lower Eyelid Inner",
-
 		"j_f_mayu_l": "Left Eyebrow A",
 		"j_f_mayu_r": "Right Eyebrow A",
 		"j_f_mmayu_l": "Left Eyebrow B",
@@ -487,7 +470,6 @@
 		"j_f_miken_02_l": "Left Brow Ridge B",
 		"j_f_miken_01_r": "Right Brow Ridge A",
 		"j_f_miken_02_r": "Right Brow Ridge B",
-
 		"j_f_face": "Face",
 		"j_f_hoho_l": "Left Cheek",
 		"j_f_hoho_r": "Right Cheek",
@@ -502,10 +484,8 @@
 		"j_f_hana_r": "Right Nostril",
 		"j_f_dmiken_l": "Left Glabella",
 		"j_f_dmiken_r": "Right Glabella",
-
 		"j_ex_met_vb": "Visor"
 	},
-
 	"boneCategory": {
 		"Head": "Head",
 		"Hair": "Hair",
@@ -550,7 +530,6 @@
 		"Earring": "Earring",
 		"Weapons": "Weapons",
 		"Other": "Other",
-
 		"LeftHandIvcs": "IVCS Left Hand",
 		"RightHandIvcs": "Right Hand IVCS",
 		"BreastsIvcs": "IVCS Breasts",
@@ -560,7 +539,6 @@
 		"PenisIvcs": "IVCS Penis",
 		"VaginaIvcs": "IVCS Vagina",
 		"BottomIvcs": "IVCS Bottom",
-
 		"SkelomaeWings": "Skelomae Wings",
 		"SkelomaeWingsLeft": "Left Skelomae Wing",
 		"SkelomaeWingsRight": "Right Skelomae Wing",
@@ -572,11 +550,9 @@
 		"SkelomaeCreaturesCentaurBodyFrontLegs": "Front Legs",
 		"SkelomaeCreaturesCentaurBodyBackLegs": "Back Legs",
 		"SkelomaeCreaturesCentaurTail": "Tail",
-
 		"NofflebonesBreasts": "Nofflebones Breasts",
 		"NofflebonesGenitals": "Nofflebones Genitals",
 		"NofflebonesVagina": "Nofflebones Vagina",
-
 		"NofflebonesClothing": "Nofflebones Clothing",
 		"NofflebonesHead": "Head",
 		"NofflebonesHeadProps": "Props",
@@ -600,21 +576,18 @@
 		"NofflebonesFeet": "Feet",
 		"NofflebonesFootLeft": "Left",
 		"NofflebonesFootRight": "Right",
-
 		"Physics": "Physics",
 		"PhysicsIvcs": "IVCS Physics",
 		"PhysicsYAS": "YAS Physics",
 		"NofflebonesPhysics": "Nofflebones Physics",
 		"NofflebonesBottom": "Nofflebones Bottom"
 	},
-
 	"lightType": {
 		"Directional": "Directional",
 		"PointLight": "Point Light",
 		"SpotLight": "Spot Light",
 		"AreaLight": "Area Light"
 	},
-
 	"lightFalloff": {
 		"Linear": "Linear",
 		"Quadratic": "Quadratic",

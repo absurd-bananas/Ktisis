@@ -4,25 +4,23 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Scene.Types;
+#nullable enable
 using System;
 
-#nullable enable
+using Ktisis.Scene.Types;
+
 namespace Ktisis.Scene.Entities;
 
-public class SceneRoot(ISceneManager scene) : SceneEntity(scene)
-{
-  public override bool IsValid => this.Scene.IsValid;
+public class SceneRoot(ISceneManager scene) : SceneEntity(scene) {
+	public override bool IsValid => this.Scene.IsValid;
 
-  public override SceneEntity? Parent
-  {
-    get => (SceneEntity) null;
-    set => throw new Exception("Attempted to set parent of scene root.");
-  }
+	public override SceneEntity? Parent {
+		get => null;
+		set => throw new Exception("Attempted to set parent of scene root.");
+	}
 
-  public override bool Add(SceneEntity entity)
-  {
-    Ktisis.Ktisis.Log.Debug($"Adding entity to scene: '{entity.Name}' ({entity.GetType().Name})", Array.Empty<object>());
-    return base.Add(entity);
-  }
+	public override bool Add(SceneEntity entity) {
+		Ktisis.Ktisis.Log.Debug($"Adding entity to scene: '{entity.Name}' ({entity.GetType().Name})", Array.Empty<object>());
+		return base.Add(entity);
+	}
 }

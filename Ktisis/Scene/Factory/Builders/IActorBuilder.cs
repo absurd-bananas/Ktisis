@@ -4,14 +4,12 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Scene.Entities.Game;
 using Ktisis.Scene.Factory.Types;
 
-#nullable enable
 namespace Ktisis.Scene.Factory.Builders;
 
-public interface IActorBuilder : 
-  IEntityBuilder<ActorEntity, IActorBuilder>,
-  IEntityBuilderBase<ActorEntity, IActorBuilder>
-{
-}
+public interface IActorBuilder :
+	IEntityBuilder<ActorEntity, IActorBuilder>,
+	IEntityBuilderBase<ActorEntity, IActorBuilder> { }

@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Data.Config.Sections;
 
-public class CameraConfig
-{
-  public float DefaultWorkCamSpeed = 0.25f;
-  public bool ScrollWheelAdjustsSpeed = true;
-  public float PanSensitivityModifier = 1f;
+public class CameraConfig {
+	public float DefaultWorkCamSpeed = 0.25f;
+	public float PanSensitivityModifier = 1f;
+	public bool ScrollWheelAdjustsSpeed = true;
 }

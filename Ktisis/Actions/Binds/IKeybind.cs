@@ -7,7 +7,6 @@
 #nullable enable
 namespace Ktisis.Actions.Binds;
 
-public interface IKeybind
-{
-  KeybindInfo BindInfo { get; }
+public interface IKeybind {
+	KeybindInfo BindInfo { get; }
 }

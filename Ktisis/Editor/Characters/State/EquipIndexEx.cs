@@ -4,48 +4,43 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using Ktisis.GameData.Excel;
 
-#nullable disable
 namespace Ktisis.Editor.Characters.State;
 
-public static class EquipIndexEx
-{
-  public static EquipSlot ToEquipSlot(this EquipIndex index)
-  {
-    int num = (int) index;
-    EquipSlot equipSlot;
-    switch (index)
-    {
-      case EquipIndex.RingRight:
-        equipSlot = EquipSlot.RingRight;
-        break;
-      case EquipIndex.RingLeft:
-        equipSlot = EquipSlot.RingLeft;
-        break;
-      default:
-        equipSlot = (EquipSlot) (num + (num > 2 ? 3 : 2));
-        break;
-    }
-    return equipSlot;
-  }
+public static class EquipIndexEx {
+	public static EquipSlot ToEquipSlot(this EquipIndex index) {
+		var num = (int)index;
+		EquipSlot equipSlot;
+		switch (index) {
+			case EquipIndex.RingRight:
+				equipSlot = EquipSlot.RingRight;
+				break;
+			case EquipIndex.RingLeft:
+				equipSlot = EquipSlot.RingLeft;
+				break;
+			default:
+				equipSlot = (EquipSlot)(num + (num > 2 ? 3 : 2));
+				break;
+		}
+		return equipSlot;
+	}
 
-  public static EquipIndex ToEquipIndex(this EquipSlot slot)
-  {
-    int num = (int) slot;
-    EquipIndex equipIndex;
-    switch (slot)
-    {
-      case EquipSlot.RingLeft:
-        equipIndex = EquipIndex.RingLeft;
-        break;
-      case EquipSlot.RingRight:
-        equipIndex = EquipIndex.RingRight;
-        break;
-      default:
-        equipIndex = (EquipIndex) (num - (num >= 5 ? 3 : 2));
-        break;
-    }
-    return equipIndex;
-  }
+	public static EquipIndex ToEquipIndex(this EquipSlot slot) {
+		var num = (int)slot;
+		EquipIndex equipIndex;
+		switch (slot) {
+			case EquipSlot.RingLeft:
+				equipIndex = EquipIndex.RingLeft;
+				break;
+			case EquipSlot.RingRight:
+				equipIndex = EquipIndex.RingRight;
+				break;
+			default:
+				equipIndex = (EquipIndex)(num - (num >= 5 ? 3 : 2));
+				break;
+		}
+		return equipIndex;
+	}
 }

@@ -4,15 +4,13 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Scene.Entities;
 using Ktisis.Scene.Types;
 
-#nullable enable
 namespace Ktisis.Scene.Factory.Types;
 
-public abstract class EntityCreator<T, TBuilder>(ISceneManager scene) : 
-  EntityBuilderBase<T, TBuilder>(scene)
-  where T : SceneEntity
-  where TBuilder : IEntityCreator<T, TBuilder>
-{
-}
+public abstract class EntityCreator<T, TBuilder>(ISceneManager scene) :
+	EntityBuilderBase<T, TBuilder>(scene)
+	where T : SceneEntity
+	where TBuilder : IEntityCreator<T, TBuilder> { }

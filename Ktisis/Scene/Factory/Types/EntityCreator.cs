@@ -4,15 +4,15 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Scene.Entities;
+#nullable enable
 using System.Threading.Tasks;
 
-#nullable enable
+using Ktisis.Scene.Entities;
+
 namespace Ktisis.Scene.Factory.Types;
 
 public interface IEntityCreator<T, out TBuilder> : IEntityBuilderBase<T, TBuilder>
-  where T : SceneEntity
-  where TBuilder : IEntityBuilderBase<T, TBuilder>
-{
-  Task<T> Spawn();
+	where T : SceneEntity
+	where TBuilder : IEntityBuilderBase<T, TBuilder> {
+	Task<T> Spawn();
 }

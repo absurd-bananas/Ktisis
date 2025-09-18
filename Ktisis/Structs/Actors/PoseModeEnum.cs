@@ -7,12 +7,11 @@
 #nullable disable
 namespace Ktisis.Structs.Actors;
 
-public enum PoseModeEnum : byte
-{
-  Idle = 0,
-  Battle = 1,
-  SitChair = 2,
-  SitGround = 3,
-  Sleeping = 4,
-  None = 255, // 0xFF
+public enum PoseModeEnum : byte {
+	Idle = 0,
+	Battle = 1,
+	SitChair = 2,
+	SitGround = 3,
+	Sleeping = 4,
+	None = 255 // 0xFF
 }

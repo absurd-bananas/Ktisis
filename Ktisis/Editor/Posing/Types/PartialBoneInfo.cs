@@ -7,10 +7,9 @@
 #nullable enable
 namespace Ktisis.Editor.Posing.Types;
 
-public class PartialBoneInfo
-{
-  public string Name = string.Empty;
-  public int BoneIndex;
-  public int ParentIndex;
-  public int PartialIndex;
+public class PartialBoneInfo {
+	public int BoneIndex;
+	public string Name = string.Empty;
+	public int ParentIndex;
+	public int PartialIndex;
 }

@@ -4,98 +4,92 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Editor.Selection;
-using Ktisis.Scene.Types;
+#nullable enable
 using System.Collections.Generic;
 using System.Linq;
 
-#nullable enable
+using Ktisis.Editor.Selection;
+using Ktisis.Scene.Types;
+
 namespace Ktisis.Scene.Entities;
 
-public abstract class SceneEntity : IComposite
-{
-  protected readonly ISceneManager Scene;
-  private readonly List<SceneEntity> _children = new List<SceneEntity>();
+public abstract class SceneEntity : IComposite {
+	private readonly List<SceneEntity> _children = new List<SceneEntity>();
+	protected readonly ISceneManager Scene;
 
-  public string Name { get; set; } = string.Empty;
+	protected SceneEntity(ISceneManager scene) {
+		this.Scene = scene;
+	}
 
-  public EntityType Type { get; protected init; }
+	public string Name { get; set; } = string.Empty;
 
-  public virtual bool IsValid => this.Scene.IsValid && this.Parent != null;
+	public EntityType Type { get; protected init; }
 
-  protected SceneEntity(ISceneManager scene) => this.Scene = scene;
+	public virtual bool IsValid => this.Scene.IsValid && this.Parent != null;
 
-  public virtual void Update()
-  {
-    if (!this.IsValid)
-      return;
-    foreach (SceneEntity child in this.Children)
-      child.Update();
-  }
+	private ISelectManager Selection => this.Scene.Context.Selection;
 
-  private ISelectManager Selection => this.Scene.Context.Selection;
+	public bool IsSelected => this.Selection.IsSelected(this);
 
-  public bool IsSelected => this.Selection.IsSelected(this);
+	public virtual SceneEntity? Parent { get; set; }
 
-  public void Select(SelectMode mode = SelectMode.Default) => this.Selection.Select(this, mode);
+	public virtual IEnumerable<SceneEntity> Children => this._children;
 
-  public void Unselect() => this.Selection.Unselect(this);
+	public virtual bool Add(SceneEntity entity) {
+		if (this._children.Contains(entity))
+			return false;
+		this._children.Add(entity);
+		entity.Parent?.Remove(entity);
+		entity.Parent = this;
+		return true;
+	}
 
-  public virtual SceneEntity? Parent { get; set; }
+	public virtual bool Remove(SceneEntity entity) {
+		var num = this._children.Remove(entity) ? 1 : 0;
+		entity.Parent = null;
+		return num != 0;
+	}
 
-  public virtual IEnumerable<SceneEntity> Children => (IEnumerable<SceneEntity>) this._children;
+	public IEnumerable<SceneEntity> Recurse() {
+		foreach (var child in this.Children) {
+			yield return child;
+			var enumerator = child.Recurse().GetEnumerator();
+			while (enumerator.MoveNext()) {
+				yield return enumerator.Current;
+			}
+			enumerator = null;
+		}
+	}
 
-  protected List<SceneEntity> GetChildren() => this._children;
+	public virtual void Update() {
+		if (!this.IsValid)
+			return;
+		foreach (var child in this.Children)
+			child.Update();
+	}
 
-  public virtual bool Add(SceneEntity entity)
-  {
-    if (this._children.Contains(entity))
-      return false;
-    this._children.Add(entity);
-    entity.Parent?.Remove(entity);
-    entity.Parent = this;
-    return true;
-  }
+	public void Select(SelectMode mode = SelectMode.Default) => this.Selection.Select(this, mode);
 
-  public virtual bool Remove(SceneEntity entity)
-  {
-    int num = this._children.Remove(entity) ? 1 : 0;
-    entity.Parent = (SceneEntity) null;
-    return num != 0;
-  }
+	public void Unselect() => this.Selection.Unselect(this);
 
-  public virtual void Remove()
-  {
-    this.Parent?.Remove(this);
-    this.Clear();
-  }
+	protected List<SceneEntity> GetChildren() => this._children;
 
-  public virtual void Clear()
-  {
-    foreach (SceneEntity sceneEntity in this.Children.ToList<SceneEntity>())
-      sceneEntity.Remove();
-  }
+	public virtual void Remove() {
+		this.Parent?.Remove(this);
+		this.Clear();
+	}
 
-  public IEnumerable<SceneEntity> Recurse()
-  {
-    foreach (SceneEntity child in this.Children)
-    {
-      yield return child;
-      IEnumerator<SceneEntity> enumerator = child.Recurse().GetEnumerator();
-      while (enumerator.MoveNext())
-        yield return enumerator.Current;
-      enumerator = (IEnumerator<SceneEntity>) null;
-    }
-  }
+	public virtual void Clear() {
+		foreach (var sceneEntity in this.Children.ToList())
+			sceneEntity.Remove();
+	}
 
-  public bool IsChildOf(SceneEntity entity)
-  {
-    SceneEntity parent = this.Parent;
-    for (int index = 0; parent != null && index++ < 1000; parent = parent.Parent)
-    {
-      if (parent == entity)
-        return true;
-    }
-    return false;
-  }
+	public bool IsChildOf(SceneEntity entity) {
+		var parent = this.Parent;
+		for (var index = 0; parent != null && index++ < 1000; parent = parent.Parent) {
+			if (parent == entity)
+				return true;
+		}
+		return false;
+	}
 }

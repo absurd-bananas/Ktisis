@@ -7,6 +7,4 @@
 #nullable disable
 namespace Ktisis.Core.Attributes;
 
-public class SingletonAttribute : ServiceAttribute
-{
-}
+public class SingletonAttribute : ServiceAttribute { }

@@ -7,6 +7,4 @@
 #nullable disable
 namespace Ktisis.Core.Attributes;
 
-public class TransientAttribute : ServiceAttribute
-{
-}
+public class TransientAttribute : ServiceAttribute { }

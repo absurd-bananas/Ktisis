@@ -4,28 +4,24 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
+#nullable enable
 using Ktisis.Structs.Characters;
 
-#nullable enable
 namespace Ktisis.Editor.Characters.State;
 
-public class EquipmentState
-{
-  private EquipmentContainer _container;
-  private readonly bool[] _state = new bool[10];
+public class EquipmentState {
+	private readonly bool[] _state = new bool[10];
+	private EquipmentContainer _container;
 
-  public EquipmentModelId this[EquipIndex index]
-  {
-    get => this._container[(uint) index];
-    set
-    {
-      this._container[(uint) index] = value;
-      this._state[(int) index] = true;
-    }
-  }
+	public EquipmentModelId this[EquipIndex index] {
+		get => this._container[(uint)index];
+		set {
+			this._container[(uint)index] = value;
+			this._state[(int)index] = true;
+		}
+	}
 
-  public bool IsSet(EquipIndex index) => this._state[(int) index];
+	public bool IsSet(EquipIndex index) => this._state[(int)index];
 
-  public void Unset(EquipIndex index) => this._state[(int) index] = false;
+	public void Unset(EquipIndex index) => this._state[(int)index] = false;
 }

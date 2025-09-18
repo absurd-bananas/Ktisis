@@ -4,12 +4,10 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System.Runtime.InteropServices;
 
-#nullable disable
 namespace Ktisis.Structs.Env;
 
 [StructLayout(LayoutKind.Explicit, Size = 784)]
-public struct EnvSimulator
-{
-}
+public struct EnvSimulator { }

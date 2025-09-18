@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Actions.Types;
 
-public interface IMemento
-{
-  void Restore();
+public interface IMemento {
+	void Restore();
 
-  void Apply();
+	void Apply();
 }

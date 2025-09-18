@@ -7,19 +7,12 @@
 #nullable disable
 namespace Ktisis.GameData.Excel;
 
-public class ItemModel(ulong var, bool isWep = false)
-{
-  public ushort Id = (ushort) var;
-  public ushort Base = isWep ? (ushort) (var >> 16 /*0x10*/) : (ushort) 0;
-  public ushort Variant = isWep ? (ushort) (var >> 32 /*0x20*/) : (ushort) (var >> 16 /*0x10*/);
+public class ItemModel(ulong var, bool isWep = false) {
+	public ushort Base = isWep ? (ushort)(var >> 16 /*0x10*/) : (ushort)0;
+	public ushort Id = (ushort)var;
+	public ushort Variant = isWep ? (ushort)(var >> 32 /*0x20*/) : (ushort)(var >> 16 /*0x10*/);
 
-  public bool Matches(ushort id, ushort variant)
-  {
-    return (int) this.Id == (int) id && (int) this.Variant == (int) variant;
-  }
+	public bool Matches(ushort id, ushort variant) => this.Id == id && this.Variant == variant;
 
-  public bool Matches(ushort id, ushort secondId, ushort variant)
-  {
-    return (int) this.Id == (int) id && (int) this.Base == (int) secondId && (int) this.Variant == (int) variant;
-  }
+	public bool Matches(ushort id, ushort secondId, ushort variant) => this.Id == id && this.Base == secondId && this.Variant == variant;
 }

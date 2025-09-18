@@ -4,37 +4,36 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Objects.Types;
-using Ktisis.Editor.Camera.Types;
+#nullable enable
 using System;
 using System.Collections.Generic;
 
-#nullable enable
+using Ktisis.Editor.Camera.Types;
+
 namespace Ktisis.Editor.Camera;
 
-public interface ICameraManager : IDisposable
-{
-  bool IsValid { get; }
+public interface ICameraManager : IDisposable {
+	bool IsValid { get; }
 
-  void Initialize();
+	EditorCamera? Current { get; }
 
-  EditorCamera? Current { get; }
+	bool IsWorkCameraActive { get; }
 
-  IEnumerable<EditorCamera> GetCameras();
+	void Initialize();
 
-  void SetCurrent(EditorCamera camera);
+	IEnumerable<EditorCamera> GetCameras();
 
-  void SetNext();
+	void SetCurrent(EditorCamera camera);
 
-  void SetPrevious();
+	void SetNext();
 
-  bool IsWorkCameraActive { get; }
+	void SetPrevious();
 
-  void SetWorkCameraMode(bool enabled);
+	void SetWorkCameraMode(bool enabled);
 
-  void ToggleWorkCameraMode();
+	void ToggleWorkCameraMode();
 
-  KtisisCamera Create(CameraFlags flags = CameraFlags.None);
+	KtisisCamera Create(CameraFlags flags = CameraFlags.None);
 
-  IGameObject? ResolveOrbitTarget(EditorCamera camera);
+	IGameObject? ResolveOrbitTarget(EditorCamera camera);
 }

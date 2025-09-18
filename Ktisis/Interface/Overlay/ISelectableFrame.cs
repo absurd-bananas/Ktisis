@@ -4,16 +4,15 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Scene.Entities;
-using System.Collections.Generic;
-using System.Numerics;
-
 #nullable enable
+using System.Collections.Generic;
+
+using Ktisis.Scene.Entities;
+
 namespace Ktisis.Interface.Overlay;
 
-public interface ISelectableFrame
-{
-  IEnumerable<IItemSelect> GetItems();
+public interface ISelectableFrame {
+	IEnumerable<IItemSelect> GetItems();
 
-  void AddItem(SceneEntity entity, Vector3 worldPos, float opacityMultiplier);
+	void AddItem(SceneEntity entity, Vector3 worldPos, float opacityMultiplier);
 }

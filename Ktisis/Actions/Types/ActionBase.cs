@@ -4,27 +4,26 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Actions.Attributes;
-using Ktisis.Core.Types;
+#nullable enable
 using System.Reflection;
 
-#nullable enable
+using Ktisis.Actions.Attributes;
+using Ktisis.Core.Types;
+
 namespace Ktisis.Actions.Types;
 
-public abstract class ActionBase
-{
-  protected IPluginContext Context { get; }
+public abstract class ActionBase {
 
-  protected ActionBase(IPluginContext ctx) => this.Context = ctx;
+	protected ActionBase(IPluginContext ctx) {
+		this.Context = ctx;
+	}
+	protected IPluginContext Context { get; }
 
-  public string GetName() => this.GetAttribute().Name;
+	public string GetName() => this.GetAttribute().Name;
 
-  public ActionAttribute GetAttribute()
-  {
-    return CustomAttributeExtensions.GetCustomAttribute<ActionAttribute>((MemberInfo) this.GetType());
-  }
+	public ActionAttribute GetAttribute() => this.GetType().GetCustomAttribute<ActionAttribute>();
 
-  public virtual bool CanInvoke() => true;
+	public virtual bool CanInvoke() => true;
 
-  public abstract bool Invoke();
+	public abstract bool Invoke();
 }

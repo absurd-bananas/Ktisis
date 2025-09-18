@@ -4,19 +4,18 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-using Ktisis.Scene.Entities.World;
-using Ktisis.Scene.Factory.Types;
+#nullable enable
 using System;
 
-#nullable enable
+using Ktisis.Scene.Entities.World;
+using Ktisis.Scene.Factory.Types;
+
 namespace Ktisis.Scene.Factory.Builders;
 
-public interface IObjectBuilder : 
-  IEntityBuilder<WorldEntity, IObjectBuilder>,
-  IEntityBuilderBase<WorldEntity, IObjectBuilder>
-{
-  IObjectBuilder SetAddress(IntPtr address);
+public interface IObjectBuilder :
+	IEntityBuilder<WorldEntity, IObjectBuilder>,
+	IEntityBuilderBase<WorldEntity, IObjectBuilder> {
+	IObjectBuilder SetAddress(IntPtr address);
 
-  unsafe IObjectBuilder SetAddress(Object* pointer);
+	unsafe IObjectBuilder SetAddress(object* pointer);
 }

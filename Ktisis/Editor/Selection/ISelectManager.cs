@@ -4,29 +4,29 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Scene.Entities;
+#nullable enable
 using System.Collections.Generic;
 
-#nullable enable
+using Ktisis.Scene.Entities;
+
 namespace Ktisis.Editor.Selection;
 
-public interface ISelectManager
-{
-  event SelectChangedHandler Changed;
+public interface ISelectManager {
 
-  void Update();
+	int Count { get; }
+	event SelectChangedHandler Changed;
 
-  int Count { get; }
+	void Update();
 
-  IEnumerable<SceneEntity> GetSelected();
+	IEnumerable<SceneEntity> GetSelected();
 
-  SceneEntity? GetFirstSelected();
+	SceneEntity? GetFirstSelected();
 
-  bool IsSelected(SceneEntity entity);
+	bool IsSelected(SceneEntity entity);
 
-  void Select(SceneEntity entity, SelectMode mode = SelectMode.Default);
+	void Select(SceneEntity entity, SelectMode mode = SelectMode.Default);
 
-  void Unselect(SceneEntity entity);
+	void Unselect(SceneEntity entity);
 
-  void Clear();
+	void Clear();
 }

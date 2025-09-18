@@ -4,37 +4,34 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.System.Memory;
+#nullable disable
 using System;
 
-#nullable disable
 namespace Ktisis.Interop;
 
-public class Alloc<T> : IDisposable where T : unmanaged
-{
-  public IntPtr Address { get; private set; }
+public class Alloc<T> : IDisposable where T : unmanaged {
 
-  public unsafe T* Data => (T*) this.Address;
+	public Alloc(ulong align = 8) {
+		this.Address = (IntPtr)((IMemorySpace)(IntPtr)IMemorySpace.GetDefaultSpace()).Malloc<T>(align);
+	}
+	public IntPtr Address { get; private set; }
 
-  public bool IsDisposed { get; private set; }
+	public unsafe T* Data => (T*)this.Address;
 
-  public unsafe Alloc(ulong align = 8)
-  {
-    this.Address = (IntPtr) ((IMemorySpace) (IntPtr) IMemorySpace.GetDefaultSpace()).Malloc<T>(align);
-  }
+	public bool IsDisposed { get; private set; }
 
-  public unsafe void Dispose()
-  {
-    if (this.IsDisposed)
-      return;
-    if (this.Address != IntPtr.Zero)
-    {
-      IMemorySpace.Free<T>(this.Data);
-      this.Address = IntPtr.Zero;
-    }
-    this.IsDisposed = true;
-    GC.SuppressFinalize((object) this);
-  }
+	public unsafe void Dispose() {
+		if (this.IsDisposed)
+			return;
+		if (this.Address != IntPtr.Zero) {
+			IMemorySpace.Free<T>(this.Data);
+			this.Address = IntPtr.Zero;
+		}
+		this.IsDisposed = true;
+		GC.SuppressFinalize(this);
+	}
 
-  ~Alloc() => this.Dispose();
+	~Alloc() {
+		this.Dispose();
+	}
 }

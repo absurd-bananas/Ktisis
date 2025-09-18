@@ -7,8 +7,7 @@
 #nullable disable
 namespace Ktisis.Editor.Characters.Make;
 
-public class MakeTypeParam
-{
-  public byte Value;
-  public uint Graphic;
+public class MakeTypeParam {
+	public uint Graphic;
+	public byte Value;
 }

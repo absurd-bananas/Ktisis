@@ -7,9 +7,8 @@
 #nullable enable
 namespace Ktisis.Editor.Transforms.Types;
 
-public interface ITransformHandler
-{
-  ITransformTarget? Target { get; }
+public interface ITransformHandler {
+	ITransformTarget? Target { get; }
 
-  ITransformMemento Begin(ITransformTarget target);
+	ITransformMemento Begin(ITransformTarget target);
 }

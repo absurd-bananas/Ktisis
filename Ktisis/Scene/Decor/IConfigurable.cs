@@ -7,7 +7,6 @@
 #nullable disable
 namespace Ktisis.Scene.Decor;
 
-public interface IConfigurable
-{
-  void Refresh();
+public interface IConfigurable {
+	void Refresh();
 }

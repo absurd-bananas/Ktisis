@@ -7,9 +7,8 @@
 #nullable disable
 namespace KtisisPyon.Editor.Transforms.Types;
 
-public enum Axis
-{
-  X,
-  Y,
-  Z,
+public enum Axis {
+	X,
+	Y,
+	Z
 }

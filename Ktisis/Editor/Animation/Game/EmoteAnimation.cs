@@ -4,45 +4,40 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Editor.Animation.Types;
-using Lumina.Excel;
-using Lumina.Excel.Sheets;
-using Lumina.Text.ReadOnly;
-
 #nullable enable
+using Ktisis.Editor.Animation.Types;
+
 namespace Ktisis.Editor.Animation.Game;
 
-public class EmoteAnimation(Emote emote, int index = 0) : GameAnimation
-{
-  public override string Name
-  {
-    get
-    {
-      ReadOnlySeString name = ((Emote) ref emote).Name;
-      return ((ReadOnlySeString) ref name).ExtractText();
-    }
-  }
+public class EmoteAnimation(Emote emote, int index = 0) : GameAnimation {
+	public override string Name {
+		get {
+			ReadOnlySeString name = ((Emote) ref emote ).
+			this.Name;
+			return ((ReadOnlySeString) ref name ).ExtractText();
+		}
+	}
 
-  public override ushort Icon => ((Emote) ref emote).Icon;
+	public override ushort Icon => ((Emote)
 
-  public override uint TimelineId => this.Timeline.RowId;
+	public override uint TimelineId => this.Timeline.RowId;
 
-  public override TimelineSlot Slot
-  {
-    get
-    {
-      if (!this.Timeline.IsValid)
-        return TimelineSlot.FullBody;
-      ActionTimeline actionTimeline = this.Timeline.Value;
-      return (TimelineSlot) ((ActionTimeline) ref actionTimeline).Stance;
-    }
-  }
+	public override TimelineSlot Slot {
+		get {
+			if (!this.Timeline.IsValid)
+				return TimelineSlot.FullBody;
+			ActionTimeline actionTimeline = this.Timeline.Value;
+			return (TimelineSlot)((ActionTimeline) ref actionTimeline ).Stance;
+		}
+	}
 
-  public int Index => index;
+	public int Index => index;
 
-  public uint EmoteId => ((Emote) ref emote).RowId;
+	public uint EmoteId => ((Emote)
 
-  public bool IsExpression => ((Emote) ref emote).EmoteCategory.RowId == 3U;
+	public bool IsExpression => ((Emote)
 
-  private RowRef<ActionTimeline> Timeline => ((Emote) ref emote).ActionTimeline[index];
+	private RowRef<ActionTimeline> Timeline => ((Emote)ref emote).Icon;
+	ref emote).RowId;
+	ref emote).EmoteCategory.RowId== 3U;ref emote).ActionTimeline[index];
 }

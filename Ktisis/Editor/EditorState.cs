@@ -4,6 +4,9 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
+using System;
+
 using Ktisis.Editor.Actions;
 using Ktisis.Editor.Animation.Types;
 using Ktisis.Editor.Camera;
@@ -15,84 +18,71 @@ using Ktisis.Editor.Transforms.Types;
 using Ktisis.Interface.Editor.Types;
 using Ktisis.Interop.Hooking;
 using Ktisis.Scene.Types;
-using System;
 
-#nullable enable
 namespace Ktisis.Editor;
 
-public class EditorState : IDisposable
-{
-  private readonly IEditorContext _context;
-  private readonly HookScope _scope;
-  private bool IsInit;
-  private bool IsDisposing;
+public class EditorState : IDisposable {
+	private readonly IEditorContext _context;
+	private readonly HookScope _scope;
+	private bool IsDisposing;
+	private bool IsInit;
 
-  public bool IsValid => this.IsInit && this._context.IsGPosing && !this.IsDisposing;
+	public EditorState(IEditorContext context, HookScope scope) {
+		this._context = context;
+		this._scope = scope;
+	}
 
-  public required IActionManager Actions { get; init; }
+	public bool IsValid => this.IsInit && this._context.IsGPosing && !this.IsDisposing;
 
-  public required IAnimationManager Animation { get; init; }
+	public required IActionManager Actions { get; init; }
 
-  public required ICameraManager Cameras { get; init; }
+	public required IAnimationManager Animation { get; init; }
 
-  public required ICharacterManager Characters { get; init; }
+	public required ICameraManager Cameras { get; init; }
 
-  public required IEditorInterface Interface { get; init; }
+	public required ICharacterManager Characters { get; init; }
 
-  public required IPosingManager Posing { get; init; }
+	public required IEditorInterface Interface { get; init; }
 
-  public required ISceneManager Scene { get; init; }
+	public required IPosingManager Posing { get; init; }
 
-  public required ISelectManager Selection { get; init; }
+	public required ISceneManager Scene { get; init; }
 
-  public required ITransformHandler Transform { get; init; }
+	public required ISelectManager Selection { get; init; }
 
-  public EditorState(IEditorContext context, HookScope scope)
-  {
-    this._context = context;
-    this._scope = scope;
-  }
+	public required ITransformHandler Transform { get; init; }
 
-  public void Initialize()
-  {
-    try
-    {
-      this.IsInit = true;
-      this.Actions.Initialize();
-      this.Animation.Initialize();
-      this.Characters.Initialize();
-      this.Cameras.Initialize();
-      this.Posing.Initialize();
-      this.Scene.Initialize();
-    }
-    catch
-    {
-      this.Dispose();
-      throw;
-    }
-    try
-    {
-      this.Interface.Prepare();
-    }
-    catch (Exception ex)
-    {
-      Ktisis.Ktisis.Log.Error($"Error preparing interface:\n{ex}", Array.Empty<object>());
-    }
-  }
+	public void Dispose() {
+		this.IsDisposing = true;
+		this._scope.Dispose();
+		this.Scene.Dispose();
+		this.Posing.Dispose();
+		this.Cameras.Dispose();
+		GC.SuppressFinalize(this);
+	}
 
-  public void Update()
-  {
-    this.Scene.Update();
-    this.Selection.Update();
-  }
+	public void Initialize() {
+		try {
+			this.IsInit = true;
+			this.Actions.Initialize();
+			this.Animation.Initialize();
+			this.Characters.Initialize();
+			this.Cameras.Initialize();
+			this.Posing.Initialize();
+			this.Scene.Initialize();
+		} catch {
+			this.Dispose();
+			throw;
+		}
+		try {
+			this.Interface.Prepare();
+		} catch (Exception ex) {
+			Ktisis.Ktisis.Log.Error($"Error preparing interface:\n{ex}", Array.Empty<object>());
+		}
+	}
 
-  public void Dispose()
-  {
-    this.IsDisposing = true;
-    this._scope.Dispose();
-    this.Scene.Dispose();
-    this.Posing.Dispose();
-    this.Cameras.Dispose();
-    GC.SuppressFinalize((object) this);
-  }
+	public void Update() {
+		this.Scene.Update();
+		this.Selection.Update();
+	}
 }

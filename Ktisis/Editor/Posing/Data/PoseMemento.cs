@@ -4,37 +4,34 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Actions.Types;
-using Ktisis.Editor.Posing.Types;
+#nullable enable
 using System.Collections.Generic;
 
-#nullable enable
+using Ktisis.Actions.Types;
+using Ktisis.Editor.Posing.Types;
+
 namespace Ktisis.Editor.Posing.Data;
 
-public class PoseMemento(EntityPoseConverter converter) : IMemento
-{
-  public required PoseTransforms Transforms { get; init; }
+public class PoseMemento(EntityPoseConverter converter) : IMemento {
+	public required PoseTransforms Transforms { get; init; }
 
-  public required List<PartialBoneInfo>? Bones { get; init; }
+	public required List<PartialBoneInfo>? Bones { get; init; }
 
-  public required PoseContainer Initial { get; init; }
+	public required PoseContainer Initial { get; init; }
 
-  public required PoseContainer Final { get; init; }
+	public required PoseContainer Final { get; init; }
 
-  public void Restore() => this.Apply(this.Initial);
+	public void Restore() => this.Apply(this.Initial);
 
-  public void Apply() => this.Apply(this.Final);
+	public void Apply() => this.Apply(this.Final);
 
-  private void Apply(PoseContainer pose)
-  {
-    if (!converter.IsPoseValid)
-      return;
-    if (this.Bones != null)
-    {
-      IEnumerable<PartialBoneInfo> bones = converter.IntersectBonesByName((IEnumerable<PartialBoneInfo>) this.Bones);
-      converter.LoadBones(pose, bones, this.Transforms);
-    }
-    else
-      converter.Load(pose, this.Transforms);
-  }
+	private void Apply(PoseContainer pose) {
+		if (!converter.IsPoseValid)
+			return;
+		if (this.Bones != null) {
+			var bones = converter.IntersectBonesByName(this.Bones);
+			converter.LoadBones(pose, bones, this.Transforms);
+		} else
+			converter.Load(pose, this.Transforms);
+	}
 }

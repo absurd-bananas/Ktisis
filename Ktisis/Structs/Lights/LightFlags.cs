@@ -4,16 +4,15 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System;
 
-#nullable disable
 namespace Ktisis.Structs.Lights;
 
 [Flags]
-public enum LightFlags : uint
-{
-  Reflection = 1,
-  Dynamic = 2,
-  CharaShadow = 4,
-  ObjectShadow = 8,
+public enum LightFlags : uint {
+	Reflection = 1,
+	Dynamic = 2,
+	CharaShadow = 4,
+	ObjectShadow = 8
 }

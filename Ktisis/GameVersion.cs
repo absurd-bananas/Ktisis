@@ -4,18 +4,16 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using System;
 
-#nullable enable
 namespace Ktisis;
 
-public static class GameVersion
-{
-  public const string Validated = "2023.11.09.0000.0000";
+public static class GameVersion {
+	public const string Validated = "2023.11.09.0000.0000";
 
-  public static unsafe string GetCurrent()
-  {
-    FFXIVClientStructs.FFXIV.Client.System.Framework.Framework* frameworkPtr = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance();
-    return (IntPtr) frameworkPtr == IntPtr.Zero ? string.Empty : ((FFXIVClientStructs.FFXIV.Client.System.Framework.Framework) (IntPtr) frameworkPtr).GameVersionString;
-  }
+	public unsafe static string GetCurrent() {
+		FFXIVClientStructs.FFXIV.Client.System.Framework.Framework* frameworkPtr = FFXIVClientStructs.FFXIV.Client.System.Framework.Framework.Instance();
+		return (IntPtr)frameworkPtr == IntPtr.Zero ? string.Empty : ((FFXIVClientStructs.FFXIV.Client.System.Framework.Framework)(IntPtr)frameworkPtr).GameVersionString;
+	}
 }

@@ -4,28 +4,25 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Interface.Textures;
-using Dalamud.Utility;
-using Lumina.Excel.Sheets;
-using Lumina.Text.ReadOnly;
-
 #nullable enable
 namespace Ktisis.Services.Environment;
 
-public class WeatherInfo
-{
-  public readonly string Name;
-  public readonly uint RowId;
-  public readonly ISharedImmediateTexture? Icon;
+public class WeatherInfo {
+	public readonly ISharedImmediateTexture? Icon;
+	public readonly string Name;
+	public readonly uint RowId;
 
-  public WeatherInfo(Weather row, ISharedImmediateTexture? icon)
-  {
-    ReadOnlySeString name = ((Weather) ref row).Name;
-    string str = ((ReadOnlySeString) ref name).ExtractText();
-    if (StringExtensions.IsNullOrEmpty(str))
-      str = $"Weather #{((Weather) ref row).RowId}";
-    this.Name = str;
-    this.RowId = ((Weather) ref row).RowId;
-    this.Icon = icon;
-  }
+	public WeatherInfo(Weather row, ISharedImmediateTexture? icon) {
+		ReadOnlySeString name = ((Weather) ref row ).
+		this.Name;
+		string str = ((ReadOnlySeString) ref name ).ExtractText();
+		if (StringExtensions.IsNullOrEmpty(str))
+			str = $"Weather #{((Weather) ref
+		row).
+		this.RowId}";
+		this.Name = str;
+		this.RowId = ((Weather) ref row).
+		this.RowId;
+		this.Icon = icon;
+	}
 }

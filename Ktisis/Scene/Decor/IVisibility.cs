@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Scene.Decor;
 
-public interface IVisibility
-{
-  bool Visible { get; set; }
+public interface IVisibility {
+	bool Visible { get; set; }
 
-  bool Toggle() => this.Visible = !this.Visible;
+	bool Toggle() => this.Visible = !this.Visible;
 }

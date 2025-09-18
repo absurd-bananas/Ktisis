@@ -4,67 +4,60 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using System;
 using System.Collections.Generic;
 
-#nullable enable
 namespace Ktisis.Interop.Hooking;
 
-public class HookScope : IHookModule, IDisposable
-{
-  private readonly IHookMediator _hook;
-  private readonly List<HookModule> Modules = new List<HookModule>();
-  private bool _init;
+public class HookScope : IHookModule, IDisposable {
+	private readonly IHookMediator _hook;
+	private readonly List<HookModule> Modules = new List<HookModule>();
 
-  public HookScope(IHookMediator hook) => this._hook = hook;
+	public HookScope(IHookMediator hook) {
+		this._hook = hook;
+	}
 
-  public bool IsInit => this._init;
+	public bool IsInit { get; private set; }
 
-  public void EnableAll() => this.Modules.ForEach((Action<HookModule>) (mod => mod.EnableAll()));
+	public void EnableAll() => this.Modules.ForEach(mod => mod.EnableAll());
 
-  public void DisableAll() => this.Modules.ForEach((Action<HookModule>) (mod => mod.DisableAll()));
+	public void DisableAll() => this.Modules.ForEach(mod => mod.DisableAll());
 
-  public void SetEnabled(bool enabled)
-  {
-    if (enabled)
-      this.EnableAll();
-    else
-      this.DisableAll();
-  }
+	public void SetEnabled(bool enabled) {
+		if (enabled)
+			this.EnableAll();
+		else
+			this.DisableAll();
+	}
 
-  public bool TryGetHook<T>(out HookWrapper<T>? result) where T : Delegate
-  {
-    foreach (HookModule module in this.Modules)
-    {
-      HookWrapper<T> result1;
-      if (module.TryGetHook<T>(out result1))
-      {
-        result = result1;
-        return true;
-      }
-    }
-    result = (HookWrapper<T>) null;
-    return false;
-  }
+	public bool TryGetHook<T>(out HookWrapper<T>? result) where T : Delegate {
+		foreach (var module in this.Modules) {
+			HookWrapper<T> result1;
+			if (module.TryGetHook(out result1)) {
+				result = result1;
+				return true;
+			}
+		}
+		result = null;
+		return false;
+	}
 
-  public T Create<T>(params object[] param) where T : HookModule
-  {
-    T obj = this._hook.Create<T>(param);
-    this.Modules.Add((HookModule) obj);
-    return obj;
-  }
+	public bool Initialize() {
+		var flag = false;
+		foreach (var module in this.Modules)
+			flag |= module.Initialize();
+		return this.IsInit = flag;
+	}
 
-  public bool Initialize()
-  {
-    bool flag = false;
-    foreach (HookModule module in this.Modules)
-      flag |= module.Initialize();
-    return this._init = flag;
-  }
+	public void Dispose() {
+		this.Modules.ForEach(mod => mod.Dispose());
+		this.Modules.Clear();
+	}
 
-  public void Dispose()
-  {
-    this.Modules.ForEach((Action<HookModule>) (mod => mod.Dispose()));
-    this.Modules.Clear();
-  }
+	public T Create<T>(params object[] param) where T : HookModule {
+		var obj = this._hook.Create<T>(param);
+		this.Modules.Add(obj);
+		return obj;
+	}
 }

@@ -4,42 +4,36 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
+#nullable enable
 using Ktisis.Structs.Characters;
 
-#nullable enable
 namespace Ktisis.Editor.Characters.State;
 
-public class WeaponState
-{
-  private WeaponContainer _container;
-  private readonly bool[] _state = new bool[3];
-  private readonly EquipmentToggle[] _visible = new EquipmentToggle[3];
+public class WeaponState {
+	private readonly bool[] _state = new bool[3];
+	private readonly EquipmentToggle[] _visible = new EquipmentToggle[3];
+	private WeaponContainer _container;
 
-  public WeaponModelId this[WeaponIndex index]
-  {
-    get => this._container[(uint) index];
-    set
-    {
-      this._container[(uint) index] = value;
-      this._state[(int) index] = true;
-    }
-  }
+	public WeaponModelId this[WeaponIndex index] {
+		get => this._container[(uint)index];
+		set {
+			this._container[(uint)index] = value;
+			this._state[(int)index] = true;
+		}
+	}
 
-  public bool IsSet(WeaponIndex index) => this._state[(int) index];
+	public bool IsSet(WeaponIndex index) => this._state[(int)index];
 
-  public void Unset(WeaponIndex index) => this._state[(int) index] = false;
+	public void Unset(WeaponIndex index) => this._state[(int)index] = false;
 
-  public EquipmentToggle GetVisible(WeaponIndex index) => this._visible[(int) index];
+	public EquipmentToggle GetVisible(WeaponIndex index) => this._visible[(int)index];
 
-  public void SetVisible(WeaponIndex index, bool visible)
-  {
-    this._visible[(int) index] = visible ? EquipmentToggle.On : EquipmentToggle.Off;
-  }
+	public void SetVisible(WeaponIndex index, bool visible) {
+		this._visible[(int)index] = visible ? EquipmentToggle.On : EquipmentToggle.Off;
+	}
 
-  public bool CheckVisible(WeaponIndex index, bool visible)
-  {
-    EquipmentToggle equipmentToggle = this._visible[(int) index];
-    return equipmentToggle == EquipmentToggle.None ? visible : equipmentToggle == EquipmentToggle.On;
-  }
+	public bool CheckVisible(WeaponIndex index, bool visible) {
+		var equipmentToggle = this._visible[(int)index];
+		return equipmentToggle == EquipmentToggle.None ? visible : equipmentToggle == EquipmentToggle.On;
+	}
 }

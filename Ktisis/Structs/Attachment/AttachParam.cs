@@ -4,19 +4,17 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Graphics;
+#nullable disable
 using System.Runtime.InteropServices;
 
-#nullable disable
 namespace Ktisis.Structs.Attachment;
 
 [StructLayout(LayoutKind.Explicit, Size = 64 /*0x40*/)]
-public struct AttachParam
-{
-  [FieldOffset(0)]
-  public ushort ChildId;
-  [FieldOffset(2)]
-  public ushort ParentId;
-  [FieldOffset(16 /*0x10*/)]
-  public Transform Transform;
+public struct AttachParam {
+	[FieldOffset(0)]
+	public ushort ChildId;
+	[FieldOffset(2)]
+	public ushort ParentId;
+	[FieldOffset(16 /*0x10*/)]
+	public Transform Transform;
 }

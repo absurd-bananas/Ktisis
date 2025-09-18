@@ -7,39 +7,38 @@
 #nullable disable
 namespace Ktisis.Data.Config.Sections;
 
-public class OverlayConfig
-{
-  public bool Visible = true;
-  public bool DrawLines = true;
-  public bool DrawLinesGizmo = true;
-  public bool DrawDotsGizmo = true;
-  public float DotRadius = 7f;
-  public float DotOutline = 1f;
-  public float DotRadiusSelected = 8f;
-  public float DotOutlineSelected = 2.5f;
-  public uint DotColor = uint.MaxValue;
-  public uint DotOutlineColor = 4278190080 /*0xFF000000*/;
-  public uint DotColorSelected = uint.MaxValue;
-  public uint DotOutlineColorSelected = 4278190080 /*0xFF000000*/;
-  public float DotOpacity = 0.95f;
-  public float DotOpacityUsing = 0.15f;
-  public float LineThickness = 2f;
-  public float LineOpacity = 0.95f;
-  public float LineOpacityUsing = 0.15f;
-  public uint DefaultLineColor = uint.MaxValue;
-  public float ActiveActorOpacityMultiplier = 1f;
-  public float InactiveActorOpacityMultiplier = 1f;
-  public OverlayConfig.ActiveState ActiveStateType = OverlayConfig.ActiveState.Both;
-  public bool DrawReferenceTitle = true;
-  public bool ColorSelectedBoneParentLine = true;
-  public bool ColorSelectedBoneDescendantLine = true;
-  public uint SelectedBoneParentLineColor = 4281545727;
-  public uint SelectedBoneDescendantLineColor = 4281597747 /*0xFF33FF33*/;
+public class OverlayConfig {
 
-  public enum ActiveState
-  {
-    Selection,
-    Target,
-    Both,
-  }
+	public enum ActiveState {
+		Selection,
+		Target,
+		Both
+	}
+
+	public float ActiveActorOpacityMultiplier = 1f;
+	public ActiveState ActiveStateType = ActiveState.Both;
+	public bool ColorSelectedBoneDescendantLine = true;
+	public bool ColorSelectedBoneParentLine = true;
+	public uint DefaultLineColor = uint.MaxValue;
+	public uint DotColor = uint.MaxValue;
+	public uint DotColorSelected = uint.MaxValue;
+	public float DotOpacity = 0.95f;
+	public float DotOpacityUsing = 0.15f;
+	public float DotOutline = 1f;
+	public uint DotOutlineColor = 4278190080 /*0xFF000000*/;
+	public uint DotOutlineColorSelected = 4278190080 /*0xFF000000*/;
+	public float DotOutlineSelected = 2.5f;
+	public float DotRadius = 7f;
+	public float DotRadiusSelected = 8f;
+	public bool DrawDotsGizmo = true;
+	public bool DrawLines = true;
+	public bool DrawLinesGizmo = true;
+	public bool DrawReferenceTitle = true;
+	public float InactiveActorOpacityMultiplier = 1f;
+	public float LineOpacity = 0.95f;
+	public float LineOpacityUsing = 0.15f;
+	public float LineThickness = 2f;
+	public uint SelectedBoneDescendantLineColor = 4281597747 /*0xFF33FF33*/;
+	public uint SelectedBoneParentLineColor = 4281545727;
+	public bool Visible = true;
 }

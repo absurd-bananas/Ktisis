@@ -7,16 +7,15 @@
 #nullable disable
 namespace Ktisis.Scene.Types;
 
-public enum EntityType
-{
-  Invalid,
-  Actor,
-  Armature,
-  BoneGroup,
-  BoneNode,
-  Models,
-  ModelSlot,
-  Weapon,
-  Light,
-  RefImage,
+public enum EntityType {
+	Invalid,
+	Actor,
+	Armature,
+	BoneGroup,
+	BoneNode,
+	Models,
+	ModelSlot,
+	Weapon,
+	Light,
+	RefImage
 }

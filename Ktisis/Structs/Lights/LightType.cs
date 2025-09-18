@@ -7,10 +7,9 @@
 #nullable disable
 namespace Ktisis.Structs.Lights;
 
-public enum LightType : uint
-{
-  Directional = 1,
-  PointLight = 2,
-  SpotLight = 3,
-  AreaLight = 4,
+public enum LightType : uint {
+	Directional = 1,
+	PointLight = 2,
+	SpotLight = 3,
+	AreaLight = 4
 }

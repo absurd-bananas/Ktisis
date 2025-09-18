@@ -4,29 +4,28 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Data.Config.Bones;
-using Ktisis.Editor.Posing.Ik.Ccd;
-using Ktisis.Editor.Posing.Ik.TwoJoints;
-using Ktisis.Editor.Posing.Ik.Types;
-using Ktisis.Scene.Decor;
+#nullable enable
 using System.Collections.Generic;
 
-#nullable enable
+using Ktisis.Data.Config.Bones;
+using Ktisis.Editor.Posing.Ik.Ccd;
+using Ktisis.Editor.Posing.Ik.Types;
+using Ktisis.Scene.Decor;
+
 namespace Ktisis.Editor.Posing.Ik;
 
-public interface IIkController
-{
-  void Setup(ISkeleton skeleton);
+public interface IIkController {
 
-  int GroupCount { get; }
+	int GroupCount { get; }
+	void Setup(ISkeleton skeleton);
 
-  IEnumerable<(string name, IIkGroup group)> GetGroups();
+	IEnumerable<(string name, IIkGroup group)> GetGroups();
 
-  bool TrySetupGroup(string name, CcdGroupParams param, out CcdGroup? group);
+	bool TrySetupGroup(string name, CcdGroupParams param, out CcdGroup? group);
 
-  bool TrySetupGroup(string name, TwoJointsGroupParams param, out TwoJointsGroup? group);
+	bool TrySetupGroup(string name, TwoJointsGroupParams param, out TwoJointsGroup? group);
 
-  void Solve(bool frozen = false);
+	void Solve(bool frozen = false);
 
-  void Destroy();
+	void Destroy();
 }

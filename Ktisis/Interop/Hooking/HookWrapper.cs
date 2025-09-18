@@ -4,17 +4,15 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Hooking;
+#nullable enable
 using System;
 
-#nullable enable
 namespace Ktisis.Interop.Hooking;
 
-public interface IHookWrapper : IDalamudHook, IDisposable
-{
-  string Name { get; }
+public interface IHookWrapper : IDalamudHook, IDisposable {
+	string Name { get; }
 
-  void Enable();
+	void Enable();
 
-  void Disable();
+	void Disable();
 }

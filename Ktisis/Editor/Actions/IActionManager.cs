@@ -4,16 +4,15 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Editor.Actions.Input;
 
-#nullable enable
 namespace Ktisis.Editor.Actions;
 
-public interface IActionManager
-{
-  IInputManager Input { get; }
+public interface IActionManager {
+	IInputManager Input { get; }
 
-  IHistoryManager History { get; }
+	IHistoryManager History { get; }
 
-  void Initialize();
+	void Initialize();
 }

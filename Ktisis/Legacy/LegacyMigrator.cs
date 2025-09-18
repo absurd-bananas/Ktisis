@@ -4,54 +4,50 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
+using System;
+
 using Ktisis.Core.Attributes;
 using Ktisis.Interface;
 using Ktisis.Legacy.Interface;
 using Ktisis.Services.Game;
-using System;
 
-#nullable enable
 namespace Ktisis.Legacy;
 
 [Singleton]
-public class LegacyMigrator
-{
-  private readonly GPoseService _gpose;
-  private readonly GuiManager _gui;
-  private bool _confirmed;
+public class LegacyMigrator {
+	private readonly GPoseService _gpose;
+	private readonly GuiManager _gui;
+	private bool _confirmed;
 
-  public event Action? OnConfirmed;
+	public LegacyMigrator(GPoseService gpose, GuiManager gui) {
+		this._gpose = gpose;
+		this._gui = gui;
+	}
 
-  public LegacyMigrator(GPoseService gpose, GuiManager gui)
-  {
-    this._gpose = gpose;
-    this._gui = gui;
-  }
+	public event Action? OnConfirmed;
 
-  public void Setup()
-  {
-    Ktisis.Ktisis.Log.Warning("User is migrating from Ktisis v0.2, activating legacy mode.", Array.Empty<object>());
-    this._gpose.StateChanged += new GPoseStateHandler(this.OnGPoseStateChanged);
-    this._gpose.Subscribe();
-  }
+	public void Setup() {
+		Ktisis.Ktisis.Log.Warning("User is migrating from Ktisis v0.2, activating legacy mode.", Array.Empty<object>());
+		this._gpose.StateChanged += this.OnGPoseStateChanged;
+		this._gpose.Subscribe();
+	}
 
-  private void OnGPoseStateChanged(object sender, bool state)
-  {
-    if (!state || this._confirmed)
-      return;
-    this._gui.GetOrCreate<MigratorWindow>((object) this).Open();
-  }
+	private void OnGPoseStateChanged(object sender, bool state) {
+		if (!state || this._confirmed)
+			return;
+		this._gui.GetOrCreate<MigratorWindow>(this).Open();
+	}
 
-  public void Begin()
-  {
-    if (this._confirmed)
-      return;
-    this._confirmed = true;
-    this._gpose.StateChanged -= new GPoseStateHandler(this.OnGPoseStateChanged);
-    this._gpose.Reset();
-    Action onConfirmed = this.OnConfirmed;
-    if (onConfirmed == null)
-      return;
-    onConfirmed();
-  }
+	public void Begin() {
+		if (this._confirmed)
+			return;
+		this._confirmed = true;
+		this._gpose.StateChanged -= this.OnGPoseStateChanged;
+		this._gpose.Reset();
+		var onConfirmed = this.OnConfirmed;
+		if (onConfirmed == null)
+			return;
+		onConfirmed();
+	}
 }

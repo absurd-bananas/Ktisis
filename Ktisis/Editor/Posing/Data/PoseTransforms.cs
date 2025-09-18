@@ -4,17 +4,16 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System;
 
-#nullable disable
 namespace Ktisis.Editor.Posing.Data;
 
 [Flags]
-public enum PoseTransforms
-{
-  None = 0,
-  Rotation = 1,
-  Position = 2,
-  Scale = 4,
-  PositionRoot = 8,
+public enum PoseTransforms {
+	None = 0,
+	Rotation = 1,
+	Position = 2,
+	Scale = 4,
+	PositionRoot = 8
 }

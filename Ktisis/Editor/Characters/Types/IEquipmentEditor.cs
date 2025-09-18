@@ -4,47 +4,45 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
+#nullable disable
 using Ktisis.Editor.Characters.State;
 
-#nullable disable
 namespace Ktisis.Editor.Characters.Types;
 
-public interface IEquipmentEditor
-{
-  void ApplyStateFlags();
+public interface IEquipmentEditor {
+	void ApplyStateFlags();
 
-  EquipmentModelId GetEquipIndex(EquipIndex index);
+	EquipmentModelId GetEquipIndex(EquipIndex index);
 
-  void SetEquipIndex(EquipIndex index, EquipmentModelId model);
+	void SetEquipIndex(EquipIndex index, EquipmentModelId model);
 
-  void SetEquipIdVariant(EquipIndex index, ushort id, byte variant);
+	void SetEquipIdVariant(EquipIndex index, ushort id, byte variant);
 
-  void SetEquipStainId(EquipIndex index, byte stainId, int dyeIndex = 0);
+	void SetEquipStainId(EquipIndex index, byte stainId, int dyeIndex = 0);
 
-  bool GetHatVisible();
+	bool GetHatVisible();
 
-  void SetHatVisible(bool visible);
+	void SetHatVisible(bool visible);
 
-  bool GetVisorToggled();
+	bool GetVisorToggled();
 
-  void SetVisorToggled(bool toggled);
+	void SetVisorToggled(bool toggled);
 
-  ushort GetGlassesId(int index = 0);
+	ushort GetGlassesId(int index = 0);
 
-  void SetGlassesId(int index, ushort id);
+	void SetGlassesId(int index, ushort id);
 
-  WeaponModelId GetWeaponIndex(WeaponIndex index);
+	WeaponModelId GetWeaponIndex(WeaponIndex index);
 
-  void SetWeaponIndex(WeaponIndex index, WeaponModelId model);
+	void SetWeaponIndex(WeaponIndex index, WeaponModelId model);
 
-  void SetWeaponIdBaseVariant(WeaponIndex index, ushort id, ushort second, byte variant);
+	void SetWeaponIdBaseVariant(WeaponIndex index, ushort id, ushort second, byte variant);
 
-  void SetWeaponStainId(WeaponIndex index, byte stainId, int dyeIndex = 0);
+	void SetWeaponStainId(WeaponIndex index, byte stainId, int dyeIndex = 0);
 
-  bool GetWeaponVisible(WeaponIndex index);
+	bool GetWeaponVisible(WeaponIndex index);
 
-  void SetWeaponVisible(WeaponIndex index, bool visible);
+	void SetWeaponVisible(WeaponIndex index, bool visible);
 
-  void ApplyStateToGameObject();
+	void ApplyStateToGameObject();
 }

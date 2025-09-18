@@ -4,8 +4,6 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Keys;
-
 #nullable disable
 namespace Ktisis.Editor.Actions.Input;
 

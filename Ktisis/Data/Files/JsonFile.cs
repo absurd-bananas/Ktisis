@@ -4,17 +4,16 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using System;
 
-#nullable enable
 namespace Ktisis.Data.Files;
 
 [Serializable]
-public class JsonFile
-{
-  public string FileExtension { get; set; } = ".json";
+public class JsonFile {
+	public string FileExtension { get; set; } = ".json";
 
-  public string TypeName { get; set; } = "Json File";
+	public string TypeName { get; set; } = "Json File";
 
-  public int FileVersion { get; set; } = 1;
+	public int FileVersion { get; set; } = 1;
 }

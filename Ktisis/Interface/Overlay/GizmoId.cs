@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Interface.Overlay;
 
-public enum GizmoId
-{
-  Default = -1, // 0xFFFFFFFF
-  OverlayMain = 0,
-  TransformEditor = 1,
+public enum GizmoId {
+	Default = -1, // 0xFFFFFFFF
+	OverlayMain = 0,
+	TransformEditor = 1
 }

@@ -4,56 +4,47 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Data.Files;
+#nullable enable
 using System;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
-#nullable enable
+using Ktisis.Data.Files;
+
 namespace Ktisis.Data.Json.Converters;
 
-public class JsonFileConverter : JsonConverter<JsonFile>
-{
-  public virtual bool CanConvert(Type t) => t.BaseType == typeof (JsonFile);
+public class JsonFileConverter : JsonConverter<JsonFile> {
+	public virtual bool CanConvert(Type t) => t.BaseType == typeof(JsonFile);
 
-  public virtual JsonFile? Read(
-    ref Utf8JsonReader reader,
-    Type typeToConvert,
-    JsonSerializerOptions options)
-  {
-    JsonFile instance = (JsonFile) Activator.CreateInstance(typeToConvert);
-    using (JsonDocument jsonDocument = JsonDocument.ParseValue(ref reader))
-    {
-      foreach (PropertyInfo property in typeToConvert.GetProperties())
-      {
-        JsonElement rootElement = jsonDocument.RootElement;
-        JsonElement jsonElement;
-        if (!((JsonElement) ref rootElement).TryGetProperty(((MemberInfo) property).Name, ref jsonElement))
-        {
-          DeserializerDefaultAttribute customAttribute = CustomAttributeExtensions.GetCustomAttribute<DeserializerDefaultAttribute>((MemberInfo) property);
-          if (customAttribute != null)
-            property.SetValue((object) instance, customAttribute.Default);
-        }
-        else
-        {
-          try
-          {
-            object obj = JsonSerializer.Deserialize(jsonElement, property.PropertyType, options);
-            if (obj != null)
-              property.SetValue((object) instance, obj);
-          }
-          catch
-          {
-            Ktisis.Ktisis.Log.Warning($"Failed to parse {property.PropertyType.Name} value '{((MemberInfo) property).Name}' (received {((JsonElement) ref jsonElement).ValueKind} instead)", Array.Empty<object>());
-          }
-        }
-      }
-      return instance;
-    }
-  }
+	public virtual JsonFile? Read(
+		ref Utf8JsonReader reader,
+		Type typeToConvert,
+		JsonSerializerOptions options
+	) {
+		var instance = (JsonFile)Activator.CreateInstance(typeToConvert);
+		using (JsonDocument jsonDocument = JsonDocument.ParseValue(ref reader)) {
+			foreach (var property in typeToConvert.GetProperties()) {
+				JsonElement rootElement = jsonDocument.RootElement;
+				JsonElement jsonElement;
+				if (!((JsonElement) ref rootElement ).TryGetProperty(property.Name, ref jsonElement))
+				{
+					var customAttribute = property.GetCustomAttribute<DeserializerDefaultAttribute>();
+					if (customAttribute != null)
+						property.SetValue(instance, customAttribute.Default);
+				}
+				else
+				{
+					try {
+						object obj = JsonSerializer.Deserialize(jsonElement, property.PropertyType, options);
+						if (obj != null)
+							property.SetValue(instance, obj);
+					} catch {
+						Ktisis.Ktisis.Log.Warning($"Failed to parse {property.PropertyType.Name} value '{property.Name}' (received {((JsonElement) ref jsonElement).ValueKind} instead)", Array.Empty<object>());
+					}
+				}
+			}
+			return instance;
+		}
+	}
 
-  public virtual void Write(Utf8JsonWriter writer, JsonFile value, JsonSerializerOptions options)
-  {
-  }
+	public virtual void Write(Utf8JsonWriter writer, JsonFile value, JsonSerializerOptions options) { }
 }

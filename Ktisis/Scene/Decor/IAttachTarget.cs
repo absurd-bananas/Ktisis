@@ -7,7 +7,6 @@
 #nullable enable
 namespace Ktisis.Scene.Decor;
 
-public interface IAttachTarget
-{
-  bool TryAcceptAttach(IAttachable child);
+public interface IAttachTarget {
+	bool TryAcceptAttach(IAttachable child);
 }

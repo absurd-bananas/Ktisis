@@ -4,14 +4,11 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
-
 #nullable disable
 namespace Ktisis.Scene.Decor;
 
-public interface ICharacter
-{
-  bool IsValid { get; }
+public interface ICharacter {
+	bool IsValid { get; }
 
-  unsafe CharacterBase* GetCharacter();
+	unsafe CharacterBase* GetCharacter();
 }

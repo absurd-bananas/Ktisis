@@ -7,19 +7,17 @@
 #nullable disable
 namespace Ktisis.Scene.Decor.Ik;
 
-public interface IIkNode
-{
-  bool IsEnabled { get; }
+public interface IIkNode {
+	bool IsEnabled { get; }
 
-  void Enable();
+	void Enable();
 
-  void Disable();
+	void Disable();
 
-  void Toggle()
-  {
-    if (this.IsEnabled)
-      this.Disable();
-    else
-      this.Enable();
-  }
+	void Toggle() {
+		if (this.IsEnabled)
+			this.Disable();
+		else
+			this.Enable();
+	}
 }

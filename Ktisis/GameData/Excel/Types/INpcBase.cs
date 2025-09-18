@@ -4,23 +4,21 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Game.Character;
+#nullable enable
 using Ktisis.Structs.Characters;
 
-#nullable enable
 namespace Ktisis.GameData.Excel.Types;
 
-public interface INpcBase
-{
-  string Name { get; set; }
+public interface INpcBase {
+	string Name { get; set; }
 
-  ushort GetModelId() => 0;
+	ushort GetModelId() => 0;
 
-  CustomizeContainer? GetCustomize() => new CustomizeContainer?();
+	CustomizeContainer? GetCustomize() => new CustomizeContainer?();
 
-  EquipmentContainer? GetEquipment() => new EquipmentContainer?();
+	EquipmentContainer? GetEquipment() => new EquipmentContainer?();
 
-  WeaponModelId? GetMainHand() => new WeaponModelId?();
+	WeaponModelId? GetMainHand() => new WeaponModelId?();
 
-  WeaponModelId? GetOffHand() => new WeaponModelId?();
+	WeaponModelId? GetOffHand() => new WeaponModelId?();
 }

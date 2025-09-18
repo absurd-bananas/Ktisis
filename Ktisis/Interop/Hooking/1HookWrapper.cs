@@ -4,42 +4,38 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Hooking;
+#nullable enable
 using System;
 
-#nullable enable
 namespace Ktisis.Interop.Hooking;
 
-public class HookWrapper<T> : IHookWrapper, IDalamudHook, IDisposable where T : Delegate
-{
-  private readonly Hook<T> _hook;
+public class HookWrapper<T> : IHookWrapper, IDalamudHook, IDisposable where T : Delegate {
+	private readonly Hook<T> _hook;
 
-  public string Name { get; }
+	public HookWrapper(Hook<T> hook) {
+		this._hook = hook;
+		this.Name = this.GetType().GetGenericArguments()[0].Name;
+	}
 
-  public HookWrapper(Hook<T> hook)
-  {
-    this._hook = hook;
-    this.Name = this.GetType().GetGenericArguments()[0].Name;
-  }
+	public IntPtr Address => this._hook.Address;
 
-  public IntPtr Address => this._hook.Address;
+	public bool IsEnabled => this._hook.IsEnabled;
 
-  public bool IsEnabled => this._hook.IsEnabled;
+	public bool IsDisposed => this._hook.IsDisposed;
 
-  public bool IsDisposed => this._hook.IsDisposed;
+	public string BackendName => this._hook.BackendName;
 
-  public string BackendName => this._hook.BackendName;
+	public string Name { get; }
 
-  public void Enable() => this._hook.Enable();
+	public void Enable() => this._hook.Enable();
 
-  public void Disable() => this._hook.Disable();
+	public void Disable() => this._hook.Disable();
 
-  public void Dispose()
-  {
-    Ktisis.Ktisis.Log.Debug($"Disposing hook: '{this.Name}'", Array.Empty<object>());
-    if (this._hook.IsEnabled)
-      this._hook.Disable();
-    this._hook.Dispose();
-    GC.SuppressFinalize((object) this);
-  }
+	public void Dispose() {
+		Ktisis.Ktisis.Log.Debug($"Disposing hook: '{this.Name}'", Array.Empty<object>());
+		if (this._hook.IsEnabled)
+			this._hook.Disable();
+		this._hook.Dispose();
+		GC.SuppressFinalize(this);
+	}
 }

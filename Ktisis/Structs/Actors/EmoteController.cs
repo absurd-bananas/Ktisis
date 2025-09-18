@@ -4,20 +4,19 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System.Runtime.InteropServices;
 
-#nullable disable
 namespace Ktisis.Structs.Actors;
 
 [StructLayout(LayoutKind.Explicit)]
-public struct EmoteController
-{
-  [FieldOffset(32 /*0x20*/)]
-  public PoseModeEnum Mode;
-  [FieldOffset(33)]
-  public byte Pose;
-  [FieldOffset(53)]
-  public bool IsForceDefaultPose;
-  [FieldOffset(55)]
-  public bool IsDrawObjectOffset;
+public struct EmoteController {
+	[FieldOffset(32 /*0x20*/)]
+	public PoseModeEnum Mode;
+	[FieldOffset(33)]
+	public byte Pose;
+	[FieldOffset(53)]
+	public bool IsForceDefaultPose;
+	[FieldOffset(55)]
+	public bool IsDrawObjectOffset;
 }

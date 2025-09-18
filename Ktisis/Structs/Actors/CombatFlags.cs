@@ -4,14 +4,13 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System;
 
-#nullable disable
 namespace Ktisis.Structs.Actors;
 
 [Flags]
-public enum CombatFlags : byte
-{
-  None = 0,
-  WeaponDrawn = 64, // 0x40
+public enum CombatFlags : byte {
+	None = 0,
+	WeaponDrawn = 64 // 0x40
 }

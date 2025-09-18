@@ -7,8 +7,7 @@
 #nullable disable
 namespace Ktisis.Editor.Transforms.Types;
 
-public enum SelectiveFlipType
-{
-  Copy,
-  Swap,
+public enum SelectiveFlipType {
+	Copy,
+	Swap
 }

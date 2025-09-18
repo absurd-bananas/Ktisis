@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Editor.Characters.State;
 
-public enum EquipmentToggle
-{
-  None,
-  Off,
-  On,
+public enum EquipmentToggle {
+	None,
+	Off,
+	On
 }

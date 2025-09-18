@@ -4,23 +4,16 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System;
 
-#nullable disable
 namespace Ktisis.Structs.Common;
 
-public struct ObjectUnion
-{
-  public unsafe IntPtr** __vfTable;
-  public IntPtr Data;
+public struct ObjectUnion {
+	public unsafe IntPtr** __vfTable;
+	public IntPtr Data;
 
-  public IntPtr GetObjectPointer()
-  {
-    return (this.Data & new IntPtr(1)) == IntPtr.Zero ? IntPtr.Zero : this.Data & new IntPtr(-8);
-  }
+	public IntPtr GetObjectPointer() => (this.Data & new IntPtr(1)) == IntPtr.Zero ? IntPtr.Zero : this.Data & new IntPtr(-8);
 
-  public short GetObjectIndex()
-  {
-    return (this.Data & new IntPtr(4)) == IntPtr.Zero ? (short) -1 : (short) (this.Data >> 3);
-  }
+	public short GetObjectIndex() => (this.Data & new IntPtr(4)) == IntPtr.Zero ? (short)-1 : (short)(this.Data >> 3);
 }

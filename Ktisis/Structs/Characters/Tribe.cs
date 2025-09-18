@@ -7,22 +7,21 @@
 #nullable disable
 namespace Ktisis.Structs.Characters;
 
-public enum Tribe : byte
-{
-  Midlander = 1,
-  Highlander = 2,
-  Wildwood = 3,
-  Duskwight = 4,
-  Plainsfolk = 5,
-  Dunesfolk = 6,
-  SunSeeker = 7,
-  MoonKeeper = 8,
-  SeaWolf = 9,
-  Hellsguard = 10, // 0x0A
-  Raen = 11, // 0x0B
-  Xaela = 12, // 0x0C
-  Helion = 13, // 0x0D
-  Lost = 14, // 0x0E
-  Rava = 15, // 0x0F
-  Veena = 16, // 0x10
+public enum Tribe : byte {
+	Midlander = 1,
+	Highlander = 2,
+	Wildwood = 3,
+	Duskwight = 4,
+	Plainsfolk = 5,
+	Dunesfolk = 6,
+	SunSeeker = 7,
+	MoonKeeper = 8,
+	SeaWolf = 9,
+	Hellsguard = 10, // 0x0A
+	Raen = 11, // 0x0B
+	Xaela = 12, // 0x0C
+	Helion = 13, // 0x0D
+	Lost = 14, // 0x0E
+	Rava = 15, // 0x0F
+	Veena = 16 // 0x10
 }

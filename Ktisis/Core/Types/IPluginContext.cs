@@ -4,24 +4,23 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Actions;
 using Ktisis.Data.Config;
 using Ktisis.Editor.Context.Types;
 using Ktisis.Interface;
 using Ktisis.Interop.Ipc;
 
-#nullable enable
 namespace Ktisis.Core.Types;
 
-public interface IPluginContext
-{
-  ActionService Actions { get; }
+public interface IPluginContext {
+	ActionService Actions { get; }
 
-  ConfigManager Config { get; }
+	ConfigManager Config { get; }
 
-  GuiManager Gui { get; }
+	GuiManager Gui { get; }
 
-  IpcManager Ipc { get; }
+	IpcManager Ipc { get; }
 
-  IEditorContext? Editor { get; }
+	IEditorContext? Editor { get; }
 }

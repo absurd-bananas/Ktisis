@@ -1,1026 +1,1026 @@
 <Categories>
-	<Category Id="Head">
-		<Bones>
-			j_kao
-			j_kubi
-			j_head
-		</Bones>
-		<Category Id="Hair">
-			<Bones>
-				j_kami_a
-				j_kami_b
-				j_kami_f_l
-				j_kami_f_r
-			</Bones>
-		</Category>
-		<Category Id="Ears">
-			<Category Id="LeftEar">
-				<Bones>
-					j_mimi_l
-					j_zera_a_l
-					j_zera_b_l
-					j_zerb_a_l
-					j_zerb_b_l
-					j_zerc_a_l
-					j_zerc_b_l
-					j_zerd_a_l
-					j_zerd_b_l
-					j_ear_l
-				</Bones>
-			</Category>
-			<Category Id="RightEar">
-				<Bones>
-					j_mimi_r
-					j_zera_a_r
-					j_zera_b_r
-					j_zerb_a_r
-					j_zerb_b_r
-					j_zerc_a_r
-					j_zerc_b_r
-					j_zerd_a_r
-					j_zerd_b_r
-					j_ear_r
-				</Bones>
-			</Category>
-		</Category>
-		<Category Id="Face">
-			<Bones>
-				j_face
-				j_f_face
-			</Bones>
-			<Category Id="Brow">
-				<Category Id="LeftBrow">
-					<Bones>
-						j_f_miken_l
-						j_f_mayu_l
-						j_f_mmayu_l
-						j_f_miken_01_l
-						j_f_miken_02_l
-					</Bones>
-				</Category>
-				<Category Id="RightBrow">
-					<Bones>
-						j_f_miken_r
-						j_f_mayu_r
-						j_f_mmayu_r
-						j_f_miken_01_r
-						j_f_miken_02_r
-					</Bones>
-				</Category>
-			</Category>
-			<Category Id="Eyes">
-				<Bones>
-					j_f_eyeprm_01_l
-					j_f_eyeprm_01_r
-					j_f_eyeprmroll_l
-					j_f_eyeprmroll_r
-					j_f_eyeprm_02_l
-					j_f_eyeprm_02_r
-					j_f_irisprm_l
-					j_f_irisprm_r
-					j_f_noanim_eyesize_l
-					j_f_noanim_eyesize_r
-				</Bones>
-				<Category Id="LeftEye">
-					<Bones>
-						j_f_eye_l
-						j_f_eyepuru_l
-						j_f_mab_l
-					</Bones>
-					<Category Id="LeftEyelid">
-						<Bones>
-							j_f_umab_l
-							j_f_dmab_l
-							j_f_mabup_01_l
-							j_f_mabdn_01_l
-							j_f_mabup_02out_l
-							j_f_mabdn_02out_l
-							j_f_mabup_03in_l
-							j_f_mabdn_03in_l
-						</Bones>
-					</Category>
-				</Category>
-				<Category Id="RightEye">
-					<Bones>
-						j_f_eye_r
-						j_f_eyepuru_r
-						j_f_mab_r
-					</Bones>
-					<Category Id="RightEyelid">
-						<Bones>
-							j_f_umab_r
-							j_f_dmab_r
-							j_f_mabup_01_r
-							j_f_mabdn_01_r
-							j_f_mabup_02out_r
-							j_f_mabdn_02out_r
-							j_f_mabup_03in_r
-							j_f_mabdn_03in_r
-						</Bones>
-					</Category>
-				</Category>
-			</Category>
-			<Category Id="Nose">
-				<Bones>
-					j_f_hana
-					j_f_memoto
-					j_f_uhana
-					j_f_hana_l
-					j_f_hana_r
-				</Bones>
-			</Category>
-			<Category Id="Cheeks">
-				<Category Id="LeftCheek">
-					<Bones>
-						j_f_hoho_l
-						j_f_dhoho_l
-						j_f_shoho_l
-						j_f_dmemoto_l
-					</Bones>
-				</Category>
-				<Category Id="RightCheek">
-					<Bones>
-						j_f_hoho_r
-						j_f_dhoho_r
-						j_f_shoho_r
-						j_f_dmemoto_r
-					</Bones>
-				</Category>
-			</Category>
-			<Category Id="Mouth">
-				<Bones>
-					j_ago
-					j_f_lip_l
-					j_f_lip_r
-				</Bones>
-				<Category Id="UpperMouth">
-					<Bones>
-						j_f_hagukiup
-					</Bones>
-					<Category Id="UpperLip">
-						<Bones>
-							j_f_ulip_a
-							j_f_ulip_b
-							j_f_ulip_01_l
-							j_f_ulip_02_l
-							j_f_ulip_01_r
-							j_f_ulip_02_r
-							j_f_umlip_01_l
-							j_f_umlip_02_l
-							j_f_umlip_01_r
-							j_f_umlip_02_r
-							j_f_uslip_l
-							j_f_uslip_r
-						</Bones>
-					</Category>
-				</Category>
-				<Category Id="LowerMouth">
-					<Bones>
-						j_f_ago
-						j_f_dago
-						j_f_hagukidn
-					</Bones>
-					<Category Id="LowerLip">
-						<Bones>
-							j_f_dlip_a
-							j_f_dlip_b
-							j_f_dlip_01_l
-							j_f_dlip_02_l
-							j_f_dlip_01_r
-							j_f_dlip_02_r
-							j_f_dmlip_01_l
-							j_f_dmlip_02_l
-							j_f_dmlip_01_r
-							j_f_dmlip_02_r
-							j_f_dslip_l
-							j_f_dslip_r
-						</Bones>
-					</Category>
-				</Category>
-				<Category Id="Tongue">
-					<Bones>
-						j_f_bero_01
-						j_f_bero_02
-						j_f_bero_03
-					</Bones>
-				</Category>
-			</Category>
-		</Category>
-	</Category>
-	<Category Id="Body">
-		<Category Id="Arms">
-			<Category Id="LeftArm">
-				<Bones>
-					j_sako_l
-					j_ude_a_l
-					j_ude_b_l
-					n_hkata_l
-					n_hhiji_l
-					iv_nitoukin_l
-				</Bones>
-				<Category Id="LeftHand">
-					<TwoJointsIK Type="Arm">
-						<FirstBone>j_ude_a_l</FirstBone>
-						<FirstTwist>n_hkata_l</FirstTwist>
-						<SecondBone>j_ude_b_l</SecondBone>
-						<SecondTwist>n_hhiji_l</SecondTwist>
-						<EndBone>j_te_l</EndBone>
-						<EndBone>j_hand_l</EndBone>
-					</TwoJointsIK>
-					<Bones>
-						j_hito_a_l
-						j_ko_a_l
-						j_kusu_a_l
-						j_naka_a_l
-						j_oya_a_l
-						j_hito_b_l
-						j_ko_b_l
-						j_kusu_b_l
-						j_naka_b_l
-						j_oya_b_l
-						j_te_l
-						n_hte_l
-						j_hand_l
-					</Bones>
-					<Category Id="LeftHandIvcs">
-						<Bones>
-							iv_ko_c_l
-							iv_kusu_c_l
-							iv_naka_c_l
-							iv_hito_c_l
-						</Bones>
-					</Category>
-				</Category>
-			</Category>
-			<Category Id="RightArm">
-				<Bones>
-					j_sako_r
-					j_ude_a_r
-					j_ude_b_r
-					n_hkata_r
-					n_hhiji_r
-					iv_nitoukin_r
-				</Bones>
-				<Category Id="RightHand">
-					<TwoJointsIK Type="Arm">
-						<FirstBone>j_ude_a_r</FirstBone>
-						<FirstTwist>n_hkata_r</FirstTwist>
-						<SecondBone>j_ude_b_r</SecondBone>
-						<SecondTwist>n_hhiji_r</SecondTwist>
-						<EndBone>j_te_r</EndBone>
-						<EndBone>j_hand_r</EndBone>
-					</TwoJointsIK>
-					<Bones>
-						j_hito_a_r
-						j_ko_a_r
-						j_kusu_a_r
-						j_naka_a_r
-						j_oya_a_r
-						j_hito_b_r
-						j_ko_b_r
-						j_kusu_b_r
-						j_naka_b_r
-						j_oya_b_r
-						j_te_r
-						n_hte_r
-						j_hand_r
-					</Bones>
-					<Category Id="RightHandIvcs">
-						<Bones>
-							iv_ko_c_r
-							iv_kusu_c_r
-							iv_naka_c_r
-							iv_hito_c_r
-						</Bones>
-					</Category>
-				</Category>
-			</Category>
-		</Category>
-		<Category Id="Spine">
-			<Bones>
-				n_hara
-				j_kosi
-				j_sebo_a
-				j_sebo_b
-				j_sebo_c
-			</Bones>
-			<Category Id="SkelomaeWings">
-				<Category Id="SkelomaeWingsLeft">
-					<Bones>
-						mkl_wingbase_l
-						mkl_wingarm_a_l
-						mkl_wingarm_b_l
-						mkl_wingarm_c_l
-						mkl_wingarm_d_l
-					</Bones>
-				</Category>
-				<Category Id="SkelomaeWingsRight">
-					<Bones>
-						mkl_wingbase_r
-						mkl_wingarm_a_r
-						mkl_wingarm_b_r
-						mkl_wingarm_c_r
-						mkl_wingarm_d_r
-					</Bones>
-				</Category>
-			</Category>
-			<Category Id="Breasts">
-				<Bones>
-					j_mune_l
-					j_mune_r
-				</Bones>
-				<Category Id="BreastsIvcs">
-					<Bones>
-						iv_c_mune_l
-						iv_c_mune_r
-					</Bones>
-				</Category>
-				<Category Id="NofflebonesBreasts">
-					<Bones>
-						nf_nipple_l
-						nf_nipple_r
-						nf_shrt_nf_nipple_l
-						nf_bra_nf_nipple_l
-						nf_shrt_nf_nipple_r
-						nf_bra_nf_nipple_r
-					</Bones>
-				</Category>
-			</Category>
-			<Category Id="SkelomaeCreatures">
-				<Category Id="SkelomaeCreaturesLamia">
-					<Category Id="SkelomaeCreaturesGenetals" IsNsfw="true">
-						<Bones>
-							lamia_clucoa_l
-							lamia_clucoa_r
-						</Bones>
-					</Category>
-					<Bones>
-						lamia_a
-						lamia_b
-						lamia_c
-						lamia_d
-						lamia_e
-						lamia_f
-						lamia_g
-						lamia_h
-						lamia_i
-						lamia_j
-						lamia_k
-						lamia_l
-						lamia_m
-						lamia_n
-						lamia_o
-						lamia_p
-						lamia_q
-						lamia_r
-						lamia_s
-						lamia_t
-						lamia_u
-					</Bones>
-				</Category>
-				<Category Id="SkelomaeCreaturesCentaur">
-					<Category Id="SkelomaeCreaturesCentaurBody">
-						<Bones>
-							rf_centaur_body
-							rf_centaur_hip
-							rf_centaur_shoulder_f_l
-							rf_centaur_shoulder_f_r
-						</Bones>
-					</Category>
-					<Category Id="SkelomaeCreaturesCentaurTail">
-						<Bones>
-							rf_centaur_tail_a
-							rf_centaur_tail_b
-							rf_centaur_tail_c
-							rf_centaur_tail_d
-						</Bones>
-					</Category>
-					<Category Id="SkelomaeCreaturesCentaurBodyFrontLegs">
-						<Bones>
-							rf_centaur_farm_a_l
-							rf_centaur_farm_b_l
-							rf_centaur_farm_c_l
-							rf_centaur_farm_d_l
-							rf_centaur_farm_e_l
-							rf_centaur_farm_a_r
-							rf_centaur_farm_b_r
-							rf_centaur_farm_c_r
-							rf_centaur_farm_d_r
-							rf_centaur_farm_e_r
-						</Bones>
-					</Category>
-					<Category Id="SkelomaeCreaturesCentaurBodyBackLegs">
-						<Bones>
-							rf_centaur_bleg_a_l
-							rf_centaur_bleg_b_l
-							rf_centaur_bleg_c_l
-							rf_centaur_bleg_d_l
-							rf_centaur_bleg_e_l
-							rf_centaur_bleg_a_r
-							rf_centaur_bleg_b_r
-							rf_centaur_bleg_c_r
-							rf_centaur_bleg_d_r
-							rf_centaur_bleg_e_r
-						</Bones>
-					</Category>
-				</Category>
-			</Category>
-		</Category>
-		<Category Id="Legs">
-			<Category Id="LeftLeg">
-				<Bones>
-					j_asi_a_l
-					j_asi_b_l
-					j_asi_c_l
-				</Bones>
-				<Category Id="LeftFoot">
-					<TwoJointsIK Type="Leg">
-						<FirstBone>j_asi_a_l</FirstBone>
-						<SecondBone>j_asi_b_l</SecondBone>
-						<SecondTwist>j_asi_c_l</SecondTwist>
-						<EndBone>j_asi_d_l</EndBone>
-						<EndBone>j_foot_l</EndBone>
-					</TwoJointsIK>
-					<Bones>
-						j_asi_d_l
-						j_asi_e_l
-						j_foot_l
-					</Bones>
-					<Category Id="LeftFootIvcs">
-						<Bones>
-							iv_asi_oya_a_l
-							iv_asi_oya_b_l
-							iv_asi_hito_a_l
-							iv_asi_hito_b_l
-							iv_asi_naka_a_l
-							iv_asi_naka_b_l
-							iv_asi_kusu_a_l
-							iv_asi_kusu_b_l
-							iv_asi_ko_a_l
-							iv_asi_ko_b_l
-						</Bones>
-					</Category>
-				</Category>
-			</Category>
-			<Category Id="RightLeg">
-				<Bones>
-					j_asi_a_r
-					j_asi_b_r
-					j_asi_c_r
-				</Bones>
-				<Category Id="RightFoot">
-					<TwoJointsIK Type="Leg">
-						<FirstBone>j_asi_a_r</FirstBone>
-						<SecondBone>j_asi_b_r</SecondBone>
-						<SecondTwist>j_asi_c_r</SecondTwist>
-						<EndBone>j_asi_d_r</EndBone>
-						<EndBone>j_foot_r</EndBone>
-					</TwoJointsIK>
-					<Bones>
-						j_asi_d_r
-						j_asi_e_r
-						j_foot_r
-					</Bones>
-					<Category Id="RightFootIvcs">
-						<Bones>
-							iv_asi_oya_a_r
-							iv_asi_oya_b_r
-							iv_asi_hito_a_r
-							iv_asi_hito_b_r
-							iv_asi_naka_a_r
-							iv_asi_naka_b_r
-							iv_asi_kusu_a_r
-							iv_asi_kusu_b_r
-							iv_asi_ko_a_r
-							iv_asi_ko_b_r
-						</Bones>
-					</Category>
-				</Category>
-			</Category>
-		</Category>
-		<Category Id="GenitalsIvcs" IsNsfw="true">
-			<Category Id="PenisIvcs" IsNsfw="true">
-				<CcdIK>
-					<StartBone>iv_ochinko_a</StartBone>
-					<EndBone>iv_ochinko_f</EndBone>
-				</CcdIK>
-				<Bones>
-					iv_kougan_l
-					iv_kougan_r
-					iv_ochinko_a
-					iv_ochinko_b
-					iv_ochinko_c
-					iv_ochinko_d
-					iv_ochinko_e
-					iv_ochinko_f
-					j_penis
-					j_balls
-				</Bones>
-			</Category>
-			<Category Id="VaginaIvcs" IsNsfw="true">
-				<Bones>
-					iv_omanko
-					iv_kuritto
-					iv_inshin_l
-					iv_inshin_r
-				</Bones>
-			</Category>
-		</Category>
-		<Category Id="NofflebonesGenitals" IsNsfw="true">
-			<Category Id="NofflebonesVagina" IsNsfw="true">
-				<Bones>
-					nf_clitoris
-					nf_labia_inner_l
-					nf_labia_outer_l
-					nf_labia_inner_r
-					nf_labia_outer_r
-				</Bones>
-			</Category>
-		</Category>
-		<Category Id="BottomIvcs" IsNsfw="true">
-			<Bones>
-				iv_koumon
-				iv_koumon_l
-				iv_koumon_r
-				iv_shiri_l
-				iv_shiri_r
-			</Bones>
-		</Category>
-		<Category Id="NofflebonesBottom" IsNsfw="true">
-			<Bones>
-				nf_iv_shiri_l
-				nf_iv_shiri_r
-				nf_shrt_iv_shiri_l
-				nf_shrt_iv_shiri_r
-			</Bones>
-		</Category>
-	</Category>
-	<Category Id="Tail">
-		<CcdIK>
-			<StartBone>n_sippo_a</StartBone>
-			<EndBone>n_sippo_e</EndBone>
-			<EndBone>j_tail</EndBone>
-		</CcdIK>
-		<Bones>
-			n_sippo_a
-			n_sippo_b
-			n_sippo_c
-			n_sippo_d
-			n_sippo_e
-			j_tail
-		</Bones>
-	</Category>
-	<Category Id="Clothing">
-		<Bones>
-			n_hizasoubi_l
-			n_hizasoubi_r
-			n_kataarmor_l
-			n_kataarmor_r
-			n_hijisoubi_l
-			n_hijisoubi_r
-			j_ex_top_a_r
-			j_ex_top_a_l
-			j_ex_top_b_r
-			j_ex_top_b_l
-			j_ex_met_a
-			j_ex_met_b
-			j_ex_met_c
-			j_ex_met_d
-			j_ex_met_va
-			j_ex_met_vb
-		</Bones>
-		<Category Id="Cloth">
-			<Bones>
-				j_sk_b_b_l
-				j_sk_b_b_r
-				j_sk_f_b_l
-				j_sk_f_b_r
-				j_sk_s_b_l
-				j_sk_s_b_r
-				j_sk_b_a_l
-				j_sk_b_a_r
-				j_sk_f_a_l
-				j_sk_f_a_r
-				j_sk_s_a_l
-				j_sk_s_a_r
-				j_sk_b_c_l
-				j_sk_b_c_r
-				j_sk_f_c_l
-				j_sk_f_c_r
-				j_sk_s_c_l
-				j_sk_s_c_r
-			</Bones>
-		</Category>
-		<Category Id="Earring">
-			<Bones>
-				n_ear_a_l
-				n_ear_a_r
-				n_ear_b_l
-				n_ear_b_r
-			</Bones>
-		</Category>
-		<Category Id="NofflebonesClothing">
-			<Category Id="NofflebonesHead">
-				<Bones>
-					nf_hlm_j_kao
-					nf_hlm_j_kubi
-					nf_hlm_j_sebo_c
-					nf_hlm_j_ago
-				</Bones>
-				<Category Id="NofflebonesHeadProps">
-					<Bones>
-						nf_glasses
-						nf_faceprop_a
-						nf_faceprop_b
-						nf_faceprop_c
-						nf_faceprop_d
-						nf_faceprop_e
-						nf_faceprop_f
-						nf_faceprop_g
-						nf_faceprop_h
-						nf_faceprop_i
-						nf_faceprop_j
-						nf_neckprop_a
-					</Bones>
-				</Category>
-			</Category>
-			<Category Id="NofflebonesUpperBody">
-				<Category Id="NofflebonesBra" IsNsfw="true">
-					<Bones>
-						nf_bra_j_kubi
-						nf_bra_j_mune_l
-						nf_bra_n_hkata_l
-						nf_bra_j_ude_a_l
-						nf_bra_strap_top_l
-						nf_bra_strap_b_l
-						nf_bra_j_sako_l
+    <Category Id="Head">
+        <Bones>
+            j_kao
+            j_kubi
+            j_head
+        </Bones>
+        <Category Id="Hair">
+            <Bones>
+                j_kami_a
+                j_kami_b
+                j_kami_f_l
+                j_kami_f_r
+            </Bones>
+        </Category>
+        <Category Id="Ears">
+            <Category Id="LeftEar">
+                <Bones>
+                    j_mimi_l
+                    j_zera_a_l
+                    j_zera_b_l
+                    j_zerb_a_l
+                    j_zerb_b_l
+                    j_zerc_a_l
+                    j_zerc_b_l
+                    j_zerd_a_l
+                    j_zerd_b_l
+                    j_ear_l
+                </Bones>
+            </Category>
+            <Category Id="RightEar">
+                <Bones>
+                    j_mimi_r
+                    j_zera_a_r
+                    j_zera_b_r
+                    j_zerb_a_r
+                    j_zerb_b_r
+                    j_zerc_a_r
+                    j_zerc_b_r
+                    j_zerd_a_r
+                    j_zerd_b_r
+                    j_ear_r
+                </Bones>
+            </Category>
+        </Category>
+        <Category Id="Face">
+            <Bones>
+                j_face
+                j_f_face
+            </Bones>
+            <Category Id="Brow">
+                <Category Id="LeftBrow">
+                    <Bones>
+                        j_f_miken_l
+                        j_f_mayu_l
+                        j_f_mmayu_l
+                        j_f_miken_01_l
+                        j_f_miken_02_l
+                    </Bones>
+                </Category>
+                <Category Id="RightBrow">
+                    <Bones>
+                        j_f_miken_r
+                        j_f_mayu_r
+                        j_f_mmayu_r
+                        j_f_miken_01_r
+                        j_f_miken_02_r
+                    </Bones>
+                </Category>
+            </Category>
+            <Category Id="Eyes">
+                <Bones>
+                    j_f_eyeprm_01_l
+                    j_f_eyeprm_01_r
+                    j_f_eyeprmroll_l
+                    j_f_eyeprmroll_r
+                    j_f_eyeprm_02_l
+                    j_f_eyeprm_02_r
+                    j_f_irisprm_l
+                    j_f_irisprm_r
+                    j_f_noanim_eyesize_l
+                    j_f_noanim_eyesize_r
+                </Bones>
+                <Category Id="LeftEye">
+                    <Bones>
+                        j_f_eye_l
+                        j_f_eyepuru_l
+                        j_f_mab_l
+                    </Bones>
+                    <Category Id="LeftEyelid">
+                        <Bones>
+                            j_f_umab_l
+                            j_f_dmab_l
+                            j_f_mabup_01_l
+                            j_f_mabdn_01_l
+                            j_f_mabup_02out_l
+                            j_f_mabdn_02out_l
+                            j_f_mabup_03in_l
+                            j_f_mabdn_03in_l
+                        </Bones>
+                    </Category>
+                </Category>
+                <Category Id="RightEye">
+                    <Bones>
+                        j_f_eye_r
+                        j_f_eyepuru_r
+                        j_f_mab_r
+                    </Bones>
+                    <Category Id="RightEyelid">
+                        <Bones>
+                            j_f_umab_r
+                            j_f_dmab_r
+                            j_f_mabup_01_r
+                            j_f_mabdn_01_r
+                            j_f_mabup_02out_r
+                            j_f_mabdn_02out_r
+                            j_f_mabup_03in_r
+                            j_f_mabdn_03in_r
+                        </Bones>
+                    </Category>
+                </Category>
+            </Category>
+            <Category Id="Nose">
+                <Bones>
+                    j_f_hana
+                    j_f_memoto
+                    j_f_uhana
+                    j_f_hana_l
+                    j_f_hana_r
+                </Bones>
+            </Category>
+            <Category Id="Cheeks">
+                <Category Id="LeftCheek">
+                    <Bones>
+                        j_f_hoho_l
+                        j_f_dhoho_l
+                        j_f_shoho_l
+                        j_f_dmemoto_l
+                    </Bones>
+                </Category>
+                <Category Id="RightCheek">
+                    <Bones>
+                        j_f_hoho_r
+                        j_f_dhoho_r
+                        j_f_shoho_r
+                        j_f_dmemoto_r
+                    </Bones>
+                </Category>
+            </Category>
+            <Category Id="Mouth">
+                <Bones>
+                    j_ago
+                    j_f_lip_l
+                    j_f_lip_r
+                </Bones>
+                <Category Id="UpperMouth">
+                    <Bones>
+                        j_f_hagukiup
+                    </Bones>
+                    <Category Id="UpperLip">
+                        <Bones>
+                            j_f_ulip_a
+                            j_f_ulip_b
+                            j_f_ulip_01_l
+                            j_f_ulip_02_l
+                            j_f_ulip_01_r
+                            j_f_ulip_02_r
+                            j_f_umlip_01_l
+                            j_f_umlip_02_l
+                            j_f_umlip_01_r
+                            j_f_umlip_02_r
+                            j_f_uslip_l
+                            j_f_uslip_r
+                        </Bones>
+                    </Category>
+                </Category>
+                <Category Id="LowerMouth">
+                    <Bones>
+                        j_f_ago
+                        j_f_dago
+                        j_f_hagukidn
+                    </Bones>
+                    <Category Id="LowerLip">
+                        <Bones>
+                            j_f_dlip_a
+                            j_f_dlip_b
+                            j_f_dlip_01_l
+                            j_f_dlip_02_l
+                            j_f_dlip_01_r
+                            j_f_dlip_02_r
+                            j_f_dmlip_01_l
+                            j_f_dmlip_02_l
+                            j_f_dmlip_01_r
+                            j_f_dmlip_02_r
+                            j_f_dslip_l
+                            j_f_dslip_r
+                        </Bones>
+                    </Category>
+                </Category>
+                <Category Id="Tongue">
+                    <Bones>
+                        j_f_bero_01
+                        j_f_bero_02
+                        j_f_bero_03
+                    </Bones>
+                </Category>
+            </Category>
+        </Category>
+    </Category>
+    <Category Id="Body">
+        <Category Id="Arms">
+            <Category Id="LeftArm">
+                <Bones>
+                    j_sako_l
+                    j_ude_a_l
+                    j_ude_b_l
+                    n_hkata_l
+                    n_hhiji_l
+                    iv_nitoukin_l
+                </Bones>
+                <Category Id="LeftHand">
+                    <TwoJointsIK Type="Arm">
+                        <FirstBone>j_ude_a_l</FirstBone>
+                        <FirstTwist>n_hkata_l</FirstTwist>
+                        <SecondBone>j_ude_b_l</SecondBone>
+                        <SecondTwist>n_hhiji_l</SecondTwist>
+                        <EndBone>j_te_l</EndBone>
+                        <EndBone>j_hand_l</EndBone>
+                    </TwoJointsIK>
+                    <Bones>
+                        j_hito_a_l
+                        j_ko_a_l
+                        j_kusu_a_l
+                        j_naka_a_l
+                        j_oya_a_l
+                        j_hito_b_l
+                        j_ko_b_l
+                        j_kusu_b_l
+                        j_naka_b_l
+                        j_oya_b_l
+                        j_te_l
+                        n_hte_l
+                        j_hand_l
+                    </Bones>
+                    <Category Id="LeftHandIvcs">
+                        <Bones>
+                            iv_ko_c_l
+                            iv_kusu_c_l
+                            iv_naka_c_l
+                            iv_hito_c_l
+                        </Bones>
+                    </Category>
+                </Category>
+            </Category>
+            <Category Id="RightArm">
+                <Bones>
+                    j_sako_r
+                    j_ude_a_r
+                    j_ude_b_r
+                    n_hkata_r
+                    n_hhiji_r
+                    iv_nitoukin_r
+                </Bones>
+                <Category Id="RightHand">
+                    <TwoJointsIK Type="Arm">
+                        <FirstBone>j_ude_a_r</FirstBone>
+                        <FirstTwist>n_hkata_r</FirstTwist>
+                        <SecondBone>j_ude_b_r</SecondBone>
+                        <SecondTwist>n_hhiji_r</SecondTwist>
+                        <EndBone>j_te_r</EndBone>
+                        <EndBone>j_hand_r</EndBone>
+                    </TwoJointsIK>
+                    <Bones>
+                        j_hito_a_r
+                        j_ko_a_r
+                        j_kusu_a_r
+                        j_naka_a_r
+                        j_oya_a_r
+                        j_hito_b_r
+                        j_ko_b_r
+                        j_kusu_b_r
+                        j_naka_b_r
+                        j_oya_b_r
+                        j_te_r
+                        n_hte_r
+                        j_hand_r
+                    </Bones>
+                    <Category Id="RightHandIvcs">
+                        <Bones>
+                            iv_ko_c_r
+                            iv_kusu_c_r
+                            iv_naka_c_r
+                            iv_hito_c_r
+                        </Bones>
+                    </Category>
+                </Category>
+            </Category>
+        </Category>
+        <Category Id="Spine">
+            <Bones>
+                n_hara
+                j_kosi
+                j_sebo_a
+                j_sebo_b
+                j_sebo_c
+            </Bones>
+            <Category Id="SkelomaeWings">
+                <Category Id="SkelomaeWingsLeft">
+                    <Bones>
+                        mkl_wingbase_l
+                        mkl_wingarm_a_l
+                        mkl_wingarm_b_l
+                        mkl_wingarm_c_l
+                        mkl_wingarm_d_l
+                    </Bones>
+                </Category>
+                <Category Id="SkelomaeWingsRight">
+                    <Bones>
+                        mkl_wingbase_r
+                        mkl_wingarm_a_r
+                        mkl_wingarm_b_r
+                        mkl_wingarm_c_r
+                        mkl_wingarm_d_r
+                    </Bones>
+                </Category>
+            </Category>
+            <Category Id="Breasts">
+                <Bones>
+                    j_mune_l
+                    j_mune_r
+                </Bones>
+                <Category Id="BreastsIvcs">
+                    <Bones>
+                        iv_c_mune_l
+                        iv_c_mune_r
+                    </Bones>
+                </Category>
+                <Category Id="NofflebonesBreasts">
+                    <Bones>
+                        nf_nipple_l
+                        nf_nipple_r
+                        nf_shrt_nf_nipple_l
+                        nf_bra_nf_nipple_l
+                        nf_shrt_nf_nipple_r
+                        nf_bra_nf_nipple_r
+                    </Bones>
+                </Category>
+            </Category>
+            <Category Id="SkelomaeCreatures">
+                <Category Id="SkelomaeCreaturesLamia">
+                    <Category Id="SkelomaeCreaturesGenetals" IsNsfw="true">
+                        <Bones>
+                            lamia_clucoa_l
+                            lamia_clucoa_r
+                        </Bones>
+                    </Category>
+                    <Bones>
+                        lamia_a
+                        lamia_b
+                        lamia_c
+                        lamia_d
+                        lamia_e
+                        lamia_f
+                        lamia_g
+                        lamia_h
+                        lamia_i
+                        lamia_j
+                        lamia_k
+                        lamia_l
+                        lamia_m
+                        lamia_n
+                        lamia_o
+                        lamia_p
+                        lamia_q
+                        lamia_r
+                        lamia_s
+                        lamia_t
+                        lamia_u
+                    </Bones>
+                </Category>
+                <Category Id="SkelomaeCreaturesCentaur">
+                    <Category Id="SkelomaeCreaturesCentaurBody">
+                        <Bones>
+                            rf_centaur_body
+                            rf_centaur_hip
+                            rf_centaur_shoulder_f_l
+                            rf_centaur_shoulder_f_r
+                        </Bones>
+                    </Category>
+                    <Category Id="SkelomaeCreaturesCentaurTail">
+                        <Bones>
+                            rf_centaur_tail_a
+                            rf_centaur_tail_b
+                            rf_centaur_tail_c
+                            rf_centaur_tail_d
+                        </Bones>
+                    </Category>
+                    <Category Id="SkelomaeCreaturesCentaurBodyFrontLegs">
+                        <Bones>
+                            rf_centaur_farm_a_l
+                            rf_centaur_farm_b_l
+                            rf_centaur_farm_c_l
+                            rf_centaur_farm_d_l
+                            rf_centaur_farm_e_l
+                            rf_centaur_farm_a_r
+                            rf_centaur_farm_b_r
+                            rf_centaur_farm_c_r
+                            rf_centaur_farm_d_r
+                            rf_centaur_farm_e_r
+                        </Bones>
+                    </Category>
+                    <Category Id="SkelomaeCreaturesCentaurBodyBackLegs">
+                        <Bones>
+                            rf_centaur_bleg_a_l
+                            rf_centaur_bleg_b_l
+                            rf_centaur_bleg_c_l
+                            rf_centaur_bleg_d_l
+                            rf_centaur_bleg_e_l
+                            rf_centaur_bleg_a_r
+                            rf_centaur_bleg_b_r
+                            rf_centaur_bleg_c_r
+                            rf_centaur_bleg_d_r
+                            rf_centaur_bleg_e_r
+                        </Bones>
+                    </Category>
+                </Category>
+            </Category>
+        </Category>
+        <Category Id="Legs">
+            <Category Id="LeftLeg">
+                <Bones>
+                    j_asi_a_l
+                    j_asi_b_l
+                    j_asi_c_l
+                </Bones>
+                <Category Id="LeftFoot">
+                    <TwoJointsIK Type="Leg">
+                        <FirstBone>j_asi_a_l</FirstBone>
+                        <SecondBone>j_asi_b_l</SecondBone>
+                        <SecondTwist>j_asi_c_l</SecondTwist>
+                        <EndBone>j_asi_d_l</EndBone>
+                        <EndBone>j_foot_l</EndBone>
+                    </TwoJointsIK>
+                    <Bones>
+                        j_asi_d_l
+                        j_asi_e_l
+                        j_foot_l
+                    </Bones>
+                    <Category Id="LeftFootIvcs">
+                        <Bones>
+                            iv_asi_oya_a_l
+                            iv_asi_oya_b_l
+                            iv_asi_hito_a_l
+                            iv_asi_hito_b_l
+                            iv_asi_naka_a_l
+                            iv_asi_naka_b_l
+                            iv_asi_kusu_a_l
+                            iv_asi_kusu_b_l
+                            iv_asi_ko_a_l
+                            iv_asi_ko_b_l
+                        </Bones>
+                    </Category>
+                </Category>
+            </Category>
+            <Category Id="RightLeg">
+                <Bones>
+                    j_asi_a_r
+                    j_asi_b_r
+                    j_asi_c_r
+                </Bones>
+                <Category Id="RightFoot">
+                    <TwoJointsIK Type="Leg">
+                        <FirstBone>j_asi_a_r</FirstBone>
+                        <SecondBone>j_asi_b_r</SecondBone>
+                        <SecondTwist>j_asi_c_r</SecondTwist>
+                        <EndBone>j_asi_d_r</EndBone>
+                        <EndBone>j_foot_r</EndBone>
+                    </TwoJointsIK>
+                    <Bones>
+                        j_asi_d_r
+                        j_asi_e_r
+                        j_foot_r
+                    </Bones>
+                    <Category Id="RightFootIvcs">
+                        <Bones>
+                            iv_asi_oya_a_r
+                            iv_asi_oya_b_r
+                            iv_asi_hito_a_r
+                            iv_asi_hito_b_r
+                            iv_asi_naka_a_r
+                            iv_asi_naka_b_r
+                            iv_asi_kusu_a_r
+                            iv_asi_kusu_b_r
+                            iv_asi_ko_a_r
+                            iv_asi_ko_b_r
+                        </Bones>
+                    </Category>
+                </Category>
+            </Category>
+        </Category>
+        <Category Id="GenitalsIvcs" IsNsfw="true">
+            <Category Id="PenisIvcs" IsNsfw="true">
+                <CcdIK>
+                    <StartBone>iv_ochinko_a</StartBone>
+                    <EndBone>iv_ochinko_f</EndBone>
+                </CcdIK>
+                <Bones>
+                    iv_kougan_l
+                    iv_kougan_r
+                    iv_ochinko_a
+                    iv_ochinko_b
+                    iv_ochinko_c
+                    iv_ochinko_d
+                    iv_ochinko_e
+                    iv_ochinko_f
+                    j_penis
+                    j_balls
+                </Bones>
+            </Category>
+            <Category Id="VaginaIvcs" IsNsfw="true">
+                <Bones>
+                    iv_omanko
+                    iv_kuritto
+                    iv_inshin_l
+                    iv_inshin_r
+                </Bones>
+            </Category>
+        </Category>
+        <Category Id="NofflebonesGenitals" IsNsfw="true">
+            <Category Id="NofflebonesVagina" IsNsfw="true">
+                <Bones>
+                    nf_clitoris
+                    nf_labia_inner_l
+                    nf_labia_outer_l
+                    nf_labia_inner_r
+                    nf_labia_outer_r
+                </Bones>
+            </Category>
+        </Category>
+        <Category Id="BottomIvcs" IsNsfw="true">
+            <Bones>
+                iv_koumon
+                iv_koumon_l
+                iv_koumon_r
+                iv_shiri_l
+                iv_shiri_r
+            </Bones>
+        </Category>
+        <Category Id="NofflebonesBottom" IsNsfw="true">
+            <Bones>
+                nf_iv_shiri_l
+                nf_iv_shiri_r
+                nf_shrt_iv_shiri_l
+                nf_shrt_iv_shiri_r
+            </Bones>
+        </Category>
+    </Category>
+    <Category Id="Tail">
+        <CcdIK>
+            <StartBone>n_sippo_a</StartBone>
+            <EndBone>n_sippo_e</EndBone>
+            <EndBone>j_tail</EndBone>
+        </CcdIK>
+        <Bones>
+            n_sippo_a
+            n_sippo_b
+            n_sippo_c
+            n_sippo_d
+            n_sippo_e
+            j_tail
+        </Bones>
+    </Category>
+    <Category Id="Clothing">
+        <Bones>
+            n_hizasoubi_l
+            n_hizasoubi_r
+            n_kataarmor_l
+            n_kataarmor_r
+            n_hijisoubi_l
+            n_hijisoubi_r
+            j_ex_top_a_r
+            j_ex_top_a_l
+            j_ex_top_b_r
+            j_ex_top_b_l
+            j_ex_met_a
+            j_ex_met_b
+            j_ex_met_c
+            j_ex_met_d
+            j_ex_met_va
+            j_ex_met_vb
+        </Bones>
+        <Category Id="Cloth">
+            <Bones>
+                j_sk_b_b_l
+                j_sk_b_b_r
+                j_sk_f_b_l
+                j_sk_f_b_r
+                j_sk_s_b_l
+                j_sk_s_b_r
+                j_sk_b_a_l
+                j_sk_b_a_r
+                j_sk_f_a_l
+                j_sk_f_a_r
+                j_sk_s_a_l
+                j_sk_s_a_r
+                j_sk_b_c_l
+                j_sk_b_c_r
+                j_sk_f_c_l
+                j_sk_f_c_r
+                j_sk_s_c_l
+                j_sk_s_c_r
+            </Bones>
+        </Category>
+        <Category Id="Earring">
+            <Bones>
+                n_ear_a_l
+                n_ear_a_r
+                n_ear_b_l
+                n_ear_b_r
+            </Bones>
+        </Category>
+        <Category Id="NofflebonesClothing">
+            <Category Id="NofflebonesHead">
+                <Bones>
+                    nf_hlm_j_kao
+                    nf_hlm_j_kubi
+                    nf_hlm_j_sebo_c
+                    nf_hlm_j_ago
+                </Bones>
+                <Category Id="NofflebonesHeadProps">
+                    <Bones>
+                        nf_glasses
+                        nf_faceprop_a
+                        nf_faceprop_b
+                        nf_faceprop_c
+                        nf_faceprop_d
+                        nf_faceprop_e
+                        nf_faceprop_f
+                        nf_faceprop_g
+                        nf_faceprop_h
+                        nf_faceprop_i
+                        nf_faceprop_j
+                        nf_neckprop_a
+                    </Bones>
+                </Category>
+            </Category>
+            <Category Id="NofflebonesUpperBody">
+                <Category Id="NofflebonesBra" IsNsfw="true">
+                    <Bones>
+                        nf_bra_j_kubi
+                        nf_bra_j_mune_l
+                        nf_bra_n_hkata_l
+                        nf_bra_j_ude_a_l
+                        nf_bra_strap_top_l
+                        nf_bra_strap_b_l
+                        nf_bra_j_sako_l
 
-						nf_bra_j_mune_r
-						nf_bra_n_hkata_r
-						nf_bra_j_ude_a_r
-						nf_bra_strap_top_r
-						nf_bra_strap_b_r
-						nf_bra_j_sako_r
+                        nf_bra_j_mune_r
+                        nf_bra_n_hkata_r
+                        nf_bra_j_ude_a_r
+                        nf_bra_strap_top_r
+                        nf_bra_strap_b_r
+                        nf_bra_j_sako_r
 
-						nf_breastprop_a_l
-						nf_breastprop_a_r
-						nf_bra_j_sebo_a
-						nf_bra_j_sebo_b
-						nf_bra_j_sebo_c
-					</Bones>
-				</Category>
-				<Category Id="NofflebonesChest">
-					<Bones>
-						nf_shrt_j_kubi
-						nf_shrt_j_kosi
-						nf_shrt_j_sebo_a
-						nf_shrt_j_sebo_b
-						nf_shrt_j_sebo_c
-					</Bones>
-					<Category Id="NofflebonesChestLeft">
-						<Bones>
-							nf_shrt_j_te_l
-							nf_shrt_n_hte_l
-							
-							nf_shrt_j_asi_a_l
-							nf_shrt_j_mune_l
-							nf_shrt_j_ude_a_l
-							nf_shrt_j_sako_l
-							nf_shrt_n_hkata_l
-							nf_shrt_j_ude_b_l
-							nf_shrt_n_hhiji_l
+                        nf_breastprop_a_l
+                        nf_breastprop_a_r
+                        nf_bra_j_sebo_a
+                        nf_bra_j_sebo_b
+                        nf_bra_j_sebo_c
+                    </Bones>
+                </Category>
+                <Category Id="NofflebonesChest">
+                    <Bones>
+                        nf_shrt_j_kubi
+                        nf_shrt_j_kosi
+                        nf_shrt_j_sebo_a
+                        nf_shrt_j_sebo_b
+                        nf_shrt_j_sebo_c
+                    </Bones>
+                    <Category Id="NofflebonesChestLeft">
+                        <Bones>
+                            nf_shrt_j_te_l
+                            nf_shrt_n_hte_l
 
-							nf_shrt_j_sk_b_c_l
-							nf_shrt_j_sk_b_b_l
-							nf_shrt_j_sk_b_a_l
-							nf_shrt_j_sk_f_c_l
-							nf_shrt_j_sk_f_b_l
-							nf_shrt_j_sk_f_a_l
-							nf_shrt_j_sk_s_c_l
-							nf_shrt_j_sk_s_b_l
-							nf_shrt_j_sk_s_a_l
-						</Bones>
-					</Category>
-					<Category Id="NofflebonesChestRight">
-						<Bones>
-							nf_shrt_j_te_r
-							nf_shrt_n_hte_r
+                            nf_shrt_j_asi_a_l
+                            nf_shrt_j_mune_l
+                            nf_shrt_j_ude_a_l
+                            nf_shrt_j_sako_l
+                            nf_shrt_n_hkata_l
+                            nf_shrt_j_ude_b_l
+                            nf_shrt_n_hhiji_l
 
-							nf_shrt_j_asi_a_r
-							nf_shrt_j_mune_r
-							nf_shrt_j_ude_a_r
-							nf_shrt_j_sako_r
-							nf_shrt_n_hkata_r
-							nf_shrt_j_ude_b_r
-							nf_shrt_n_hhiji_r
+                            nf_shrt_j_sk_b_c_l
+                            nf_shrt_j_sk_b_b_l
+                            nf_shrt_j_sk_b_a_l
+                            nf_shrt_j_sk_f_c_l
+                            nf_shrt_j_sk_f_b_l
+                            nf_shrt_j_sk_f_a_l
+                            nf_shrt_j_sk_s_c_l
+                            nf_shrt_j_sk_s_b_l
+                            nf_shrt_j_sk_s_a_l
+                        </Bones>
+                    </Category>
+                    <Category Id="NofflebonesChestRight">
+                        <Bones>
+                            nf_shrt_j_te_r
+                            nf_shrt_n_hte_r
 
-							nf_shrt_j_sk_b_c_r
-							nf_shrt_j_sk_b_b_r
-							nf_shrt_j_sk_b_a_r
-							nf_shrt_j_sk_f_c_r
-							nf_shrt_j_sk_f_b_r
-							nf_shrt_j_sk_f_a_r
-							nf_shrt_j_sk_s_c_r
-							nf_shrt_j_sk_s_b_r
-							nf_shrt_j_sk_s_a_r
-						</Bones>
-					</Category>
-				</Category>
-				<Category Id="NofflebonesArms">
-					<Category Id="NofflebonesArmLeft">
-						<Bones>
-							nf_glv_j_sako_l
-							nf_glv_j_ude_a_l
-							nf_glv_n_hkata_l
-							nf_glv_j_ude_b_l
-							nf_glv_n_hhiji_l
-							nf_glv_n_hte_l
-							nf_glv_j_te_l
-							nf_glv_j_oya_a_l
-							nf_glv_j_oya_b_l
-							nf_glv_j_hito_a_l
-							nf_glv_j_hito_b_l
-							nf_glv_iv_hito_c_l
-							nf_glv_j_naka_a_l
-							nf_glv_j_naka_b_l
-							nf_glv_iv_naka_c_l
-							nf_glv_j_kusu_a_l
-							nf_glv_j_kusu_b_l
-							nf_glv_iv_kusu_c_l
-							nf_glv_j_ko_a_l
-							nf_glv_j_ko_b_l
-							nf_glv_iv_ko_c_l
-						</Bones>
-						<Category Id="NofflebonesArmLeftProps">
-							<Bones>
-								nf_handpropsub_l_l
-								nf_handpropsub_r_l
-								nf_handprop_a_l
-								nf_handprop_b_l
-								nf_handprop_c_l
-								nf_handprop_d_l
-								nf_handprop_e_l
-								nf_handprop_f_l
-								nf_handprop_g_l
-								nf_handprop_h_l
-								nf_handprop_i_l
-								nf_handprop_j_l
-								nf_handprop_k_l
-								nf_handprop_l_l
-								nf_finger_m_prop_l
-								nf_palm_prop_a_l
-							</Bones>
-						</Category>
-					</Category>
-					<Category Id="NofflebonesArmRight">
-						<Bones>
-							nf_glv_j_sako_r
-							nf_glv_j_ude_a_r
-							nf_glv_n_hkata_r
-							nf_glv_j_ude_b_r
-							nf_glv_n_hhiji_r
-							nf_glv_n_hte_r
-							nf_glv_j_te_r
-							nf_glv_j_oya_a_r
-							nf_glv_j_oya_b_r
-							nf_glv_j_hito_a_r
-							nf_glv_j_hito_b_r
-							nf_glv_iv_hito_c_r
-							nf_glv_j_naka_a_r
-							nf_glv_j_naka_b_r
-							nf_glv_iv_naka_c_r
-							nf_glv_j_kusu_a_r
-							nf_glv_j_kusu_b_r
-							nf_glv_iv_kusu_c_r
-							nf_glv_j_ko_a_r
-							nf_glv_j_ko_b_r
-							nf_glv_iv_ko_c_r
-						</Bones>
-						<Category Id="NofflebonesArmRightProps">
-							<Bones>
-								nf_handpropsub_l_r
-								nf_handpropsub_r_r
-								nf_handprop_a_r
-								nf_handprop_b_r
-								nf_handprop_c_r
-								nf_handprop_d_r
-								nf_handprop_e_r
-								nf_handprop_f_r
-								nf_handprop_g_r
-								nf_handprop_h_r
-								nf_handprop_i_r
-								nf_handprop_j_r
-								nf_handprop_k_r
-								nf_handprop_l_r
-								nf_finger_m_prop_r
-								nf_palm_prop_a_r
-							</Bones>
-						</Category>
-					</Category>
-				</Category>
-				<Category Id="NofflebonesUpperBodyProps">
-					<Bones>
-						nf_spineaprop_a
-						nf_spineaprop_b
-						nf_spineaprop_c
-						nf_spineaprop_d
-						nf_spineaprop_e
-						nf_spineaprop_f
-						nf_spinebprop_a
-						nf_spinebprop_b
-						nf_spinebprop_c
-						nf_spinebprop_d
-						nf_spinebprop_e
-						nf_spinebprop_f
-						nf_spinecprop_a
-						nf_spinecprop_b
-						nf_spinecprop_c
-						nf_spinecprop_d
-						nf_spinecprop_e
-						nf_spinecprop_f
-					</Bones>
-				</Category>
-			</Category>
-			
-			<Category Id="NofflebonesLowerBody">
-				<Bones>
-					nf_skrt_iv_shiri_l
-					nf_skrt_iv_shiri_r
-					nf_skrt_j_kosi
-					nf_skrt_j_sebo_a
-					nf_skrt_nf_bulge_a
-					nf_skrt_j_sk_b_c_l
-					nf_skrt_j_sk_b_b_l
-					nf_skrt_j_sk_b_a_l
-					nf_skrt_j_sk_b_c_r
-					nf_skrt_j_sk_b_b_r
-					nf_skrt_j_sk_b_a_r
-					nf_skrt_j_sk_f_c_l
-					nf_skrt_j_sk_f_b_l
-					nf_skrt_j_sk_f_a_l
-					nf_skrt_j_sk_f_c_r
-					nf_skrt_j_sk_f_b_r
-					nf_skrt_j_sk_f_a_r
-					nf_skrt_j_sk_s_c_l
-					nf_skrt_j_sk_s_b_l
-					nf_skrt_j_sk_s_a_l
-					nf_skrt_j_sk_s_c_r
-					nf_skrt_j_sk_s_b_r
-					nf_skrt_j_sk_s_a_r
-				</Bones>
-				<Category Id="NofflebonesUnderwear" IsNsfw="true">
-					<Bones>
-						nf_pnty_iv_shiri_l
-						nf_pnty_iv_shiri_r
-						nf_pnty_j_sk_b_a_l
-						nf_pnty_j_sk_b_a_r
-						nf_pnty_j_sk_f_a_l
-						nf_pnty_j_sk_f_a_r
-						nf_pnty_j_sk_s_a_l
-						nf_pnty_j_sk_s_a_r
-						nf_pnty_j_asi_a_l
-						nf_pnty_j_asi_a_r
-						nf_pnty_waist_front
-						nf_pnty_waist_back
-						nf_pnty_wing_s_l
-						nf_pnty_wing_s_r
-						nf_pnty_crotch
-						nf_pnty_nf_bulge_a
-						nf_pnty_j_kosi
-						nf_pnty_j_sebo_a
-						nf_bulge_a
-					</Bones>
-				</Category>
-				<Category Id="NofflebonesLegs">
-					<Bones>
-						nf_pant_j_sebo_a
-						nf_pant_j_kosi
-						nf_pant_nf_bulge_a
-					</Bones>
-					<Category Id="NofflebonesLegLeft">
-						<Bones>
-							nf_pant_iv_shiri_l
-							nf_pant_j_asi_a_l
-							nf_pant_j_asi_b_l
-							nf_pant_j_asi_c_l
-							nf_pant_j_asi_d_l
-						</Bones>
-					</Category>
-					<Category Id="NofflebonesLegRight">
-						<Bones>
-							nf_pant_iv_shiri_r
-							nf_pant_j_asi_a_r
-							nf_pant_j_asi_b_r
-							nf_pant_j_asi_c_r
-							nf_pant_j_asi_d_r
-						</Bones>
-					</Category>
-				</Category>
-				<Category Id="NofflebonesFeet">
-					<Category Id="NofflebonesFootLeft">
-						<Bones>
-							nf_sho_j_asi_c_l
-							nf_sho_j_asi_d_l
-							nf_sho_j_asi_e_l
-						</Bones>
-					</Category>
-					<Category Id="NofflebonesFootRight">
-						<Bones>
-							nf_sho_j_asi_c_r
-							nf_sho_j_asi_d_r
-							nf_sho_j_asi_e_r
-						</Bones>
-					</Category>
-				</Category>
-				<Category Id="NofflebonesLowerBodyProps">
-					<Bones>
-						nf_hipprop_a
-						nf_hipprop_b
-						nf_hipprop_c
-						nf_hipprop_d
-						nf_hipprop_e
-						nf_hipprop_f
-						nf_hipprop_g
-						nf_hipprop_h
-						nf_hipprop_i
-						nf_hipprop_j
-						nf_hipprop_k
-						nf_hipprop_l
-					</Bones>
-				</Category>
-			</Category>
-		</Category>
-	</Category>
-	<Category Id="Weapons">
-		<Bones>
-			j_buki_sebo_l
-			j_buki_sebo_r
-			j_buki2_kosi_l
-			j_buki2_kosi_r
-			j_buki_kosi_l
-			j_buki_kosi_r
-			n_buki_r
-			n_buki_l
-			n_buki_tate_l
-			n_buki_tate_r
-		</Bones>
-	</Category>
-	<Category Id="Physics">
-		<Category Id="PhysicsIvcs">
-			<Bones>
-				iv_kintama_phys_l
-				iv_kintama_phys_r
-				iv_funyachin_phy_a
-				iv_funyachin_phy_b
-				iv_funyachin_phy_c
-				iv_funyachin_phy_d
-				iv_kyokin_phys_l
-				iv_kyokin_phys_r
-				iv_fukubu_phys
-				iv_fukubu_phys_l
-				iv_fukubu_phys_r
-				iv_daitai_phys_l
-				iv_daitai_phys_r
-			</Bones>
-		</Category>
-		<Category Id="PhysicsYAS">
-			<Bones>
-				ya_fukubu_phys
-				ya_shiri_phys_l
-				ya_shiri_phys_r
-				ya_daitai_phys_l
-				ya_daitai_phys_r
-			</Bones>
-		</Category>
-		<Category Id="NofflebonesPhysics">
-			<Bones>
-				nf_iv_kintama_phys_l
-				nf_pnty_nf_iv_kintama_phys_l
-				nf_pant_nf_iv_kintama_phys_l
-				nf_iv_kintama_phys_r
-				nf_pnty_nf_iv_kintama_phys_r
-				nf_pant_nf_iv_kintama_phys_r
-				nf_iv_funyachin_phy_d
-				nf_pnty_nf_iv_funyachin_phy_d
-				nf_pant_nf_iv_funyachin_phy_d
-				nf_iv_funyachin_phy_c
-				nf_pnty_nf_iv_funyachin_phy_c
-				nf_pant_nf_iv_funyachin_phy_c
-				nf_iv_funyachin_phy_b
-				nf_pnty_nf_iv_funyachin_phy_b
-				nf_pant_nf_iv_funyachin_phy_b
-				nf_iv_funyachin_phy_a
-				nf_pnty_nf_iv_funyachin_phy_a
-				nf_pant_nf_iv_funyachin_phy_a
-				nf_iv_daitai_phys_l
-				nf_pnty_nf_iv_daitai_phys_l
-				nf_pant_nf_iv_daitai_phys_l
-				nf_iv_daitai_phys_r
-				nf_pnty_nf_iv_daitai_phys_r
-				nf_pant_nf_iv_daitai_phys_r
-			</Bones>
-		</Category>
-	</Category>
-	<Category Id="Other" IsDefault="true">
-	</Category>
+                            nf_shrt_j_asi_a_r
+                            nf_shrt_j_mune_r
+                            nf_shrt_j_ude_a_r
+                            nf_shrt_j_sako_r
+                            nf_shrt_n_hkata_r
+                            nf_shrt_j_ude_b_r
+                            nf_shrt_n_hhiji_r
+
+                            nf_shrt_j_sk_b_c_r
+                            nf_shrt_j_sk_b_b_r
+                            nf_shrt_j_sk_b_a_r
+                            nf_shrt_j_sk_f_c_r
+                            nf_shrt_j_sk_f_b_r
+                            nf_shrt_j_sk_f_a_r
+                            nf_shrt_j_sk_s_c_r
+                            nf_shrt_j_sk_s_b_r
+                            nf_shrt_j_sk_s_a_r
+                        </Bones>
+                    </Category>
+                </Category>
+                <Category Id="NofflebonesArms">
+                    <Category Id="NofflebonesArmLeft">
+                        <Bones>
+                            nf_glv_j_sako_l
+                            nf_glv_j_ude_a_l
+                            nf_glv_n_hkata_l
+                            nf_glv_j_ude_b_l
+                            nf_glv_n_hhiji_l
+                            nf_glv_n_hte_l
+                            nf_glv_j_te_l
+                            nf_glv_j_oya_a_l
+                            nf_glv_j_oya_b_l
+                            nf_glv_j_hito_a_l
+                            nf_glv_j_hito_b_l
+                            nf_glv_iv_hito_c_l
+                            nf_glv_j_naka_a_l
+                            nf_glv_j_naka_b_l
+                            nf_glv_iv_naka_c_l
+                            nf_glv_j_kusu_a_l
+                            nf_glv_j_kusu_b_l
+                            nf_glv_iv_kusu_c_l
+                            nf_glv_j_ko_a_l
+                            nf_glv_j_ko_b_l
+                            nf_glv_iv_ko_c_l
+                        </Bones>
+                        <Category Id="NofflebonesArmLeftProps">
+                            <Bones>
+                                nf_handpropsub_l_l
+                                nf_handpropsub_r_l
+                                nf_handprop_a_l
+                                nf_handprop_b_l
+                                nf_handprop_c_l
+                                nf_handprop_d_l
+                                nf_handprop_e_l
+                                nf_handprop_f_l
+                                nf_handprop_g_l
+                                nf_handprop_h_l
+                                nf_handprop_i_l
+                                nf_handprop_j_l
+                                nf_handprop_k_l
+                                nf_handprop_l_l
+                                nf_finger_m_prop_l
+                                nf_palm_prop_a_l
+                            </Bones>
+                        </Category>
+                    </Category>
+                    <Category Id="NofflebonesArmRight">
+                        <Bones>
+                            nf_glv_j_sako_r
+                            nf_glv_j_ude_a_r
+                            nf_glv_n_hkata_r
+                            nf_glv_j_ude_b_r
+                            nf_glv_n_hhiji_r
+                            nf_glv_n_hte_r
+                            nf_glv_j_te_r
+                            nf_glv_j_oya_a_r
+                            nf_glv_j_oya_b_r
+                            nf_glv_j_hito_a_r
+                            nf_glv_j_hito_b_r
+                            nf_glv_iv_hito_c_r
+                            nf_glv_j_naka_a_r
+                            nf_glv_j_naka_b_r
+                            nf_glv_iv_naka_c_r
+                            nf_glv_j_kusu_a_r
+                            nf_glv_j_kusu_b_r
+                            nf_glv_iv_kusu_c_r
+                            nf_glv_j_ko_a_r
+                            nf_glv_j_ko_b_r
+                            nf_glv_iv_ko_c_r
+                        </Bones>
+                        <Category Id="NofflebonesArmRightProps">
+                            <Bones>
+                                nf_handpropsub_l_r
+                                nf_handpropsub_r_r
+                                nf_handprop_a_r
+                                nf_handprop_b_r
+                                nf_handprop_c_r
+                                nf_handprop_d_r
+                                nf_handprop_e_r
+                                nf_handprop_f_r
+                                nf_handprop_g_r
+                                nf_handprop_h_r
+                                nf_handprop_i_r
+                                nf_handprop_j_r
+                                nf_handprop_k_r
+                                nf_handprop_l_r
+                                nf_finger_m_prop_r
+                                nf_palm_prop_a_r
+                            </Bones>
+                        </Category>
+                    </Category>
+                </Category>
+                <Category Id="NofflebonesUpperBodyProps">
+                    <Bones>
+                        nf_spineaprop_a
+                        nf_spineaprop_b
+                        nf_spineaprop_c
+                        nf_spineaprop_d
+                        nf_spineaprop_e
+                        nf_spineaprop_f
+                        nf_spinebprop_a
+                        nf_spinebprop_b
+                        nf_spinebprop_c
+                        nf_spinebprop_d
+                        nf_spinebprop_e
+                        nf_spinebprop_f
+                        nf_spinecprop_a
+                        nf_spinecprop_b
+                        nf_spinecprop_c
+                        nf_spinecprop_d
+                        nf_spinecprop_e
+                        nf_spinecprop_f
+                    </Bones>
+                </Category>
+            </Category>
+
+            <Category Id="NofflebonesLowerBody">
+                <Bones>
+                    nf_skrt_iv_shiri_l
+                    nf_skrt_iv_shiri_r
+                    nf_skrt_j_kosi
+                    nf_skrt_j_sebo_a
+                    nf_skrt_nf_bulge_a
+                    nf_skrt_j_sk_b_c_l
+                    nf_skrt_j_sk_b_b_l
+                    nf_skrt_j_sk_b_a_l
+                    nf_skrt_j_sk_b_c_r
+                    nf_skrt_j_sk_b_b_r
+                    nf_skrt_j_sk_b_a_r
+                    nf_skrt_j_sk_f_c_l
+                    nf_skrt_j_sk_f_b_l
+                    nf_skrt_j_sk_f_a_l
+                    nf_skrt_j_sk_f_c_r
+                    nf_skrt_j_sk_f_b_r
+                    nf_skrt_j_sk_f_a_r
+                    nf_skrt_j_sk_s_c_l
+                    nf_skrt_j_sk_s_b_l
+                    nf_skrt_j_sk_s_a_l
+                    nf_skrt_j_sk_s_c_r
+                    nf_skrt_j_sk_s_b_r
+                    nf_skrt_j_sk_s_a_r
+                </Bones>
+                <Category Id="NofflebonesUnderwear" IsNsfw="true">
+                    <Bones>
+                        nf_pnty_iv_shiri_l
+                        nf_pnty_iv_shiri_r
+                        nf_pnty_j_sk_b_a_l
+                        nf_pnty_j_sk_b_a_r
+                        nf_pnty_j_sk_f_a_l
+                        nf_pnty_j_sk_f_a_r
+                        nf_pnty_j_sk_s_a_l
+                        nf_pnty_j_sk_s_a_r
+                        nf_pnty_j_asi_a_l
+                        nf_pnty_j_asi_a_r
+                        nf_pnty_waist_front
+                        nf_pnty_waist_back
+                        nf_pnty_wing_s_l
+                        nf_pnty_wing_s_r
+                        nf_pnty_crotch
+                        nf_pnty_nf_bulge_a
+                        nf_pnty_j_kosi
+                        nf_pnty_j_sebo_a
+                        nf_bulge_a
+                    </Bones>
+                </Category>
+                <Category Id="NofflebonesLegs">
+                    <Bones>
+                        nf_pant_j_sebo_a
+                        nf_pant_j_kosi
+                        nf_pant_nf_bulge_a
+                    </Bones>
+                    <Category Id="NofflebonesLegLeft">
+                        <Bones>
+                            nf_pant_iv_shiri_l
+                            nf_pant_j_asi_a_l
+                            nf_pant_j_asi_b_l
+                            nf_pant_j_asi_c_l
+                            nf_pant_j_asi_d_l
+                        </Bones>
+                    </Category>
+                    <Category Id="NofflebonesLegRight">
+                        <Bones>
+                            nf_pant_iv_shiri_r
+                            nf_pant_j_asi_a_r
+                            nf_pant_j_asi_b_r
+                            nf_pant_j_asi_c_r
+                            nf_pant_j_asi_d_r
+                        </Bones>
+                    </Category>
+                </Category>
+                <Category Id="NofflebonesFeet">
+                    <Category Id="NofflebonesFootLeft">
+                        <Bones>
+                            nf_sho_j_asi_c_l
+                            nf_sho_j_asi_d_l
+                            nf_sho_j_asi_e_l
+                        </Bones>
+                    </Category>
+                    <Category Id="NofflebonesFootRight">
+                        <Bones>
+                            nf_sho_j_asi_c_r
+                            nf_sho_j_asi_d_r
+                            nf_sho_j_asi_e_r
+                        </Bones>
+                    </Category>
+                </Category>
+                <Category Id="NofflebonesLowerBodyProps">
+                    <Bones>
+                        nf_hipprop_a
+                        nf_hipprop_b
+                        nf_hipprop_c
+                        nf_hipprop_d
+                        nf_hipprop_e
+                        nf_hipprop_f
+                        nf_hipprop_g
+                        nf_hipprop_h
+                        nf_hipprop_i
+                        nf_hipprop_j
+                        nf_hipprop_k
+                        nf_hipprop_l
+                    </Bones>
+                </Category>
+            </Category>
+        </Category>
+    </Category>
+    <Category Id="Weapons">
+        <Bones>
+            j_buki_sebo_l
+            j_buki_sebo_r
+            j_buki2_kosi_l
+            j_buki2_kosi_r
+            j_buki_kosi_l
+            j_buki_kosi_r
+            n_buki_r
+            n_buki_l
+            n_buki_tate_l
+            n_buki_tate_r
+        </Bones>
+    </Category>
+    <Category Id="Physics">
+        <Category Id="PhysicsIvcs">
+            <Bones>
+                iv_kintama_phys_l
+                iv_kintama_phys_r
+                iv_funyachin_phy_a
+                iv_funyachin_phy_b
+                iv_funyachin_phy_c
+                iv_funyachin_phy_d
+                iv_kyokin_phys_l
+                iv_kyokin_phys_r
+                iv_fukubu_phys
+                iv_fukubu_phys_l
+                iv_fukubu_phys_r
+                iv_daitai_phys_l
+                iv_daitai_phys_r
+            </Bones>
+        </Category>
+        <Category Id="PhysicsYAS">
+            <Bones>
+                ya_fukubu_phys
+                ya_shiri_phys_l
+                ya_shiri_phys_r
+                ya_daitai_phys_l
+                ya_daitai_phys_r
+            </Bones>
+        </Category>
+        <Category Id="NofflebonesPhysics">
+            <Bones>
+                nf_iv_kintama_phys_l
+                nf_pnty_nf_iv_kintama_phys_l
+                nf_pant_nf_iv_kintama_phys_l
+                nf_iv_kintama_phys_r
+                nf_pnty_nf_iv_kintama_phys_r
+                nf_pant_nf_iv_kintama_phys_r
+                nf_iv_funyachin_phy_d
+                nf_pnty_nf_iv_funyachin_phy_d
+                nf_pant_nf_iv_funyachin_phy_d
+                nf_iv_funyachin_phy_c
+                nf_pnty_nf_iv_funyachin_phy_c
+                nf_pant_nf_iv_funyachin_phy_c
+                nf_iv_funyachin_phy_b
+                nf_pnty_nf_iv_funyachin_phy_b
+                nf_pant_nf_iv_funyachin_phy_b
+                nf_iv_funyachin_phy_a
+                nf_pnty_nf_iv_funyachin_phy_a
+                nf_pant_nf_iv_funyachin_phy_a
+                nf_iv_daitai_phys_l
+                nf_pnty_nf_iv_daitai_phys_l
+                nf_pant_nf_iv_daitai_phys_l
+                nf_iv_daitai_phys_r
+                nf_pnty_nf_iv_daitai_phys_r
+                nf_pant_nf_iv_daitai_phys_r
+            </Bones>
+        </Category>
+    </Category>
+    <Category Id="Other" IsDefault="true">
+    </Category>
 </Categories>

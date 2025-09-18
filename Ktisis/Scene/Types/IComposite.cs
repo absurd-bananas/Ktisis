@@ -4,21 +4,21 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Scene.Entities;
+#nullable enable
 using System.Collections.Generic;
 
-#nullable enable
+using Ktisis.Scene.Entities;
+
 namespace Ktisis.Scene.Types;
 
-public interface IComposite
-{
-  SceneEntity? Parent { get; set; }
+public interface IComposite {
+	SceneEntity? Parent { get; set; }
 
-  IEnumerable<SceneEntity> Children { get; }
+	IEnumerable<SceneEntity> Children { get; }
 
-  bool Add(SceneEntity entity);
+	bool Add(SceneEntity entity);
 
-  bool Remove(SceneEntity entity);
+	bool Remove(SceneEntity entity);
 
-  IEnumerable<SceneEntity> Recurse();
+	IEnumerable<SceneEntity> Recurse();
 }

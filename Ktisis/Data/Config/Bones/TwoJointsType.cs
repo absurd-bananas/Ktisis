@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Data.Config.Bones;
 
-public enum TwoJointsType
-{
-  None,
-  Arm,
-  Leg,
+public enum TwoJointsType {
+	None,
+	Arm,
+	Leg
 }

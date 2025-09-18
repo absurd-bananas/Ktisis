@@ -4,15 +4,12 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Keys;
-using Ktisis.Actions.Binds;
-using System;
-
 #nullable enable
+using Ktisis.Actions.Binds;
+
 namespace Ktisis.Data.Config.Actions;
 
-public class ActionKeybind
-{
-  public bool Enabled = true;
-  public KeyCombo Combo = new KeyCombo((VirtualKey) 0, Array.Empty<VirtualKey>());
+public class ActionKeybind {
+	public KeyCombo Combo = new KeyCombo((VirtualKey)0);
+	public bool Enabled = true;
 }

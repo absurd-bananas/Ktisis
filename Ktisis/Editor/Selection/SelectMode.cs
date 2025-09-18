@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Editor.Selection;
 
-public enum SelectMode
-{
-  Default,
-  Multiple,
-  Force,
+public enum SelectMode {
+	Default,
+	Multiple,
+	Force
 }

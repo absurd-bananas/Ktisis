@@ -4,18 +4,17 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System.Runtime.InteropServices;
 
-#nullable disable
 namespace Ktisis.Structs.Env.Weather;
 
 [StructLayout(LayoutKind.Explicit, Size = 12)]
-public struct EnvWind
-{
-  [FieldOffset(0)]
-  public float Direction;
-  [FieldOffset(4)]
-  public float Angle;
-  [FieldOffset(8)]
-  public float Speed;
+public struct EnvWind {
+	[FieldOffset(0)]
+	public float Direction;
+	[FieldOffset(4)]
+	public float Angle;
+	[FieldOffset(8)]
+	public float Speed;
 }

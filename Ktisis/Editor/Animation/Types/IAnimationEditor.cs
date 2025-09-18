@@ -4,35 +4,34 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Editor.Animation.Game;
 using Ktisis.Structs.Actors;
 
-#nullable enable
 namespace Ktisis.Editor.Animation.Types;
 
-public interface IAnimationEditor
-{
-  bool SpeedControlEnabled { get; set; }
+public interface IAnimationEditor {
+	bool SpeedControlEnabled { get; set; }
 
-  bool PositionLockEnabled { get; set; }
+	bool PositionLockEnabled { get; set; }
 
-  bool TryGetModeAndPose(out PoseModeEnum mode, out int pose);
+	bool IsWeaponDrawn { get; }
 
-  int GetPoseCount(PoseModeEnum poseMode);
+	bool TryGetModeAndPose(out PoseModeEnum mode, out int pose);
 
-  void SetPose(PoseModeEnum poseMode, byte pose = 255 /*0xFF*/);
+	int GetPoseCount(PoseModeEnum poseMode);
 
-  void PlayAnimation(GameAnimation animation, bool playStart = true);
+	void SetPose(PoseModeEnum poseMode, byte pose = 255 /*0xFF*/);
 
-  void PlayTimeline(uint id);
+	void PlayAnimation(GameAnimation animation, bool playStart = true);
 
-  AnimationTimeline GetTimeline();
+	void PlayTimeline(uint id);
 
-  void SetForceTimeline(ushort id);
+	AnimationTimeline GetTimeline();
 
-  void SetTimelineSpeed(uint slot, float speed);
+	void SetForceTimeline(ushort id);
 
-  bool IsWeaponDrawn { get; }
+	void SetTimelineSpeed(uint slot, float speed);
 
-  void ToggleWeapon();
+	void ToggleWeapon();
 }

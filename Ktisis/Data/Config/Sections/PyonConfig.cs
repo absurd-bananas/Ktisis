@@ -4,18 +4,16 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using System.Collections.Generic;
-using System.Drawing;
-
 #nullable enable
+using System.Collections.Generic;
+
 namespace Ktisis.Data.Config.Sections;
 
-public class PyonConfig
-{
-  public int DefaultStyle;
-  public Point DefaultPosition;
-  public Size DefaultSize;
-  public Size DefaultDeviceSize;
-  public Size HiResSize;
-  public List<Size> Resolutions = new List<Size>();
+public class PyonConfig {
+	public Size DefaultDeviceSize;
+	public Point DefaultPosition;
+	public Size DefaultSize;
+	public int DefaultStyle;
+	public Size HiResSize;
+	public List<Size> Resolutions = new List<Size>();
 }

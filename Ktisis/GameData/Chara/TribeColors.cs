@@ -7,8 +7,7 @@
 #nullable enable
 namespace Ktisis.GameData.Chara;
 
-public struct TribeColors
-{
-  public uint[] SkinColors;
-  public uint[] HairColors;
+public struct TribeColors {
+	public uint[] SkinColors;
+	public uint[] HairColors;
 }

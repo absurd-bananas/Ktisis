@@ -4,20 +4,19 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.GameData.Excel;
+#nullable disable
 using System;
 
-#nullable disable
+using Ktisis.GameData.Excel;
+
 namespace Ktisis.Editor.Characters.State;
 
-public static class WeaponIndexEx
-{
-  public static EquipSlot ToEquipSlot(this WeaponIndex index)
-  {
-    if (index < WeaponIndex.Prop)
-      return (EquipSlot) index;
-    if (index == WeaponIndex.Prop)
-      return EquipSlot.OffHand;
-    throw new Exception($"Cannot convert invalid weapon index ({index})");
-  }
+public static class WeaponIndexEx {
+	public static EquipSlot ToEquipSlot(this WeaponIndex index) {
+		if (index < WeaponIndex.Prop)
+			return (EquipSlot)index;
+		if (index == WeaponIndex.Prop)
+			return EquipSlot.OffHand;
+		throw new Exception($"Cannot convert invalid weapon index ({index})");
+	}
 }

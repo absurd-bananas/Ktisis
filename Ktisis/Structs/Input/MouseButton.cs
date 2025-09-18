@@ -4,18 +4,17 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System;
 
-#nullable disable
 namespace Ktisis.Structs.Input;
 
 [Flags]
-public enum MouseButton
-{
-  None = 0,
-  Left = 1,
-  Middle = 2,
-  Right = 4,
-  Mouse4 = 8,
-  Mouse5 = 16, // 0x00000010
+public enum MouseButton {
+	None = 0,
+	Left = 1,
+	Middle = 2,
+	Right = 4,
+	Mouse4 = 8,
+	Mouse5 = 16 // 0x00000010
 }

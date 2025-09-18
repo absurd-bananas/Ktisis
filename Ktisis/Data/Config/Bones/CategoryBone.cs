@@ -7,8 +7,7 @@
 #nullable enable
 namespace Ktisis.Data.Config.Bones;
 
-public class CategoryBone(string name)
-{
-  public readonly string Name = name;
-  public bool HideOnPoseEntity;
+public class CategoryBone(string name) {
+	public readonly string Name = name;
+	public bool HideOnPoseEntity;
 }

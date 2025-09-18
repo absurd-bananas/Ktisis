@@ -4,17 +4,15 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Objects.Enums;
+#nullable enable
 using System;
 
-#nullable enable
 namespace Ktisis.Editor.Characters.Make;
 
-public class MakeTypeFeature
-{
-  public string Name = string.Empty;
-  public CustomizeIndex Index;
-  public MakeTypeParam[] Params = Array.Empty<MakeTypeParam>();
-  public bool IsCustomize;
-  public bool IsIcon;
+public class MakeTypeFeature {
+	public CustomizeIndex Index;
+	public bool IsCustomize;
+	public bool IsIcon;
+	public string Name = string.Empty;
+	public MakeTypeParam[] Params = Array.Empty<MakeTypeParam>();
 }

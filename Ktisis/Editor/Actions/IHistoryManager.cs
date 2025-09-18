@@ -4,27 +4,27 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Actions.Types;
+#nullable enable
 using System.Collections.Generic;
 
-#nullable enable
+using Ktisis.Actions.Types;
+
 namespace Ktisis.Editor.Actions;
 
-public interface IHistoryManager
-{
-  int Count { get; }
+public interface IHistoryManager {
+	int Count { get; }
 
-  bool CanUndo { get; }
+	bool CanUndo { get; }
 
-  bool CanRedo { get; }
+	bool CanRedo { get; }
 
-  void Add(IMemento item);
+	void Add(IMemento item);
 
-  void Clear();
+	void Clear();
 
-  IEnumerable<IMemento> GetTimeline();
+	IEnumerable<IMemento> GetTimeline();
 
-  void Undo();
+	void Undo();
 
-  void Redo();
+	void Redo();
 }

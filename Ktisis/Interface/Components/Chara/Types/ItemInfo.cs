@@ -4,47 +4,43 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Interface.Textures;
+#nullable enable
 using Ktisis.GameData.Excel;
 
-#nullable enable
 namespace Ktisis.Interface.Components.Chara.Types;
 
-public abstract class ItemInfo
-{
-  public bool FlagUpdate { get; set; }
+public abstract class ItemInfo {
+	public bool FlagUpdate { get; set; }
 
-  public ItemSheet? Item { get; set; }
+	public ItemSheet? Item { get; set; }
 
-  public ISharedImmediateTexture? Texture { get; set; }
+	public ISharedImmediateTexture? Texture { get; set; }
 
-  public abstract EquipSlot Slot { get; }
+	public abstract EquipSlot Slot { get; }
 
-  public abstract ushort ModelId { get; }
+	public abstract ushort ModelId { get; }
 
-  public abstract byte[] StainIds { get; }
+	public abstract byte[] StainIds { get; }
 
-  public abstract void SetEquipItem(ItemSheet item);
+	public abstract bool IsHideable { get; }
 
-  public abstract void SetStainId(byte id, int index = 0);
+	public abstract bool IsVisible { get; }
 
-  public abstract void Unequip();
+	public virtual bool IsVisor => false;
 
-  public abstract bool IsHideable { get; }
+	public virtual bool IsVisorToggled => false;
 
-  public abstract bool IsVisible { get; }
+	public abstract void SetEquipItem(ItemSheet item);
 
-  public abstract void SetVisible(bool visible);
+	public abstract void SetStainId(byte id, int index = 0);
 
-  public virtual bool IsVisor => false;
+	public abstract void Unequip();
 
-  public virtual bool IsVisorToggled => false;
+	public abstract void SetVisible(bool visible);
 
-  public virtual void SetVisorToggled(bool toggle)
-  {
-  }
+	public virtual void SetVisorToggled(bool toggle) { }
 
-  public abstract bool IsCurrent();
+	public abstract bool IsCurrent();
 
-  public abstract bool IsItemPredicate(ItemSheet item);
+	public abstract bool IsItemPredicate(ItemSheet item);
 }

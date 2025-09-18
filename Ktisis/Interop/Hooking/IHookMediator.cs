@@ -7,13 +7,12 @@
 #nullable enable
 namespace Ktisis.Interop.Hooking;
 
-public interface IHookMediator
-{
-  bool IsValid { get; }
+public interface IHookMediator {
+	bool IsValid { get; }
 
-  T Create<T>(params object[] param) where T : HookModule;
+	T Create<T>(params object[] param) where T : HookModule;
 
-  bool Init(HookModule module);
+	bool Init(HookModule module);
 
-  bool Remove(HookModule module);
+	bool Remove(HookModule module);
 }

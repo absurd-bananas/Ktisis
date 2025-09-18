@@ -4,17 +4,16 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using System.Collections.Generic;
 
-#nullable enable
 namespace Ktisis.Data.Config.Bones;
 
-public class TwoJointsGroupParams
-{
-  public TwoJointsType Type;
-  public List<string> FirstBone = new List<string>();
-  public List<string> FirstTwist = new List<string>();
-  public List<string> SecondBone = new List<string>();
-  public List<string> SecondTwist = new List<string>();
-  public List<string> EndBone = new List<string>();
+public class TwoJointsGroupParams {
+	public List<string> EndBone = new List<string>();
+	public List<string> FirstBone = new List<string>();
+	public List<string> FirstTwist = new List<string>();
+	public List<string> SecondBone = new List<string>();
+	public List<string> SecondTwist = new List<string>();
+	public TwoJointsType Type;
 }

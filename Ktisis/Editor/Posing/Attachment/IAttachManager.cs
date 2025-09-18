@@ -4,18 +4,17 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using FFXIVClientStructs.FFXIV.Client.Graphics.Render;
-using Ktisis.Scene.Decor;
+#nullable enable
 using System;
 
-#nullable enable
+using Ktisis.Scene.Decor;
+
 namespace Ktisis.Editor.Posing.Attachment;
 
-public interface IAttachManager : IDisposable
-{
-  void Attach(IAttachable child, IAttachTarget target);
+public interface IAttachManager : IDisposable {
+	void Attach(IAttachable child, IAttachTarget target);
 
-  void Detach(IAttachable child);
+	void Detach(IAttachable child);
 
-  unsafe void Invalidate(Skeleton* parent);
+	unsafe void Invalidate(Skeleton* parent);
 }

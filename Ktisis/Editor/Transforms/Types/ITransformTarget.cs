@@ -4,18 +4,18 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Scene.Decor;
-using Ktisis.Scene.Entities;
+#nullable enable
 using System.Collections.Generic;
 
-#nullable enable
+using Ktisis.Scene.Decor;
+using Ktisis.Scene.Entities;
+
 namespace Ktisis.Editor.Transforms.Types;
 
-public interface ITransformTarget : ITransform
-{
-  SceneEntity? Primary { get; }
+public interface ITransformTarget : ITransform {
+	SceneEntity? Primary { get; }
 
-  IEnumerable<SceneEntity> Targets { get; }
+	IEnumerable<SceneEntity> Targets { get; }
 
-  TransformSetup Setup { get; set; }
+	TransformSetup Setup { get; set; }
 }

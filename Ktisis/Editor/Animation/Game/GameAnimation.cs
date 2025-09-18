@@ -4,18 +4,17 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using Ktisis.Editor.Animation.Types;
 
-#nullable enable
 namespace Ktisis.Editor.Animation.Game;
 
-public abstract class GameAnimation
-{
-  public abstract string Name { get; }
+public abstract class GameAnimation {
+	public abstract string Name { get; }
 
-  public abstract ushort Icon { get; }
+	public abstract ushort Icon { get; }
 
-  public abstract uint TimelineId { get; }
+	public abstract uint TimelineId { get; }
 
-  public abstract TimelineSlot Slot { get; }
+	public abstract TimelineSlot Slot { get; }
 }

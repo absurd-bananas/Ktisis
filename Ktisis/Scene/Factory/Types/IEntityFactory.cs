@@ -4,29 +4,27 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Dalamud.Game.ClientState.Objects.Types;
+#nullable enable
 using Ktisis.Scene.Factory.Builders;
 using Ktisis.Scene.Factory.Creators;
 using Ktisis.Structs.Lights;
 
-#nullable enable
 namespace Ktisis.Scene.Factory.Types;
 
-public interface IEntityFactory
-{
-  IActorBuilder BuildActor(IGameObject actor);
+public interface IEntityFactory {
+	IActorBuilder BuildActor(IGameObject actor);
 
-  ILightBuilder BuildLight();
+	ILightBuilder BuildLight();
 
-  IObjectBuilder BuildObject();
+	IObjectBuilder BuildObject();
 
-  IPoseBuilder BuildPose();
+	IPoseBuilder BuildPose();
 
-  IActorCreator CreateActor();
+	IActorCreator CreateActor();
 
-  ILightCreator CreateLight();
+	ILightCreator CreateLight();
 
-  ILightCreator CreateLight(LightType type);
+	ILightCreator CreateLight(LightType type);
 
-  IRefImageBuilder BuildRefImage();
+	IRefImageBuilder BuildRefImage();
 }

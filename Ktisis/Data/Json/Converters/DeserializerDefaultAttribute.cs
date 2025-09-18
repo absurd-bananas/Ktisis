@@ -4,12 +4,11 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
 using System;
 
-#nullable enable
 namespace Ktisis.Data.Json.Converters;
 
-public class DeserializerDefaultAttribute(object value) : Attribute
-{
-  public readonly object Default = value;
+public class DeserializerDefaultAttribute(object value) : Attribute {
+	public readonly object Default = value;
 }

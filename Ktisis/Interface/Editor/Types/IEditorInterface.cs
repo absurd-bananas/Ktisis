@@ -4,6 +4,10 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
+using System;
+using System.Threading.Tasks;
+
 using Ktisis.Data.Config;
 using Ktisis.Data.Files;
 using Ktisis.Interface.Types;
@@ -12,79 +16,75 @@ using Ktisis.Scene.Entities;
 using Ktisis.Scene.Entities.Game;
 using Ktisis.Scene.Entities.Skeleton;
 using Ktisis.Scene.Entities.World;
-using System;
-using System.Threading.Tasks;
 
-#nullable enable
 namespace Ktisis.Interface.Editor.Types;
 
-public interface IEditorInterface
-{
-  void Prepare();
+public interface IEditorInterface {
+	void Prepare();
 
-  void OpenConfigWindow();
+	void OpenConfigWindow();
 
-  void ToggleWorkspaceWindow();
+	void ToggleWorkspaceWindow();
 
-  void OpenCameraWindow();
+	void OpenCameraWindow();
 
-  void OpenEnvironmentWindow();
+	void OpenEnvironmentWindow();
 
-  void OpenObjectEditor();
+	void OpenObjectEditor();
 
-  void OpenPosingWindow();
+	void OpenPosingWindow();
 
-  void OpenSceneCreateMenu();
+	void OpenSceneCreateMenu();
 
-  void OpenSceneEntityMenu(SceneEntity entity);
+	void OpenSceneEntityMenu(SceneEntity entity);
 
-  void OpenAssignCollection(ActorEntity entity);
+	void OpenAssignCollection(ActorEntity entity);
 
-  void OpenAssignCProfile(ActorEntity entity);
+	void OpenAssignCProfile(ActorEntity entity);
 
-  void OpenOverworldActorList();
+	void OpenOverworldActorList();
 
-  void RefreshGposeActors();
+	void RefreshGposeActors();
 
-  void OpenRenameEntity(SceneEntity entity);
+	void OpenRenameEntity(SceneEntity entity);
 
-  void OpenActorEditor(ActorEntity actor);
+	void OpenActorEditor(ActorEntity actor);
 
-  void OpenLightEditor(LightEntity light);
+	void OpenLightEditor(LightEntity light);
 
-  void OpenLightExportNoActorSelected(Action exportLight, Configuration config);
+	void OpenLightExportNoActorSelected(Action exportLight, Configuration config);
 
-  void OpenEditor<T, TA>(TA entity)
-    where T : EntityEditWindow<TA>
-    where TA : SceneEntity;
+	void OpenEditor<T, TA>(TA entity)
+		where T : EntityEditWindow<TA>
+		where TA : SceneEntity;
 
-  void OpenEditorFor(SceneEntity entity);
+	void OpenEditorFor(SceneEntity entity);
 
-  void OpenCharaImport(ActorEntity actor);
+	void OpenCharaImport(ActorEntity actor);
 
-  Task OpenCharaExport(ActorEntity actor);
+	Task OpenCharaExport(ActorEntity actor);
 
-  void OpenPoseImport(ActorEntity actor);
+	void OpenPoseImport(ActorEntity actor);
 
-  Task OpenPoseExport(EntityPose pose);
+	Task OpenPoseExport(EntityPose pose);
 
-  void OpenLightImport(LightEntity light);
+	void OpenLightImport(LightEntity light);
 
-  Task OpenLightExport(LightEntity light);
+	Task OpenLightExport(LightEntity light);
 
-  void OpenCharaFile(Action<string, CharaFile> handler);
+	void OpenCharaFile(Action<string, CharaFile> handler);
 
-  void OpenPoseFile(Action<string, PoseFile> handler);
+	void OpenPoseFile(Action<string, PoseFile> handler);
 
-  void OpenMcdfFile(Action<string> handler);
+	void OpenMcdfFile(Action<string> handler);
 
-  void OpenLightFile(Action<string, SceneManager.LightFile> handler);
+	void OpenLightFile(Action<string, SceneManager.LightFile> handler);
 
-  void OpenReferenceImages(Action<string> handler);
+	void OpenReferenceImages(Action<string> handler);
 
-  void ExportCharaFile(CharaFile file);
+	void ExportCharaFile(CharaFile file);
 
-  void ExportPoseFile(PoseFile file);
+	void ExportPoseFile(PoseFile file);
 
-  void ExportLightFile(SceneManager.LightFile file);
+	void ExportLightFile(SceneManager.LightFile file);
 }

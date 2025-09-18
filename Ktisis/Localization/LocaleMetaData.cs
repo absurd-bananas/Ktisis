@@ -7,25 +7,24 @@
 #nullable enable
 namespace Ktisis.Localization;
 
-public class LocaleMetaData
-{
-  public string TechnicalName { get; }
+public class LocaleMetaData {
 
-  public string DisplayName { get; }
+	internal LocaleMetaData(
+		string technicalName,
+		string displayName,
+		string selfName,
+		string?[] maintainers
+	) {
+		this.TechnicalName = technicalName;
+		this.DisplayName = displayName;
+		this.SelfName = selfName;
+		this.Maintainers = maintainers;
+	}
+	public string TechnicalName { get; }
 
-  public string SelfName { get; }
+	public string DisplayName { get; }
 
-  public string?[] Maintainers { get; }
+	public string SelfName { get; }
 
-  internal LocaleMetaData(
-    string technicalName,
-    string displayName,
-    string selfName,
-    string?[] maintainers)
-  {
-    this.TechnicalName = technicalName;
-    this.DisplayName = displayName;
-    this.SelfName = selfName;
-    this.Maintainers = maintainers;
-  }
+	public string?[] Maintainers { get; }
 }

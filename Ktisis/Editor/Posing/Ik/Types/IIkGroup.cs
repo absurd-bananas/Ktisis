@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Editor.Posing.Ik.Types;
 
-public interface IIkGroup
-{
-  bool IsEnabled { get; set; }
+public interface IIkGroup {
+	bool IsEnabled { get; set; }
 
-  uint SkeletonId { get; set; }
+	uint SkeletonId { get; set; }
 }

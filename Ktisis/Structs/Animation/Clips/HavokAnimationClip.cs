@@ -4,18 +4,17 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable disable
 using System.Runtime.InteropServices;
 
-#nullable disable
 namespace Ktisis.Structs.Animation.Clips;
 
 [StructLayout(LayoutKind.Explicit, Size = 208 /*0xD0*/)]
-public struct HavokAnimationClip
-{
-  [FieldOffset(0)]
-  public BaseClip Clip;
-  [FieldOffset(152)]
-  public unsafe Ktisis.Structs.Animation.MotionControl* MotionControl;
-  [FieldOffset(160 /*0xA0*/)]
-  public unsafe char* AnimationName;
+public struct HavokAnimationClip {
+	[FieldOffset(0)]
+	public BaseClip Clip;
+	[FieldOffset(152)]
+	public unsafe Ktisis.Structs.Animation.MotionControl* MotionControl;
+	[FieldOffset(160 /*0xA0*/)]
+	public unsafe char* AnimationName;
 }

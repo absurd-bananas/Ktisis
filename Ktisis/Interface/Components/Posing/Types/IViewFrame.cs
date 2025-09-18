@@ -4,20 +4,20 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Data.Config.Pose2D;
-using Ktisis.Scene.Entities.Skeleton;
+#nullable enable
 using System.Collections.Generic;
 
-#nullable enable
+using Ktisis.Scene.Entities.Skeleton;
+
 namespace Ktisis.Interface.Components.Posing.Types;
 
-public interface IViewFrame
-{
-  void DrawView(
-    PoseViewEntry entry,
-    float width,
-    float height,
-    IDictionary<string, string>? templates = null);
+public interface IViewFrame {
+	void DrawView(
+		PoseViewEntry entry,
+		float width,
+		float height,
+		IDictionary<string, string>? templates = null
+	);
 
-  void DrawBones(EntityPose pose);
+	void DrawBones(EntityPose pose);
 }

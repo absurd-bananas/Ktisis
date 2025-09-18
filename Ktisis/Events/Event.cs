@@ -4,41 +4,34 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Core.Attributes;
+#nullable enable
 using System;
 
-#nullable enable
+using Ktisis.Core.Attributes;
+
 namespace Ktisis.Events;
 
 [Transient]
-public class Event<T> : EventBase<T> where T : Delegate
-{
-  private void Enumerate(Action<object> func)
-  {
-    foreach (object subscriber in this._subscribers)
-    {
-      try
-      {
-        func(subscriber);
-      }
-      catch (Exception ex)
-      {
-        Ktisis.Ktisis.Log.Error(ex.ToString(), Array.Empty<object>());
-      }
-    }
-  }
+public class Event<T> : EventBase<T> where T : Delegate {
+	private void Enumerate(Action<object> func) {
+		foreach (var subscriber in this._subscribers) {
+			try {
+				func(subscriber);
+			} catch (Exception ex) {
+				Ktisis.Ktisis.Log.Error(ex.ToString(), Array.Empty<object>());
+			}
+		}
+	}
 
-  public void Invoke() => this.Enumerate((Action<object>) (sub => ((Action) sub)()));
+	public void Invoke() => this.Enumerate(sub => ((Action)sub)());
 
-  public void Invoke<T1>(T1 a1) => this.Enumerate((Action<object>) (sub => ((Action<T1>) sub)(a1)));
+	public void Invoke<T1>(T1 a1) => this.Enumerate(sub => ((Action<T1>)sub)(a1));
 
-  public void Invoke<T1, T2>(T1 a1, T2 a2)
-  {
-    this.Enumerate((Action<object>) (sub => ((Action<T1, T2>) sub)(a1, a2)));
-  }
+	public void Invoke<T1, T2>(T1 a1, T2 a2) {
+		this.Enumerate(sub => ((Action<T1, T2>)sub)(a1, a2));
+	}
 
-  public void Invoke<T1, T2, T3>(T1 a1, T2 a2, T3 a3)
-  {
-    this.Enumerate((Action<object>) (sub => ((Action<T1, T2, T3>) sub)(a1, a2, a3)));
-  }
+	public void Invoke<T1, T2, T3>(T1 a1, T2 a2, T3 a3) {
+		this.Enumerate(sub => ((Action<T1, T2, T3>)sub)(a1, a2, a3));
+	}
 }

@@ -7,16 +7,13 @@
 #nullable disable
 namespace Ktisis.Structs.Input;
 
-public struct KeyboardQueue
-{
-  public unsafe fixed ulong _data[66];
+public struct KeyboardQueue {
+	public unsafe fixed ulong _data[66];
 
-  public unsafe QueueEntry this[int i]
-  {
-    get
-    {
-      fixed (ulong* numPtr = this._data)
-        return ((QueueEntry*) numPtr)[i];
-    }
-  }
+	public unsafe QueueEntry this[int i] {
+		get {
+			fixed (ulong* numPtr = this._data)
+				return ((QueueEntry*)numPtr)[i];
+		}
+	}
 }

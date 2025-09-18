@@ -7,9 +7,8 @@
 #nullable disable
 namespace Ktisis.Data.Config.Entity;
 
-public enum DisplayMode
-{
-  None,
-  Dot,
-  Icon,
+public enum DisplayMode {
+	None,
+	Dot,
+	Icon
 }

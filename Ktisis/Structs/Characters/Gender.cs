@@ -7,8 +7,7 @@
 #nullable disable
 namespace Ktisis.Structs.Characters;
 
-public enum Gender : byte
-{
-  Masculine,
-  Feminine,
+public enum Gender : byte {
+	Masculine,
+	Feminine
 }

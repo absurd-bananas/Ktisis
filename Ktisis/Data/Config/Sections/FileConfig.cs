@@ -4,28 +4,28 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
+#nullable enable
+using System.Collections.Generic;
+
 using Ktisis.Editor.Characters;
 using Ktisis.Editor.Posing.Data;
 using Ktisis.Editor.Posing.Types;
-using System.Collections.Generic;
 
-#nullable enable
 namespace Ktisis.Data.Config.Sections;
 
-public class FileConfig
-{
-  public Dictionary<string, string> LastOpenedPaths = new Dictionary<string, string>();
-  public SaveModes ImportCharaModes = SaveModes.All;
-  public bool ImportNpcApplyOnSelect;
-  public bool ImportPoseSelectedBones;
-  public bool AnchorPoseSelectedBones;
-  public bool ImportPoseSelectedBonesIncludeChildBones;
-  public BoneTypeInclusion ImportPoseIncludeType;
-  public PoseTransforms ImportPoseTransforms = PoseTransforms.Rotation;
-  public PoseMode ImportPoseModes = PoseMode.All;
-  public PoseTransforms ImportLightTransforms = PoseTransforms.Rotation | PoseTransforms.Scale;
-  public bool ImportLightLighting = true;
-  public bool ImportLightColor = true;
-  public bool ImportLightShadows = true;
-  public bool ExportLightIgnoreNoActorSelectedWarning;
+public class FileConfig {
+	public bool AnchorPoseSelectedBones;
+	public bool ExportLightIgnoreNoActorSelectedWarning;
+	public SaveModes ImportCharaModes = SaveModes.All;
+	public bool ImportLightColor = true;
+	public bool ImportLightLighting = true;
+	public bool ImportLightShadows = true;
+	public PoseTransforms ImportLightTransforms = PoseTransforms.Rotation | PoseTransforms.Scale;
+	public bool ImportNpcApplyOnSelect;
+	public BoneTypeInclusion ImportPoseIncludeType;
+	public PoseMode ImportPoseModes = PoseMode.All;
+	public bool ImportPoseSelectedBones;
+	public bool ImportPoseSelectedBonesIncludeChildBones;
+	public PoseTransforms ImportPoseTransforms = PoseTransforms.Rotation;
+	public Dictionary<string, string> LastOpenedPaths = new Dictionary<string, string>();
 }

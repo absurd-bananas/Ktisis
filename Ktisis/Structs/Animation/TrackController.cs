@@ -4,17 +4,17 @@
 // MVID: 678E6480-A117-4750-B4EA-EC6ECE388B70
 // Assembly location: C:\Users\WDAGUtilityAccount\Downloads\KtisisPyon\KtisisPyon.dll
 
-using Ktisis.Structs.Common;
+#nullable disable
 using System.Runtime.InteropServices;
 
-#nullable disable
+using Ktisis.Structs.Common;
+
 namespace Ktisis.Structs.Animation;
 
 [StructLayout(LayoutKind.Explicit)]
-public struct TrackController
-{
-  [FieldOffset(0)]
-  public SchedulerState SchedulerState;
-  [FieldOffset(40)]
-  public PtrList<TimelineTrack> Tracks;
+public struct TrackController {
+	[FieldOffset(0)]
+	public SchedulerState SchedulerState;
+	[FieldOffset(40)]
+	public PtrList<TimelineTrack> Tracks;
 }
